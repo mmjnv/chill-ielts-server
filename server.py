@@ -80,77 +80,99 @@ class App(BaseHTTPRequestHandler):
         if self.logged_in(): return True
         self.redirect('/admin/login'); return False
     def redirect(self, where): self.send(HTTPStatus.SEE_OTHER, b"", headers={"Location":where})
-  def static(self, path):
-    target = (ROOT / path.lstrip('/')).resolve()
-
-    # Prevent path traversal
-    if not str(target).startswith(str(ROOT.resolve())):
-        return self.send(404, "Not found")
-
-    if not target.is_file():
-        print("Missing file:", target)
-        return self.send(404, "Not found")
-
-    types = {
-        '.html': 'text/html; charset=utf-8',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.webp': 'image/webp',
-        '.css': 'text/css',
-        '.js': 'application/javascript'
-    }
-
-    self.send(
-        200,
-        target.read_bytes(),
-        types.get(target.suffix.lower(), 'application/octet-stream')
-    )
-    def do_GET(self):
-    p = urlparse(self.path)
-    q = parse_qs(p.query)
-
-    if p.path == '/api/test':
-        return self.api_test(q.get('code', [''])[0], q.get('name', [''])[0])
-
-    if p.path.startswith('/uploads/'):
-        return self.static('data' + p.path)
-
-    if p.path == '/admin/login':
-        return self.send(
+    
+    def static(self, path):
+        target = (ROOT / path.lstrip('/')).resolve()
+        
+        # Prevent path traversal
+        if not str(target).startswith(str(ROOT.resolve())):
+            return self.send(404, "Not found")
+        
+        if not target.is_file():
+            print("Missing file:", target)
+            return self.send(404, "Not found")
+        
+        types = {
+            '.html': 'text/html; charset=utf-8',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.webp': 'image/webp',
+            '.css': 'text/css',
+            '.js': 'application/javascript'
+        }
+        
+        self.send(
             200,
-            page(
-                'Teacher sign in',
-                "<h1>Teacher sign in</h1><form method=post><label>Password</label><input name=password type=password autofocus required><button>Sign in</button></form>"
+            target.read_bytes(),
+            types.get(target.suffix.lower(), 'application/octet-stream')
+        )
+    
+    def do_GET(self):
+        p = urlparse(self.path)
+        q = parse_qs(p.query)
+
+        # API endpoints
+        if p.path == '/api/test':
+            return self.api_test(q.get('code', [''])[0], q.get('name', [''])[0])
+
+        # Static file serving for uploads
+        if p.path.startswith('/uploads/'):
+            return self.static('data' + p.path)
+
+        # Static files in root
+        if p.path == '/' or p.path == '/practice':
+            # Check if the file exists, serve it
+            html_path = ROOT / 'ielts-writing-exam.html'
+            if html_path.exists():
+                return self.send(200, html_path.read_text(), 'text/html; charset=utf-8')
+            else:
+                return self.send(404, "File not found")
+
+        if p.path == '/chill-ielts-logo.png':
+            img_path = ROOT / 'chill-ielts-logo.png'
+            if img_path.exists():
+                return self.send(200, img_path.read_bytes(), 'image/png')
+            else:
+                return self.send(404, "File not found")
+
+        # Admin routes
+        if p.path == '/admin/login':
+            return self.send(
+                200,
+                page(
+                    'Teacher sign in',
+                    "<h1>Teacher sign in</h1><form method=post><label>Password</label><input name=password type=password autofocus required><button>Sign in</button></form>"
+                )
             )
-        )
 
-    if p.path == '/admin/logout':
-        return self.send(
-            303,
-            b'',
-            headers={
-                'Location': '/admin/login',
-                'Set-Cookie': 'teacher_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
-            }
-        )
+        if p.path == '/admin/logout':
+            return self.send(
+                303,
+                b'',
+                headers={
+                    'Location': '/admin/login',
+                    'Set-Cookie': 'teacher_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
+                }
+            )
 
-    if p.path == '/admin':
-        return self.dashboard()
+        if p.path == '/admin':
+            return self.dashboard()
 
-    if p.path == '/admin/new':
-        return self.new_test()
+        if p.path == '/admin/new':
+            return self.new_test()
 
-    if p.path == '/admin/submissions':
-        return self.submissions()
+        if p.path == '/admin/submissions':
+            return self.submissions()
 
-    if p.path == '/' or p.path == '/practice':
-        return self.static('ielts-writing-exam.html')
+        # Serve static files from the current directory
+        # This handles CSS, JS, and other static assets
+        static_extensions = {'.css', '.js', '.ico', '.txt', '.xml', '.json'}
+        if Path(ROOT / p.path.lstrip('/')).exists() and Path(ROOT / p.path.lstrip('/')).suffix in static_extensions:
+            return self.static(p.path)
 
-    if p.path == '/chill-ielts-logo.png':
-        return self.static('chill-ielts-logo.png')
-
-    return self.send(404, "Not found")
+        return self.send(404, "Not found")
+    
     def do_POST(self):
         p=urlparse(self.path)
         if p.path=='/api/submissions': return self.api_submission()
@@ -159,6 +181,7 @@ class App(BaseHTTPRequestHandler):
         if p.path.startswith('/admin/code/'): return self.add_code(p.path.rsplit('/',1)[1])
         if p.path.startswith('/admin/grade/'): return self.grade_submission(p.path.rsplit('/',1)[1])
         return self.send(404,"Not found")
+    
     def api_test(self, raw_code, raw_name=''):
         code=raw_code.strip().upper()
         student_name=raw_name.strip()[:80]
@@ -168,6 +191,7 @@ class App(BaseHTTPRequestHandler):
         if not row: return self.json(404,{"error":"This access code is not available."})
         token=secrets.token_urlsafe(32); db=conn(); db.execute("DELETE FROM attempts WHERE expires_at<?",(int(time.time()),)); db.execute("INSERT OR REPLACE INTO attempts(token_hash,code_hash,test_id,expires_at,student_name) VALUES (?,?,?,?,?)",(sha(token),sha(code),row['id'],int(time.time())+7200,student_name)); db.commit(); db.close()
         self.json(200,{"title":row['title'],"attemptToken":token,"task1":{"title":row['task1_title'],"prompt":row['task1_prompt'],"imageUrl":row['task1_image'] or ''},"task2":{"title":row['task2_title'],"prompt":row['task2_prompt']}})
+    
     def api_submission(self):
         try: data=self.form()
         except Exception: return self.json(400,{"error":"Invalid submission."})
@@ -175,17 +199,21 @@ class App(BaseHTTPRequestHandler):
         if not attempt: db.close(); return self.json(403,{"error":"Your test session has expired."})
         db.execute("INSERT INTO submissions(test_id,code_hash,student_name,task1_answer,task2_answer,seconds_remaining,submitted_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(test_id,code_hash) DO UPDATE SET student_name=excluded.student_name,task1_answer=excluded.task1_answer,task2_answer=excluded.task2_answer,seconds_remaining=excluded.seconds_remaining,submitted_at=excluded.submitted_at",(attempt['test_id'],attempt['code_hash'],attempt['student_name'],str(data.get('task1Answer','')),str(data.get('task2Answer','')),int(data.get('secondsRemaining',0) or 0),int(time.time())))
         db.commit(); db.close(); self.json(200,{"ok":True})
+    
     def login(self):
         data,_=self.form(); password=str(data.get('password',''))
         if not hmac.compare_digest(sha(password),SETTINGS['password_hash']): return self.send(401,page('Teacher sign in',"<h1>Teacher sign in</h1><p class=msg>Incorrect password.</p><form method=post><input name=password type=password required><button>Sign in</button></form>"))
         expiry=str(int(time.time())+28800); sig=hmac.new(SETTINGS['secret'].encode(),expiry.encode(),hashlib.sha256).hexdigest(); self.send(303,b'',headers={'Location':'/admin','Set-Cookie':f'teacher_session={expiry}.{sig}; Path=/; HttpOnly; SameSite=Strict'})
+    
     def dashboard(self):
         if not self.require_login(): return
         db=conn(); tests=db.execute("SELECT t.*,count(c.id) codes FROM tests t LEFT JOIN codes c ON c.test_id=t.id GROUP BY t.id ORDER BY t.id DESC").fetchall(); submission_count=db.execute("SELECT count(*) FROM submissions").fetchone()[0]; code_count=db.execute("SELECT count(*) FROM codes").fetchone()[0]; db.close(); rows=''.join(f"<tr><td><b>{esc(x['title'])}</b><br><small>Task 1 + Task 2</small></td><td>{x['codes']}</td><td>{'Active' if x['active'] else 'Inactive'}</td><td><form method=post action='/admin/code/{x['id']}'><button>New 4-digit code</button></form></td></tr>" for x in tests) or '<tr><td colspan=4>No tests yet.</td></tr>'
         self.send(200,page('Tests',f"<h1>Your teaching workspace</h1><p>Build tests, issue short student codes, and review completed work in one place.</p><p><a class='button accent' href='/admin/new'>+ Create a new test</a> <a class=button href='/practice'>Open student page</a> <a class=button href='/admin/submissions'>Review submissions</a></p><div class=stats><div class=stat><strong>{len(tests)}</strong>Tests created</div><div class=stat><strong>{code_count}</strong>Student codes issued</div><div class=stat><strong>{submission_count}</strong>Completed submissions</div></div><table><tr><th>Test</th><th>Codes</th><th>Status</th><th>Teacher tool</th></tr>{rows}</table>"))
+    
     def new_test(self):
         if not self.require_login(): return
         self.send(200,page('New test',"""<h1>Create a test</h1><form method=post enctype='multipart/form-data'><label>Test title</label><input name=title required placeholder='Academic Writing Practice 1'><div class=grid><div><h2>Task 1</h2><label>Title</label><input name=task1_title value='Describe the information' required><label>Instructions / question</label><textarea name=task1_prompt required></textarea><label>Chart image (PNG, JPG or WebP)</label><input name=chart type=file accept='image/png,image/jpeg,image/webp'></div><div><h2>Task 2</h2><label>Title</label><input name=task2_title value='Discuss both views and give your opinion' required><label>Instructions / question</label><textarea name=task2_prompt required></textarea></div></div><button>Create test</button></form>"""))
+    
     def create_test(self):
         if not self.require_login(): return
         data,fs=self.form(); image=''; chart=fs['chart'] if 'chart' in fs else None
@@ -195,11 +223,13 @@ class App(BaseHTTPRequestHandler):
             if ext not in allowed: return self.send(400,page('New test','<p>Use PNG, JPG or WebP for the chart.</p>'))
             name=secrets.token_hex(12)+ext; (UPLOADS/name).write_bytes(chart.file.read()); image='/uploads/'+name
         db=conn(); cur=db.execute("INSERT INTO tests(title,task1_title,task1_prompt,task1_image,task2_title,task2_prompt,created_at) VALUES(?,?,?,?,?,?,?)",(data.get('title','').strip(),data.get('task1_title','').strip(),data.get('task1_prompt','').strip(),image,data.get('task2_title','').strip(),data.get('task2_prompt','').strip(),int(time.time()))); db.commit(); test_id=cur.lastrowid; db.close(); self.issue_code(test_id)
+    
     def add_code(self,test_id):
         if not self.require_login(): return
         try: test_id=int(test_id)
         except ValueError: return self.send(404,'Not found')
         self.issue_code(test_id)
+    
     def issue_code(self, test_id):
         """Create a code and show it immediately; only its secure hash is stored."""
         db=conn(); exists=db.execute("SELECT 1 FROM tests WHERE id=?",(test_id,)).fetchone()
@@ -211,6 +241,7 @@ class App(BaseHTTPRequestHandler):
             except sqlite3.IntegrityError: continue
         else: db.close(); return self.send(503,'All short codes are currently in use. Please try again.')
         db.close(); self.send(200,page('Student code',f"<h1>Student access code</h1><p>Give this four-digit code to one student:</p><h2 style='font-size:42px;letter-spacing:.16em'>{code}</h2><div class=notice>For fairness, create a different code for every student.</div><p><a class=button href='/admin'>Back to tests</a></p>"))
+    
     def grade_submission(self, submission_id):
         """Teacher-only AI feedback. The API key never reaches a student browser."""
         if not self.require_login(): return
@@ -234,6 +265,7 @@ Task 1 question:\n{row['task1_prompt']}\n\nTask 1 answer:\n{row['task1_answer']}
         except (urlerror.URLError, urlerror.HTTPError, ValueError) as exc:
             return self.send(502,page('AI marking unavailable',f"<h1>AI marking could not be completed</h1><div class=notice>{esc(str(exc))}</div><p>Check your API key and internet connection, then try again.</p><p><a class=button href='/admin/submissions'>Back to submissions</a></p>"))
         score='AI estimate'; db=conn(); db.execute("UPDATE submissions SET ai_feedback=?,ai_score=?,ai_marked_at=? WHERE id=?",(feedback,score,int(time.time()),submission_id)); db.commit(); db.close(); self.redirect('/admin/submissions')
+    
     def submissions(self):
         if not self.require_login(): return
         db=conn(); rows=db.execute("SELECT s.*,t.title FROM submissions s JOIN tests t ON t.id=s.test_id ORDER BY s.submitted_at DESC").fetchall(); db.close(); data=''.join(f"<tr><td><b>{esc(r['student_name'])}</b></td><td>{esc(r['title'])}<br><small>{time.strftime('%Y-%m-%d %H:%M',time.localtime(r['submitted_at']))}</small></td><td>{len(r['task1_answer'].split())} words</td><td>{len(r['task2_answer'].split())} words</td><td><form method=post action='/admin/grade/{r['id']}'><button class=accent>AI mark</button></form>{'<p class=score>AI feedback saved</p>' if r['ai_feedback'] else ''}</td><td><details><summary>Read answers and feedback</summary><h4>Task 1</h4><pre>{esc(r['task1_answer'])}</pre><h4>Task 2</h4><pre>{esc(r['task2_answer'])}</pre>{'<h4>AI feedback (unofficial estimate)</h4><pre>'+esc(r['ai_feedback'])+'</pre>' if r['ai_feedback'] else ''}</details></td></tr>" for r in rows) or '<tr><td colspan=6>No submissions yet.</td></tr>'
