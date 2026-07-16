@@ -186,4 +186,12 @@ Task 1 question:\n{row['task1_prompt']}\n\nTask 1 answer:\n{row['task1_answer']}
         self.send(200,page('Submissions',f"<h1>Student submissions</h1><p>Use AI marking as a second opinion; it is an unofficial teaching aid, not an official IELTS score.</p><table><tr><th>Student</th><th>Test</th><th>Task 1</th><th>Task 2</th><th>Feedback tool</th><th>Work</th></tr>{data}</table>"))
 
 if __name__ == '__main__':
-    port=int(os.environ.get('PORT','8080')); print(f'Chill IELTS is ready at http://localhost:{port}'); ThreadingHTTPServer(('0.0.0.0',port),App).serve_forever()
+    print("HERE:", HERE)
+    print("ROOT:", ROOT)
+    print("FILES:")
+    for f in ROOT.iterdir():
+        print(" -", f.name)
+
+    port = int(os.environ.get("PORT", "8080"))
+    print(f"Chill IELTS is ready at http://localhost:{port}")
+    ThreadingHTTPServer(("0.0.0.0", port), App).serve_forever()
