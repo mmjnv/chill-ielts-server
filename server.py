@@ -80,24 +80,77 @@ class App(BaseHTTPRequestHandler):
         if self.logged_in(): return True
         self.redirect('/admin/login'); return False
     def redirect(self, where): self.send(HTTPStatus.SEE_OTHER, b"", headers={"Location":where})
-    def static(self, path):
-        target=(ROOT/path.lstrip('/')).resolve()
-        if ROOT not in target.parents or not target.is_file(): return self.send(404,"Not found")
-        types={'.html':'text/html; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.css':'text/css','.js':'application/javascript'}
-        self.send(200,target.read_bytes(),types.get(target.suffix.lower(),'application/octet-stream'))
+  def static(self, path):
+    target = (ROOT / path.lstrip('/')).resolve()
+
+    # Prevent path traversal
+    if not str(target).startswith(str(ROOT.resolve())):
+        return self.send(404, "Not found")
+
+    if not target.is_file():
+        print("Missing file:", target)
+        return self.send(404, "Not found")
+
+    types = {
+        '.html': 'text/html; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.css': 'text/css',
+        '.js': 'application/javascript'
+    }
+
+    self.send(
+        200,
+        target.read_bytes(),
+        types.get(target.suffix.lower(), 'application/octet-stream')
+    )
     def do_GET(self):
-        p=urlparse(self.path); q=parse_qs(p.query)
-        if p.path=='/api/test': return self.api_test(q.get('code',[''])[0],q.get('name',[''])[0])
-       if p.path.startswith('/uploads/'):
-    return self.static('data' + p.path)
-        if p.path=='/admin/login': return self.send(200,page('Teacher sign in',"<h1>Teacher sign in</h1><form method=post><label>Password</label><input name=password type=password autofocus required><button>Sign in</button></form>"))
-        if p.path=='/admin/logout': return self.send(303,b'',headers={'Location':'/admin/login','Set-Cookie':'teacher_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'})
-        if p.path=='/admin': return self.dashboard()
-        if p.path=='/admin/new': return self.new_test()
-        if p.path=='/admin/submissions': return self.submissions()
-        if p.path=='/' or p.path=='/practice': return self.static('ielts-writing-exam.html')
-        if p.path=='/chill-ielts-logo.png': return self.static('chill-ielts-logo.png')
-        return self.send(404,"Not found")
+    p = urlparse(self.path)
+    q = parse_qs(p.query)
+
+    if p.path == '/api/test':
+        return self.api_test(q.get('code', [''])[0], q.get('name', [''])[0])
+
+    if p.path.startswith('/uploads/'):
+        return self.static('data' + p.path)
+
+    if p.path == '/admin/login':
+        return self.send(
+            200,
+            page(
+                'Teacher sign in',
+                "<h1>Teacher sign in</h1><form method=post><label>Password</label><input name=password type=password autofocus required><button>Sign in</button></form>"
+            )
+        )
+
+    if p.path == '/admin/logout':
+        return self.send(
+            303,
+            b'',
+            headers={
+                'Location': '/admin/login',
+                'Set-Cookie': 'teacher_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
+            }
+        )
+
+    if p.path == '/admin':
+        return self.dashboard()
+
+    if p.path == '/admin/new':
+        return self.new_test()
+
+    if p.path == '/admin/submissions':
+        return self.submissions()
+
+    if p.path == '/' or p.path == '/practice':
+        return self.static('ielts-writing-exam.html')
+
+    if p.path == '/chill-ielts-logo.png':
+        return self.static('chill-ielts-logo.png')
+
+    return self.send(404, "Not found")
     def do_POST(self):
         p=urlparse(self.path)
         if p.path=='/api/submissions': return self.api_submission()
