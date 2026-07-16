@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlparse
 from urllib import request as urlrequest, error as urlerror
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent
+ROOT = HERE
 DATA = HERE / "data"
 UPLOADS = DATA / "uploads"
 DB = DATA / "chill_ielts.sqlite3"
