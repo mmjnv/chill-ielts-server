@@ -1,56 +1,1044 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Chill IELTS | Writing practice</title>
-  <style>
-    :root { --ink:#1c2733; --muted:#607080; --line:#d8e0e8; --navy:#123758; --blue:#1769aa; --panel:#f6f8fa; --orange:#ff5a16; --good:#087e54; }
-    * { box-sizing:border-box } body { margin:0; font:15px/1.5 Arial,sans-serif; color:var(--ink); background:#fff } button,input,textarea { font:inherit }
-    .top { height:74px; display:flex; align-items:center; gap:16px; padding:10px 28px; border-bottom:1px solid var(--line); box-shadow:0 1px 5px #1a36500c; background:#fff }
-    .brand { display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:.1px; min-width:238px }.brand img { width:46px; height:46px; object-fit:contain }.brand small { display:block; color:var(--muted); font-weight:400; letter-spacing:0 }
-    .exam-title { border-left:1px solid var(--line); padding-left:20px; color:#40515f; flex:1 }.exam-title strong { display:block; color:var(--ink) }.timer { font-size:22px; font-weight:700; color:var(--navy); font-variant-numeric:tabular-nums }.finish { border:0; background:var(--orange); color:#fff; padding:11px 18px; border-radius:4px; cursor:pointer; font-weight:700 }.finish:hover{filter:brightness(.94)}
-    .tabs { height:54px; border-bottom:1px solid var(--line); display:flex; align-items:stretch; padding:0 28px; gap:4px }.tab { background:none; border:0; border-bottom:4px solid transparent; padding:0 22px; cursor:pointer; color:#526372; font-weight:700 }.tab.active { color:var(--navy); border-bottom-color:var(--orange) }.tab .status { display:inline-block; margin-left:8px; width:8px;height:8px;border-radius:50%;background:#b8c3cc}.tab .status.done {background:var(--good)}
-    .exam { display:grid; grid-template-columns:minmax(390px,1.12fr) minmax(400px,1fr); min-height:calc(100vh - 128px) }.question { padding:34px clamp(22px,4vw,65px); border-right:1px solid var(--line); overflow:auto }.answer { padding:30px clamp(20px,3vw,46px); display:flex; flex-direction:column; min-height:0 }.label { color:var(--blue); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em }.question h1 { font-size:29px; margin:6px 0 18px }.instructions { background:#fff7f2; border-left:4px solid var(--orange); padding:14px 16px; margin:18px 0 24px }.prompt { font-size:19px; line-height:1.65; max-width:850px; white-space:pre-line }.task-image { display:block; width:100%; max-width:900px; max-height:560px; object-fit:contain; margin:28px auto 0; border:1px solid var(--line); box-shadow:0 3px 12px #12375814 }.answer-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px }.answer-head strong { font-size:18px }.word-count { color:var(--muted); white-space:nowrap }.word-count.ok { color:var(--good); font-weight:700 }.save-state { font-size:12px; color:var(--good); font-weight:700; margin-left:auto }.writing { width:100%; flex:1; min-height:450px; padding:20px; resize:none; border:1px solid #aab8c4; border-radius:3px; outline:none; line-height:1.7; font-size:16px }.writing:focus { border:2px solid var(--blue); padding:19px }.foot-note { color:var(--muted); font-size:13px; padding-top:12px }.hidden { display:none!important }
-    .gate { min-height:100vh; display:grid; place-items:center; background:linear-gradient(135deg,#edf4f8,#fff) }.card { width:min(460px,calc(100% - 40px)); padding:34px; background:white; border:1px solid var(--line); border-radius:8px; box-shadow:0 12px 32px #12375818; text-align:center }.card img { width:82px;height:82px;object-fit:contain }.card h1{margin:8px 0}.card p{color:var(--muted)}.code { width:100%; padding:14px; text-align:center; letter-spacing:.16em; text-transform:uppercase; border:1px solid #aab8c4; border-radius:4px; margin:14px 0 }.start { width:100%; border:0; border-radius:4px; background:var(--navy); color:#fff; padding:13px; cursor:pointer; font-weight:700 }.error{color:#bb1d16;min-height:24px;font-size:14px;margin:12px 0 0}
-    @media (max-width:800px){.top{padding:9px 14px}.brand{min-width:0}.brand span,.exam-title{display:none}.tabs{padding:0 10px}.exam{grid-template-columns:1fr}.question{border-right:0;border-bottom:1px solid var(--line);min-height:45vh}.answer{min-height:55vh}.timer{font-size:18px}.finish{padding:9px 11px}.writing{min-height:330px}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Writing Practice</title>
+    <style>
+        /* CSS Variables for Theme Support */
+        :root {
+            --bg-primary: #f3f7fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #f8fafc;
+            --bg-input: #ffffff;
+            --text-primary: #18344e;
+            --text-secondary: #617586;
+            --text-light: #ffffff;
+            --border-color: #d7e0e8;
+            --border-focus: #123758;
+            --shadow-color: rgba(0,0,0,0.08);
+            --accent-blue: #123758;
+            --accent-orange: #ff5a16;
+            --accent-green: #087e54;
+            --accent-red: #c33;
+            --accent-yellow: #fff3cd;
+            --highlight-color: #ffeb3b;
+            --highlight-opacity: 0.5;
+            --transition-speed: 0.3s;
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #1a1a3e;
+            --bg-input: #2a2a4e;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a8a8c0;
+            --text-light: #ffffff;
+            --border-color: #3a3a5e;
+            --border-focus: #5a7aaa;
+            --shadow-color: rgba(0,0,0,0.4);
+            --accent-blue: #4a7aaa;
+            --accent-orange: #ff6a26;
+            --accent-green: #4aae7a;
+            --accent-red: #e55;
+            --accent-yellow: #3a3a1e;
+            --highlight-color: #ffd700;
+            --highlight-opacity: 0.3;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            padding: 20px;
+            line-height: 1.6;
+            transition: background var(--transition-speed), color var(--transition-speed);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            transition: background var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .theme-toggle button {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all var(--transition-speed);
+        }
+        
+        .theme-toggle button:hover {
+            background: var(--accent-blue);
+            color: var(--text-light);
+            border-color: var(--accent-blue);
+        }
+        
+        .theme-toggle .active-theme {
+            background: var(--accent-blue);
+            color: var(--text-light);
+            border-color: var(--accent-blue);
+        }
+
+        h1 { color: var(--accent-blue); margin-bottom: 10px; transition: color var(--transition-speed); }
+        .subtitle { color: var(--text-secondary); margin-bottom: 25px; }
+
+        /* Code Input */
+        .code-input {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .code-input input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: border var(--transition-speed), background var(--transition-speed);
+        }
+        .code-input input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+        }
+        .code-input button {
+            padding: 12px 24px;
+            background: var(--accent-blue);
+            color: var(--text-light);
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background var(--transition-speed);
+        }
+        .code-input button:hover { filter: brightness(1.1); }
+        .code-input button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Messages */
+        .error { 
+            background: #fee; 
+            color: var(--accent-red); 
+            padding: 12px; 
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-red);
+            margin: 10px 0;
+        }
+        [data-theme="dark"] .error {
+            background: #2a1a1a;
+            border-color: #e55;
+        }
+        
+        .success {
+            background: #e5f5ee;
+            color: var(--accent-green);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-green);
+            margin: 10px 0;
+        }
+        [data-theme="dark"] .success {
+            background: #1a2a1a;
+            border-color: #4aae7a;
+        }
+        
+        .warning {
+            background: var(--accent-yellow);
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+        }
+        [data-theme="dark"] .warning {
+            color: #ffd700;
+        }
+        
+        .hidden { display: none !important; }
+
+        /* Task Sections */
+        .task-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: background var(--transition-speed), border var(--transition-speed);
+        }
+        .task-section h2 { color: var(--accent-blue); font-size: 18px; margin-bottom: 8px; transition: color var(--transition-speed); }
+        
+        .task-section .prompt {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0 15px;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            transition: background var(--transition-speed), border var(--transition-speed);
+            position: relative;
+        }
+
+        /* Highlighting */
+        .prompt .highlight {
+            background-color: var(--highlight-color);
+            opacity: var(--highlight-opacity);
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background var(--transition-speed);
+            position: relative;
+        }
+        .prompt .highlight:hover {
+            opacity: 0.8;
+        }
+        .prompt .highlight.active {
+            opacity: 0.8;
+            box-shadow: 0 0 0 2px var(--highlight-color);
+        }
+
+        .highlight-toolbar {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .highlight-toolbar button {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all var(--transition-speed);
+        }
+        .highlight-toolbar button:hover {
+            background: var(--accent-blue);
+            color: var(--text-light);
+        }
+        .highlight-toolbar button.active {
+            background: var(--accent-blue);
+            color: var(--text-light);
+        }
+        .highlight-toolbar .clear-highlights {
+            background: var(--accent-red);
+            color: white;
+        }
+        .highlight-toolbar .clear-highlights:hover {
+            filter: brightness(1.1);
+        }
+
+        .task-section img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+        .task-section textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 15px;
+            resize: vertical;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: border var(--transition-speed), background var(--transition-speed);
+        }
+        .task-section textarea:focus {
+            outline: 2px solid var(--border-focus);
+            border-color: transparent;
+        }
+        .task-section textarea:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            gap: 10px;
+            transition: border var(--transition-speed);
+        }
+        .status-bar .student-name {
+            font-weight: bold;
+            color: var(--accent-blue);
+            transition: color var(--transition-speed);
+        }
+        .status-bar .autosave-status {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .status-bar .autosave-status.saved { color: var(--accent-green); }
+        .status-bar .autosave-status.error { color: var(--accent-red); }
+
+        /* Autosave Indicator */
+        .autosave-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .autosave-indicator.saving { background: #ffa500; animation: pulse 1s infinite; }
+        .autosave-indicator.saved { background: var(--accent-green); }
+        .autosave-indicator.error { background: var(--accent-red); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            background: var(--bg-card);
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-speed);
+        }
+        .timer.warning { 
+            color: var(--accent-red); 
+            background: #fee;
+            border-color: var(--accent-red);
+        }
+        [data-theme="dark"] .timer.warning {
+            background: #2a1a1a;
+        }
+
+        /* Submit Area */
+        .submit-area {
+            margin: 30px 0 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .submit-area button {
+            padding: 14px 32px;
+            background: var(--accent-orange);
+            color: var(--text-light);
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background var(--transition-speed), opacity var(--transition-speed);
+        }
+        .submit-area button:hover { filter: brightness(1.1); }
+        .submit-area button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .submit-area .secondary-btn {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            font-size: 14px;
+            padding: 10px 20px;
+        }
+        .submit-area .secondary-btn:hover {
+            background: var(--accent-blue);
+            color: var(--text-light);
+        }
+
+        /* Restore Notice */
+        .restore-notice {
+            background: var(--bg-card);
+            border: 1px solid var(--border-focus);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 10px 0;
+            transition: background var(--transition-speed);
+        }
+        .restore-notice button {
+            background: var(--accent-blue);
+            color: var(--text-light);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background var(--transition-speed);
+        }
+        .restore-notice button:hover { filter: brightness(1.1); }
+        .restore-notice .discard-btn {
+            background: var(--text-secondary);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .code-input { flex-direction: column; }
+            .submit-area { flex-direction: column; align-items: stretch; }
+            .status-bar { flex-direction: column; align-items: stretch; text-align: center; }
+            .theme-toggle { justify-content: center; }
+            .highlight-toolbar { justify-content: center; }
+        }
+
+        /* Print Styles */
+        @media print {
+            .theme-toggle, .highlight-toolbar, .submit-area, .status-bar { display: none; }
+            .container { box-shadow: none; padding: 0; }
+            .task-section { break-inside: avoid; }
+        }
+    </style>
 </head>
 <body>
-  <section class="gate" id="gate">
-    <main class="card"><img src="chill-ielts-logo.png" alt="Chill IELTS logo"><h1>Writing practice</h1><p>Enter your name and the access code given by your teacher.</p><input class="code" id="studentName" maxlength="80" placeholder="Your full name" autocomplete="name" style="letter-spacing:0;text-transform:none"><input class="code" id="accessCode" maxlength="20" placeholder="Access code" autocomplete="off"><button class="start" id="start">Start test</button><div class="error" id="gateError"></div></main>
-  </section>
-  <div id="player" class="hidden">
-    <header class="top"><div class="brand"><img src="chill-ielts-logo.png" alt="Chill IELTS logo"><span>Chill IELTS<small>Computer-delivered practice</small></span></div><div class="exam-title"><strong id="examName">Writing practice</strong><span id="studentDisplay">Two tasks · Your work saves on this device</span></div><div class="timer" id="timer">60:00</div><button class="finish" id="finish">Finish test</button></header>
-    <nav class="tabs"><button class="tab active" data-task="1">Task 1 <i class="status"></i></button><button class="tab" data-task="2">Task 2 <i class="status"></i></button></nav>
-    <main class="exam"><section class="question"><div class="label" id="taskLabel">Writing task 1</div><h1 id="taskTitle">Describe the information</h1><div class="instructions" id="instructions"></div><div class="prompt" id="prompt"></div><img id="taskImage" class="task-image hidden" alt="Task chart"></section><section class="answer"><div class="answer-head"><strong>Your answer</strong><span class="save-state" id="saveState">Saved</span><span class="word-count" id="wordCount">0 words</span></div><textarea class="writing" id="writing" spellcheck="false" autocorrect="off" autocapitalize="sentences" placeholder="Type your answer here..."></textarea><div class="foot-note">Spelling assistance is disabled for exam conditions. Check the word count before finishing.</div></section></main>
-  </div>
-  <script>
-    // Paste your Google Apps Script web-app URL here when it is deployed. Leave empty to use the built-in demo.
-    // When this file is opened from the Chill IELTS server, this safely loads only the test
-    // assigned to the student's access code. Keep this as '/api/test' for the server version.
-    const TASK_API_URL = '/api/test';
-    const DEMO_TASK = { title:'Practice set 12345', task1:{ title:'Describe the information', prompt:'The chart below shows the percentage of households with internet access in three countries between 2010 and 2025.\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant.', imageUrl:'' }, task2:{ title:'Discuss both views and give your opinion', prompt:'Some people believe that schools should teach children how to manage money. Others think this is the responsibility of parents.\n\nDiscuss both views and give your own opinion.' } };
-    let test, taskNo=1, seconds=3600, interval, code='', studentName='';
-    const $=id=>document.getElementById(id);
-    async function getTask(accessCode, name){
-      if (!TASK_API_URL) { if(accessCode!=='12345') throw new Error('This access code is not available. Try the demo code 12345.'); return DEMO_TASK; }
-      const response=await fetch(`${TASK_API_URL}?code=${encodeURIComponent(accessCode)}&name=${encodeURIComponent(name)}`,{cache:'no-store'});
-      const data=await response.json();
-      if(!response.ok) throw new Error(data.error||'That code could not be found or is no longer active.');
-      return data;
-    }
-    async function start(){
-      const input=$('accessCode'); code=input.value.trim().toUpperCase(); studentName=$('studentName').value.trim(); if(!studentName) return $('gateError').textContent='Please enter your full name.'; if(!code) return $('gateError').textContent='Please enter an access code.';
-      $('start').disabled=true; $('start').textContent='Loading test…'; $('gateError').textContent='';
-      try { test=await getTask(code,studentName); $('gate').classList.add('hidden'); $('player').classList.remove('hidden'); $('examName').textContent=test.title||'Writing practice'; $('studentDisplay').textContent=`Candidate: ${studentName} · Two tasks · Autosave on`; restore(); render(); interval=setInterval(tick,1000); }
-      catch(error){ $('gateError').textContent=error.message; $('start').disabled=false; $('start').textContent='Start test'; }
-    }
-    function render(){ const t=test[`task${taskNo}`]; $('taskLabel').textContent=`Writing task ${taskNo}`; $('taskTitle').textContent=t.title; $('instructions').innerHTML=taskNo===1?'You should spend about <b>20 minutes</b> on this task.<br>Write at least <b>150 words</b>.':'You should spend about <b>40 minutes</b> on this task.<br>Write at least <b>250 words</b>.'; $('prompt').textContent=t.prompt; $('taskImage').src=t.imageUrl||''; $('taskImage').classList.toggle('hidden',!t.imageUrl); $('writing').value=localStorage.getItem(key(taskNo))||''; updateCount(); document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',+b.dataset.task===taskNo)); }
-    function key(n){return `chill-writing-${code}-task${n}`} function updateCount(){const n=$('writing').value.trim()?$('writing').value.trim().split(/\s+/).length:0,min=taskNo===1?150:250; $('wordCount').textContent=`${n} words · minimum ${min}`; $('wordCount').classList.toggle('ok',n>=min); document.querySelector(`.tab[data-task="${taskNo}"] .status`).classList.toggle('done',n>0);}
-    function tick(){seconds--; if(seconds<=0){seconds=0; finish();} const m=Math.floor(seconds/60),s=seconds%60;$('timer').textContent=`${m}:${String(s).padStart(2,'0')}`;localStorage.setItem(`chill-time-${code}`,seconds)}
-    function restore(){const saved=Number(localStorage.getItem(`chill-time-${code}`));if(saved>0&&saved<=3600)seconds=saved;}
-    async function finish(){clearInterval(interval); const payload={attemptToken:test.attemptToken||'',task1Answer:localStorage.getItem(key(1))||'',task2Answer:localStorage.getItem(key(2))||'',secondsRemaining:seconds}; try { if(payload.attemptToken) await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); } catch (_) { /* The answer stays safely stored in this browser if the connection drops. */ } localStorage.removeItem(`chill-time-${code}`);alert('Test finished. Your answers have been submitted when online and remain saved on this device.');}
-    $('start').addEventListener('click',start); $('accessCode').addEventListener('keydown',e=>{if(e.key==='Enter')start()}); $('studentName').addEventListener('keydown',e=>{if(e.key==='Enter')$('accessCode').focus()}); $('writing').addEventListener('input',()=>{localStorage.setItem(key(taskNo),$('writing').value);$('saveState').textContent='Saved';updateCount()}); document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{taskNo=+b.dataset.task;render()})); $('finish').addEventListener('click',()=>{if(confirm('Finish this test? Your answers will remain saved on this device.'))finish()});
-  </script>
-</body></html>
+    <div class="container" id="app">
+        <!-- Theme Toggle -->
+        <div class="theme-toggle">
+            <span style="font-size:13px; color:var(--text-secondary);">🌓 Theme:</span>
+            <button id="lightThemeBtn" class="active-theme">☀️ Light</button>
+            <button id="darkThemeBtn">🌙 Dark</button>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <h1>📝 IELTS Writing Practice</h1>
+            <p class="subtitle">Enter your access code and name to begin</p>
+            <div class="code-input">
+                <input type="text" id="codeInput" placeholder="Enter 4-digit code" maxlength="4" autofocus>
+                <input type="text" id="nameInput" placeholder="Your full name" style="flex:1; min-width:200px; padding:12px 16px; border:2px solid var(--border-color); border-radius:6px; font-size:16px; background:var(--bg-input); color:var(--text-primary);">
+                <button id="startBtn">Start Test</button>
+            </div>
+            <div id="loginError" class="error hidden"></div>
+        </div>
+
+        <!-- Test Screen -->
+        <div id="testScreen" class="hidden">
+            <div class="status-bar">
+                <span class="student-name" id="studentNameDisplay"></span>
+                <span class="timer" id="timerDisplay">1:59:59</span>
+                <span class="autosave-status" id="autosaveStatus">
+                    <span class="autosave-indicator saved"></span> Auto-saved
+                </span>
+            </div>
+
+            <!-- Restore Notice -->
+            <div id="restoreNotice" class="restore-notice hidden">
+                <span>🔄 We found unsaved work from a previous session. Would you like to restore it?</span>
+                <button id="restoreBtn">Restore</button>
+                <button id="discardRestoreBtn" class="discard-btn">Discard</button>
+            </div>
+
+            <h1 id="testTitle"></h1>
+            
+            <!-- Task 1 -->
+            <div class="task-section">
+                <h2>📊 Task 1: <span id="task1Title"></span></h2>
+                <div class="prompt" id="task1Prompt"></div>
+                <div id="task1Image"></div>
+                
+                <!-- Highlight Toolbar for Task 1 -->
+                <div class="highlight-toolbar" id="task1HighlightToolbar">
+                    <button class="highlight-btn" data-target="task1Prompt">🖍️ Highlight</button>
+                    <button class="clear-highlights" data-target="task1Prompt">✖️ Clear Highlights</button>
+                </div>
+                
+                <textarea id="task1Answer" placeholder="Write your Task 1 answer here..."></textarea>
+            </div>
+
+            <!-- Task 2 -->
+            <div class="task-section">
+                <h2>📝 Task 2: <span id="task2Title"></span></h2>
+                <div class="prompt" id="task2Prompt"></div>
+                
+                <!-- Highlight Toolbar for Task 2 -->
+                <div class="highlight-toolbar" id="task2HighlightToolbar">
+                    <button class="highlight-btn" data-target="task2Prompt">🖍️ Highlight</button>
+                    <button class="clear-highlights" data-target="task2Prompt">✖️ Clear Highlights</button>
+                </div>
+                
+                <textarea id="task2Answer" placeholder="Write your Task 2 answer here..."></textarea>
+            </div>
+
+            <div class="submit-area">
+                <button id="submitBtn">✅ Submit Test</button>
+                <button id="clearAllHighlightsBtn" class="secondary-btn">🗑️ Clear All Highlights</button>
+                <span style="color:var(--text-secondary); font-size:14px;">Make sure you've completed both tasks before submitting</span>
+            </div>
+            <div id="submitMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // --- State ---
+            let state = {
+                token: null,
+                testData: null,
+                timerInterval: null,
+                timeRemaining: 7200,
+                isSubmitted: false,
+                autosaveInterval: null,
+                hasAutosave: false,
+                autosaveData: null,
+                highlightMode: false,
+                theme: 'light'
+            };
+
+            // --- DOM refs ---
+            const loginScreen = document.getElementById('loginScreen');
+            const testScreen = document.getElementById('testScreen');
+            const codeInput = document.getElementById('codeInput');
+            const nameInput = document.getElementById('nameInput');
+            const startBtn = document.getElementById('startBtn');
+            const loginError = document.getElementById('loginError');
+            const testTitle = document.getElementById('testTitle');
+            const task1Title = document.getElementById('task1Title');
+            const task1Prompt = document.getElementById('task1Prompt');
+            const task1Image = document.getElementById('task1Image');
+            const task2Title = document.getElementById('task2Title');
+            const task2Prompt = document.getElementById('task2Prompt');
+            const task1Answer = document.getElementById('task1Answer');
+            const task2Answer = document.getElementById('task2Answer');
+            const submitBtn = document.getElementById('submitBtn');
+            const submitMessage = document.getElementById('submitMessage');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const studentNameDisplay = document.getElementById('studentNameDisplay');
+            const autosaveStatus = document.getElementById('autosaveStatus');
+            const restoreNotice = document.getElementById('restoreNotice');
+            const restoreBtn = document.getElementById('restoreBtn');
+            const discardRestoreBtn = document.getElementById('discardRestoreBtn');
+            const lightThemeBtn = document.getElementById('lightThemeBtn');
+            const darkThemeBtn = document.getElementById('darkThemeBtn');
+            const clearAllHighlightsBtn = document.getElementById('clearAllHighlightsBtn');
+
+            // --- Theme Management ---
+            function setTheme(theme) {
+                state.theme = theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('ielts-theme', theme);
+                lightThemeBtn.classList.toggle('active-theme', theme === 'light');
+                darkThemeBtn.classList.toggle('active-theme', theme === 'dark');
+            }
+
+            function loadTheme() {
+                const saved = localStorage.getItem('ielts-theme');
+                if (saved) {
+                    setTheme(saved);
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    setTheme('dark');
+                } else {
+                    setTheme('light');
+                }
+            }
+
+            lightThemeBtn.addEventListener('click', () => setTheme('light'));
+            darkThemeBtn.addEventListener('click', () => setTheme('dark'));
+
+            // --- Highlighting System ---
+            function enableHighlighting(promptElement) {
+                if (!promptElement) return;
+                
+                // Get the text content preserving line breaks
+                const text = promptElement.textContent;
+                promptElement.innerHTML = text;
+                
+                // Add click handler for highlighting
+                promptElement.addEventListener('click', function(e) {
+                    if (!state.highlightMode) return;
+                    if (e.target === this) return; // Click on the container itself
+                    
+                    // Toggle highlight on the clicked word
+                    const selection = window.getSelection();
+                    if (selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        if (!range.collapsed) {
+                            // Wrap selected text in highlight span
+                            const span = document.createElement('span');
+                            span.className = 'highlight active';
+                            range.surroundContents(span);
+                            selection.removeAllRanges();
+                            saveHighlights();
+                            return;
+                        }
+                    }
+                    
+                    // If clicking on a highlighted word, toggle it
+                    if (e.target.classList && e.target.classList.contains('highlight')) {
+                        e.target.classList.toggle('active');
+                        saveHighlights();
+                        return;
+                    }
+                    
+                    // If clicking on text, try to highlight the word
+                    const word = window.getSelection().toString().trim();
+                    if (word && word.length > 0) {
+                        try {
+                            const range = window.getSelection().getRangeAt(0);
+                            const span = document.createElement('span');
+                            span.className = 'highlight active';
+                            range.surroundContents(span);
+                            window.getSelection().removeAllRanges();
+                            saveHighlights();
+                        } catch (e) {
+                            // Fallback: highlight the clicked word
+                            const textNode = e.target;
+                            if (textNode.nodeType === Node.TEXT_NODE && textNode.textContent.trim()) {
+                                const parent = textNode.parentNode;
+                                const words = textNode.textContent.split(/(\s+)/);
+                                const fragment = document.createDocumentFragment();
+                                words.forEach(word => {
+                                    if (word.trim()) {
+                                        const span = document.createElement('span');
+                                        span.className = 'highlight active';
+                                        span.textContent = word;
+                                        fragment.appendChild(span);
+                                    } else {
+                                        fragment.appendChild(document.createTextNode(word));
+                                    }
+                                });
+                                parent.replaceChild(fragment, textNode);
+                                saveHighlights();
+                            }
+                        }
+                    }
+                });
+            }
+
+            function toggleHighlightMode() {
+                state.highlightMode = !state.highlightMode;
+                const btns = document.querySelectorAll('.highlight-btn');
+                btns.forEach(btn => btn.classList.toggle('active', state.highlightMode));
+                
+                // Show cursor change
+                const prompts = document.querySelectorAll('.prompt');
+                prompts.forEach(p => {
+                    p.style.cursor = state.highlightMode ? 'text' : 'default';
+                });
+                
+                // Update button text
+                btns.forEach(btn => {
+                    btn.textContent = state.highlightMode ? '🖍️ Click text to highlight' : '🖍️ Highlight';
+                });
+            }
+
+            function saveHighlights() {
+                // Save highlights to localStorage
+                const highlights = {};
+                document.querySelectorAll('.prompt').forEach((prompt, index) => {
+                    const highlighted = prompt.querySelectorAll('.highlight');
+                    if (highlighted.length > 0) {
+                        highlights[index] = Array.from(highlighted).map(el => ({
+                            text: el.textContent,
+                            active: el.classList.contains('active')
+                        }));
+                    }
+                });
+                localStorage.setItem('ielts-highlights', JSON.stringify(highlights));
+            }
+
+            function loadHighlights() {
+                const saved = localStorage.getItem('ielts-highlights');
+                if (!saved) return;
+                try {
+                    const highlights = JSON.parse(saved);
+                    document.querySelectorAll('.prompt').forEach((prompt, index) => {
+                        if (highlights[index]) {
+                            // Clear existing highlights
+                            const text = prompt.textContent;
+                            prompt.innerHTML = text;
+                            
+                            // Reapply highlights by finding matching text
+                            // This is simplified - in production you'd use a more robust method
+                            highlights[index].forEach(h => {
+                                const nodes = prompt.childNodes;
+                                for (let node of nodes) {
+                                    if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(h.text)) {
+                                        const span = document.createElement('span');
+                                        span.className = 'highlight' + (h.active ? ' active' : '');
+                                        span.textContent = h.text;
+                                        node.parentNode.replaceChild(span, node);
+                                        break;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load highlights:', e);
+                }
+            }
+
+            function clearHighlights(promptElement) {
+                if (!promptElement) return;
+                const text = promptElement.textContent;
+                promptElement.innerHTML = text;
+                saveHighlights();
+            }
+
+            function clearAllHighlights() {
+                document.querySelectorAll('.prompt').forEach(p => {
+                    const text = p.textContent;
+                    p.innerHTML = text;
+                });
+                saveHighlights();
+                localStorage.removeItem('ielts-highlights');
+            }
+
+            // --- Beforeunload warning ---
+            window.addEventListener('beforeunload', function(e) {
+                if (!state.isSubmitted && state.token) {
+                    e.preventDefault();
+                    e.returnValue = '⚠️ You have unsaved work. Are you sure you want to leave? Your progress will be lost.';
+                    return e.returnValue;
+                }
+            });
+
+            // --- Autosave ---
+            function autosave() {
+                if (!state.token || state.isSubmitted) return;
+                
+                const task1 = task1Answer.value;
+                const task2 = task2Answer.value;
+                
+                if (!task1.trim() && !task2.trim()) {
+                    updateAutosaveStatus('saved', 'Auto-saved');
+                    return;
+                }
+
+                updateAutosaveStatus('saving', 'Saving...');
+
+                fetch('/api/autosave', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        attemptToken: state.token,
+                        task1Answer: task1,
+                        task2Answer: task2
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        updateAutosaveStatus('saved', 'Auto-saved ✓');
+                    } else {
+                        updateAutosaveStatus('error', 'Save failed');
+                    }
+                })
+                .catch(() => {
+                    updateAutosaveStatus('error', 'Network error');
+                });
+            }
+
+            function updateAutosaveStatus(status, text) {
+                const indicator = autosaveStatus.querySelector('.autosave-indicator');
+                indicator.className = 'autosave-indicator ' + status;
+                const textNode = autosaveStatus.childNodes[2];
+                if (textNode) textNode.textContent = text;
+                else autosaveStatus.appendChild(document.createTextNode(' ' + text));
+            }
+
+            function checkAutosave() {
+                if (!state.token) return;
+                
+                fetch('/api/autosave?token=' + encodeURIComponent(state.token))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.hasAutosave) {
+                            state.hasAutosave = true;
+                            state.autosaveData = data;
+                            restoreNotice.classList.remove('hidden');
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            // --- Timer ---
+            function startTimer(duration) {
+                state.timeRemaining = duration;
+                updateTimerDisplay();
+                if (state.timerInterval) clearInterval(state.timerInterval);
+                state.timerInterval = setInterval(() => {
+                    state.timeRemaining--;
+                    updateTimerDisplay();
+                    if (state.timeRemaining <= 0) {
+                        clearInterval(state.timerInterval);
+                        timerDisplay.textContent = '0:00:00';
+                        timerDisplay.classList.add('warning');
+                        alert('⏰ Time is up! Please submit your test.');
+                    }
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const hours = Math.floor(state.timeRemaining / 3600);
+                const minutes = Math.floor((state.timeRemaining % 3600) / 60);
+                const seconds = state.timeRemaining % 60;
+                timerDisplay.textContent = `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+                if (state.timeRemaining < 300) {
+                    timerDisplay.classList.add('warning');
+                } else {
+                    timerDisplay.classList.remove('warning');
+                }
+            }
+
+            // --- Submit ---
+            function submitTest() {
+                if (state.isSubmitted) return;
+                
+                const task1 = task1Answer.value.trim();
+                const task2 = task2Answer.value.trim();
+                
+                if (!task1 || !task2) {
+                    submitMessage.innerHTML = '<div class="warning">⚠️ Please complete both Task 1 and Task 2 before submitting.</div>';
+                    return;
+                }
+
+                if (task1.length < 50 || task2.length < 50) {
+                    submitMessage.innerHTML = '<div class="warning">⚠️ Your answers seem short. Please write at least 50 words for each task.</div>';
+                    return;
+                }
+
+                if (!confirm('⚠️ Are you sure you want to submit your test? You cannot make changes after submission.')) {
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                fetch('/api/submissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        attemptToken: state.token,
+                        task1Answer: task1,
+                        task2Answer: task2,
+                        secondsRemaining: state.timeRemaining
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        state.isSubmitted = true;
+                        submitMessage.innerHTML = '<div class="success">✅ Test submitted successfully! You can close this page.</div>';
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = '✅ Submitted ✓';
+                        task1Answer.disabled = true;
+                        task2Answer.disabled = true;
+                        if (state.autosaveInterval) clearInterval(state.autosaveInterval);
+                        if (state.timerInterval) clearInterval(state.timerInterval);
+                        // Remove beforeunload warning
+                        window.removeEventListener('beforeunload', null);
+                    } else {
+                        submitMessage.innerHTML = '<div class="error">❌ ' + (data.error || 'Submission failed. Please try again.') + '</div>';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✅ Submit Test';
+                    }
+                })
+                .catch(() => {
+                    submitMessage.innerHTML = '<div class="error">❌ Network error. Please check your connection and try again.</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '✅ Submit Test';
+                });
+            }
+
+            // --- Start Test ---
+            function startTest() {
+                const code = codeInput.value.trim().toUpperCase();
+                const name = nameInput.value.trim();
+
+                if (!code || code.length !== 4) {
+                    loginError.textContent = 'Please enter a valid 4-digit code.';
+                    loginError.classList.remove('hidden');
+                    return;
+                }
+
+                if (!name || name.length < 2) {
+                    loginError.textContent = 'Please enter your full name.';
+                    loginError.classList.remove('hidden');
+                    return;
+                }
+
+                loginError.classList.add('hidden');
+                startBtn.disabled = true;
+                startBtn.textContent = 'Loading...';
+
+                fetch('/api/test?code=' + encodeURIComponent(code) + '&name=' + encodeURIComponent(name))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            loginError.textContent = data.error;
+                            loginError.classList.remove('hidden');
+                            startBtn.disabled = false;
+                            startBtn.textContent = 'Start Test';
+                            return;
+                        }
+
+                        state.token = data.attemptToken;
+                        state.testData = data;
+                        state.isSubmitted = false;
+
+                        // Populate test
+                        testTitle.textContent = data.title;
+                        task1Title.textContent = data.task1.title;
+                        task1Prompt.textContent = data.task1.prompt;
+                        if (data.task1.imageUrl) {
+                            task1Image.innerHTML = `<img src="${data.task1.imageUrl}" alt="Chart">`;
+                        } else {
+                            task1Image.innerHTML = '';
+                        }
+                        task2Title.textContent = data.task2.title;
+                        task2Prompt.textContent = data.task2.prompt;
+                        studentNameDisplay.textContent = '👤 ' + name;
+
+                        // Show test
+                        loginScreen.classList.add('hidden');
+                        testScreen.classList.remove('hidden');
+
+                        // Enable highlighting
+                        enableHighlighting(task1Prompt);
+                        enableHighlighting(task2Prompt);
+                        
+                        // Load saved highlights
+                        setTimeout(loadHighlights, 100);
+
+                        // Start timer (2 hours)
+                        startTimer(7200);
+
+                        // Start autosave (every 25 seconds)
+                        if (state.autosaveInterval) clearInterval(state.autosaveInterval);
+                        state.autosaveInterval = setInterval(autosave, 25000);
+
+                        // Check for autosave
+                        checkAutosave();
+
+                        // Focus on first textarea
+                        task1Answer.focus();
+
+                        startBtn.disabled = false;
+                        startBtn.textContent = 'Start Test';
+                    })
+                    .catch(() => {
+                        loginError.textContent = 'Network error. Please try again.';
+                        loginError.classList.remove('hidden');
+                        startBtn.disabled = false;
+                        startBtn.textContent = 'Start Test';
+                    });
+            }
+
+            // --- Restore autosave ---
+            function restoreAutosave() {
+                if (state.autosaveData) {
+                    task1Answer.value = state.autosaveData.task1 || '';
+                    task2Answer.value = state.autosaveData.task2 || '';
+                    restoreNotice.classList.add('hidden');
+                    updateAutosaveStatus('saved', 'Restored ✓');
+                }
+            }
+
+            function discardAutosave() {
+                restoreNotice.classList.add('hidden');
+                if (state.token) {
+                    fetch('/api/autosave', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            attemptToken: state.token,
+                            task1Answer: '',
+                            task2Answer: ''
+                        })
+                    }).catch(() => {});
+                }
+            }
+
+            // --- Event Listeners ---
+            startBtn.addEventListener('click', startTest);
+            submitBtn.addEventListener('click', submitTest);
+            restoreBtn.addEventListener('click', restoreAutosave);
+            discardRestoreBtn.addEventListener('click', discardAutosave);
+            clearAllHighlightsBtn.addEventListener('click', clearAllHighlights);
+
+            // Highlight buttons
+            document.querySelectorAll('.highlight-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleHighlightMode();
+                });
+            });
+
+            document.querySelectorAll('.clear-highlights').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const prompt = document.getElementById(targetId);
+                    if (prompt) {
+                        clearHighlights(prompt);
+                        // Also clear the highlight mode
+                        state.highlightMode = false;
+                        document.querySelectorAll('.highlight-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.prompt').forEach(p => p.style.cursor = 'default');
+                        document.querySelectorAll('.highlight-btn').forEach(b => b.textContent = '🖍️ Highlight');
+                    }
+                });
+            });
+
+            // Enter key support
+            codeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (nameInput.value.trim()) {
+                        startTest();
+                    } else {
+                        nameInput.focus();
+                    }
+                }
+            });
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') startTest();
+            });
+
+            // Auto-uppercase code
+            codeInput.addEventListener('input', () => {
+                codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+            });
+
+            // Load theme on startup
+            loadTheme();
+
+            console.log('📝 Chill IELTS - Enhanced with Dark Mode & Highlighting');
+            console.log('🎯 Tip: Click the Highlight button then click any text in the prompts to highlight it');
+            console.log('🌓 Tip: Toggle between Light and Dark mode using the buttons above');
+        })();
+    </script>
+</body>
+</html>
