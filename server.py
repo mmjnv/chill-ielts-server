@@ -108,10 +108,10 @@ class App(BaseHTTPRequestHandler):
             types.get(target.suffix.lower(), 'application/octet-stream')
         )
     
-  def do_GET(self):
-    p = urlparse(self.path)
-    print("GET PATH:", p.path)
-    q = parse_qs(p.query)
+    def do_GET(self):
+        p = urlparse(self.path)
+        print("GET PATH:", p.path)
+        q = parse_qs(p.query)
 
         # API endpoints
         if p.path == '/api/test':
@@ -257,7 +257,7 @@ class App(BaseHTTPRequestHandler):
 Evaluate the following student work against IELTS Writing band descriptors. Give separate estimated bands (0–9, including .5) for Task 1 and Task 2, then one overall estimated writing band. Explain the scores under: Task Achievement/Response, Coherence and Cohesion, Lexical Resource, and Grammatical Range and Accuracy. Give 3 strengths, 3 highest-priority improvements, and one short corrected example sentence. Do not invent problems that are not in the writing.
 
 Task 1 question:\n{row['task1_prompt']}\n\nTask 1 answer:\n{row['task1_answer']}\n\nTask 2 question:\n{row['task2_prompt']}\n\nTask 2 answer:\n{row['task2_answer']}\n\nReturn plain text with clear headings."""
-        body=json.dumps({"model":os.environ.get('OPENAI_MODEL','gpt-5.4-mini'),"input":prompt}).encode()
+        body=json.dumps({"model":os.environ.get('OPENAI_MODEL','gpt-3.5-turbo'),"input":prompt}).encode()
         req=urlrequest.Request('https://api.openai.com/v1/responses',data=body,headers={'Authorization':f'Bearer {api_key}','Content-Type':'application/json'},method='POST')
         try:
             with urlrequest.urlopen(req,timeout=90) as response: result=json.loads(response.read())
