@@ -108,9 +108,10 @@ class App(BaseHTTPRequestHandler):
             types.get(target.suffix.lower(), 'application/octet-stream')
         )
     
-    def do_GET(self):
-        p = urlparse(self.path)
-        q = parse_qs(p.query)
+  def do_GET(self):
+    p = urlparse(self.path)
+    print("GET PATH:", p.path)
+    q = parse_qs(p.query)
 
         # API endpoints
         if p.path == '/api/test':
