@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: chill-ielts
+    runtime: python
+    buildCommand: ""
+    startCommand: python server.py
+
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PERSISTENT_DATA_DIR
+        value: /data
+
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
