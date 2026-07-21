@@ -5,7 +5,7 @@ No third-party packages are needed. It stores data in SQLite beside this file.
 For public use, put it behind HTTPS (for example on Render, Railway, or a school server).
 """
 from __future__ import annotations
-import cgi, hashlib, hmac, json, os, secrets, sqlite3, time, shutil
+import cgi, hashlib, hmac, json, os, secrets, sqlite3, time, shutil, uuid
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -39,7 +39,7 @@ UPLOADS.mkdir(exist_ok=True)
 # ============================================================================
 # DATABASE SCHEMA & MIGRATION
 # ============================================================================
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 
 def get_db_version(db):
     """Get current database schema version"""
@@ -75,6 +75,7 @@ def migrate_database(db):
                 student_name TEXT NOT NULL,
                 expires_at INTEGER NOT NULL,
                 completed INTEGER NOT NULL DEFAULT 0,
+                attempt_uuid TEXT UNIQUE NOT NULL,
                 FOREIGN KEY(test_id) REFERENCES tests(id)
             );
             CREATE TABLE IF NOT EXISTS submissions (
@@ -82,6 +83,7 @@ def migrate_database(db):
                 test_id INTEGER NOT NULL, 
                 student_name TEXT NOT NULL,
                 attempt_token_hash TEXT NOT NULL,
+                attempt_uuid TEXT NOT NULL,
                 task1_answer TEXT, 
                 task2_answer TEXT, 
                 seconds_remaining INTEGER, 
@@ -96,6 +98,7 @@ def migrate_database(db):
             CREATE TABLE IF NOT EXISTS autosave (
                 id INTEGER PRIMARY KEY,
                 attempt_token_hash TEXT NOT NULL UNIQUE,
+                attempt_uuid TEXT NOT NULL,
                 test_id INTEGER NOT NULL,
                 student_name TEXT NOT NULL,
                 task1_answer TEXT,
@@ -125,6 +128,10 @@ def migrate_database(db):
             db.execute("ALTER TABLE submissions ADD COLUMN attempt_token_hash TEXT")
         except sqlite3.OperationalError:
             pass
+        try:
+            db.execute("ALTER TABLE submissions ADD COLUMN attempt_uuid TEXT")
+        except sqlite3.OperationalError:
+            pass
     
     if version < 4:
         print("📦 Adding completed column to attempts...")
@@ -132,10 +139,13 @@ def migrate_database(db):
             db.execute("ALTER TABLE attempts ADD COLUMN completed INTEGER NOT NULL DEFAULT 0")
         except sqlite3.OperationalError:
             pass
+        try:
+            db.execute("ALTER TABLE attempts ADD COLUMN attempt_uuid TEXT")
+        except sqlite3.OperationalError:
+            pass
         
         # Drop old unique constraints if they exist (safe approach)
         try:
-            # Check if the old index exists and drop it safely
             indexes = db.execute("SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'sqlite_autoindex_submissions%'").fetchall()
             for idx in indexes:
                 try:
@@ -155,8 +165,54 @@ def migrate_database(db):
         try:
             db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_token_hash ON attempts(token_hash)")
             db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_test_student ON attempts(test_id, student_name)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_uuid ON attempts(attempt_uuid)")
             db.execute("CREATE INDEX IF NOT EXISTS idx_autosave_token_hash ON autosave(attempt_token_hash)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_autosave_uuid ON autosave(attempt_uuid)")
             db.execute("CREATE INDEX IF NOT EXISTS idx_submissions_test_student ON submissions(test_id, student_name)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_submissions_uuid ON submissions(attempt_uuid)")
+        except:
+            pass
+    
+    if version < 5:
+        print("📦 Adding attempt_uuid column and ensuring uniqueness...")
+        # Add attempt_uuid to attempts if missing
+        try:
+            db.execute("ALTER TABLE attempts ADD COLUMN attempt_uuid TEXT")
+        except sqlite3.OperationalError:
+            pass
+        
+        # Add attempt_uuid to submissions if missing
+        try:
+            db.execute("ALTER TABLE submissions ADD COLUMN attempt_uuid TEXT")
+        except sqlite3.OperationalError:
+            pass
+        
+        # Add attempt_uuid to autosave if missing
+        try:
+            db.execute("ALTER TABLE autosave ADD COLUMN attempt_uuid TEXT")
+        except sqlite3.OperationalError:
+            pass
+        
+        # Generate UUIDs for existing attempts
+        existing_attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''").fetchall()
+        for attempt in existing_attempts:
+            new_uuid = str(uuid.uuid4())
+            db.execute("UPDATE attempts SET attempt_uuid = ? WHERE token_hash = ?", (new_uuid, attempt['token_hash']))
+            # Also update related submissions and autosave
+            db.execute("UPDATE submissions SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
+            db.execute("UPDATE autosave SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
+        
+        # Make attempt_uuid NOT NULL after populating
+        try:
+            # SQLite doesn't support ALTER COLUMN, so we need to handle this differently
+            # We'll create a new table if needed, but for simplicity we'll just ensure the column exists
+            pass
+        except:
+            pass
+        
+        # Create unique index on attempt_uuid
+        try:
+            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_attempts_uuid_unique ON attempts(attempt_uuid)")
         except:
             pass
     
@@ -182,6 +238,10 @@ def conn():
 # ============================================================================
 def sha(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
+
+def generate_attempt_uuid() -> str:
+    """Generate a unique attempt identifier"""
+    return str(uuid.uuid4())
 
 def load_settings():
     if CONFIG.exists():
@@ -381,7 +441,7 @@ class App(BaseHTTPRequestHandler):
         return self.send(404, "Not found")
     
     # ========================================================================
-    # API: TEST ACCESS
+    # API: TEST ACCESS - Creates new attempt with UUID
     # ========================================================================
     def api_test(self, raw_code, raw_name=''):
         code = raw_code.strip().upper()
@@ -400,53 +460,50 @@ class App(BaseHTTPRequestHandler):
             db.close()
             return self.json(404, {"error": "This access code is not valid or the test is inactive."})
         
-        # Check for existing active attempt (not completed)
+        # Check for existing active attempt for THIS SPECIFIC student
+        # CRITICAL: Must match student_name AND code AND not completed
         existing_attempt = db.execute("""
-            SELECT token_hash FROM attempts 
+            SELECT token_hash, attempt_uuid FROM attempts 
             WHERE test_id=? AND student_name=? AND expires_at>? AND completed=0
         """, (test['id'], student_name, int(time.time()))).fetchone()
         
-        # Check if this student has already submitted this test
-        submitted = db.execute("""
-            SELECT id FROM submissions 
-            WHERE test_id=? AND student_name=?
-            ORDER BY submitted_at DESC LIMIT 1
-        """, (test['id'], student_name)).fetchone()
-        
-        # If there's an existing active attempt, return it (regardless of submission status)
+        # If there's an existing active attempt for this student, return it
         if existing_attempt:
             db.close()
             return self.json(200, {
                 "title": test['title'],
                 "attemptToken": existing_attempt['token_hash'],
+                "attemptUuid": existing_attempt['attempt_uuid'],
                 "task1": {"title": test['task1_title'], "prompt": test['task1_prompt'], "imageUrl": test['task1_image'] or ''},
                 "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
             })
         
-        # Create new attempt (student either hasn't started or has submitted before)
+        # Create new attempt with UUID
         token = secrets.token_urlsafe(32)
         token_hash = sha(token)
+        attempt_uuid = generate_attempt_uuid()
         
         # Delete expired attempts
         db.execute("DELETE FROM attempts WHERE expires_at<?", (int(time.time()),))
         
-        # Insert new attempt
+        # Insert new attempt with UUID
         db.execute("""
-            INSERT INTO attempts(token_hash, test_id, student_name, expires_at, completed) 
-            VALUES (?,?,?,?,0)
-        """, (token_hash, test['id'], student_name, int(time.time()) + 7200))
+            INSERT INTO attempts(token_hash, test_id, student_name, expires_at, completed, attempt_uuid) 
+            VALUES (?,?,?,?,?,?)
+        """, (token_hash, test['id'], student_name, int(time.time()) + 7200, 0, attempt_uuid))
         db.commit()
         db.close()
         
         return self.json(200, {
             "title": test['title'],
             "attemptToken": token,
+            "attemptUuid": attempt_uuid,
             "task1": {"title": test['task1_title'], "prompt": test['task1_prompt'], "imageUrl": test['task1_image'] or ''},
             "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
         })
     
     # ========================================================================
-    # API: SUBMISSION
+    # API: SUBMISSION - Uses attempt token, not student name
     # ========================================================================
     def api_submission(self):
         try:
@@ -463,7 +520,7 @@ class App(BaseHTTPRequestHandler):
         token_hash = sha(raw_token)
         db = conn()
         
-        # Verify attempt exists and is not completed
+        # Verify attempt exists and is not completed - use token only
         attempt = db.execute("""
             SELECT * FROM attempts 
             WHERE token_hash=? AND expires_at>? AND completed=0
@@ -473,13 +530,18 @@ class App(BaseHTTPRequestHandler):
             db.close()
             return self.json(403, {"error": "Your test session has expired or has already been submitted."})
         
-        # Create submission
+        # Get student_name from the attempt
+        student_name = attempt['student_name']
+        test_id = attempt['test_id']
+        attempt_uuid = attempt['attempt_uuid']
+        
+        # Create submission with attempt_uuid
         db.execute("""
             INSERT INTO submissions(
-                test_id, student_name, attempt_token_hash,
+                test_id, student_name, attempt_token_hash, attempt_uuid,
                 task1_answer, task2_answer, seconds_remaining, submitted_at
-            ) VALUES (?,?,?,?,?,?,?)
-        """, (attempt['test_id'], attempt['student_name'], token_hash,
+            ) VALUES (?,?,?,?,?,?,?,?)
+        """, (test_id, student_name, token_hash, attempt_uuid,
               str(data.get('task1Answer', '')), str(data.get('task2Answer', '')),
               int(data.get('secondsRemaining', 0) or 0), int(time.time())))
         
@@ -494,7 +556,7 @@ class App(BaseHTTPRequestHandler):
         return self.json(200, {"ok": True})
     
     # ========================================================================
-    # API: AUTOSAVE
+    # API: AUTOSAVE - Uses attempt token
     # ========================================================================
     def api_autosave(self):
         try:
@@ -514,7 +576,7 @@ class App(BaseHTTPRequestHandler):
         token_hash = sha(raw_token)
         db = conn()
         
-        # Verify attempt exists and is not completed
+        # Verify attempt exists and is not completed - use token only
         attempt = db.execute("""
             SELECT * FROM attempts 
             WHERE token_hash=? AND expires_at>? AND completed=0
@@ -524,29 +586,31 @@ class App(BaseHTTPRequestHandler):
             db.close()
             return self.json(403, {"error": "Your test session has expired or has already been submitted."})
         
-        # Save or update autosave data
+        attempt_uuid = attempt['attempt_uuid']
+        
+        # Save or update autosave data with attempt_uuid
         db.execute("""
-            INSERT INTO autosave(attempt_token_hash, test_id, student_name, task1_answer, task2_answer, saved_at)
-            VALUES (?,?,?,?,?,?)
+            INSERT INTO autosave(attempt_token_hash, attempt_uuid, test_id, student_name, task1_answer, task2_answer, saved_at)
+            VALUES (?,?,?,?,?,?,?)
             ON CONFLICT(attempt_token_hash) DO UPDATE SET
                 task1_answer=excluded.task1_answer,
                 task2_answer=excluded.task2_answer,
                 saved_at=excluded.saved_at
-        """, (token_hash, attempt['test_id'], attempt['student_name'], task1, task2, int(time.time())))
+        """, (token_hash, attempt_uuid, attempt['test_id'], attempt['student_name'], task1, task2, int(time.time())))
         
         db.commit()
         db.close()
         return self.json(200, {"ok": True, "savedAt": int(time.time())})
     
     def api_autosave_get(self, raw_token):
-        """Retrieve autosaved data"""
+        """Retrieve autosaved data - uses token only"""
         if not raw_token:
             return self.json(400, {"error": "No session token."})
         
         token_hash = sha(raw_token)
         db = conn()
         
-        # Verify attempt exists and is not completed
+        # Verify attempt exists and is not completed - use token only
         attempt = db.execute("""
             SELECT * FROM attempts 
             WHERE token_hash=? AND expires_at>? AND completed=0
@@ -713,34 +777,26 @@ class App(BaseHTTPRequestHandler):
             // Handle paste from clipboard
             async function pasteFromClipboard() {
                 try {
-                    // Try to read clipboard data
                     const clipboardItems = await navigator.clipboard.read();
                     
                     for (const item of clipboardItems) {
                         if (item.types.some(type => type.startsWith('image/'))) {
-                            // Found an image
                             const blob = await item.getType(item.types.find(type => type.startsWith('image/')));
-                            
-                            // Create a File object from the blob
                             const ext = blob.type.split('/')[1] || 'png';
                             const fileName = `pasted-image.${ext}`;
                             const file = new File([blob], fileName, { type: blob.type });
                             
-                            // Create a DataTransfer to set the file input
                             const dataTransfer = new DataTransfer();
                             dataTransfer.items.add(file);
                             chartInput.files = dataTransfer.files;
                             
-                            // Trigger change event to show preview
                             const event = new Event('change', { bubbles: true });
                             chartInput.dispatchEvent(event);
                             
-                            // Show success message
                             pasteStatus.textContent = '✅ Image pasted successfully!';
                             pasteStatus.style.display = 'block';
                             pasteStatus.style.color = 'var(--good)';
                             
-                            // Auto-hide after 3 seconds
                             setTimeout(() => {
                                 pasteStatus.style.display = 'none';
                             }, 3000);
@@ -749,7 +805,6 @@ class App(BaseHTTPRequestHandler):
                         }
                     }
                     
-                    // No image found in clipboard
                     pasteStatus.textContent = '❌ No image found in the clipboard.';
                     pasteStatus.style.display = 'block';
                     pasteStatus.style.color = '#bd2d28';
@@ -759,7 +814,6 @@ class App(BaseHTTPRequestHandler):
                     }, 3000);
                     
                 } catch (err) {
-                    // Clipboard access denied or not supported
                     if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
                         pasteStatus.textContent = '⚠️ Clipboard access denied. Please allow clipboard access or use Choose File.';
                     } else {
@@ -776,14 +830,10 @@ class App(BaseHTTPRequestHandler):
             
             pasteBtn.addEventListener('click', pasteFromClipboard);
             
-            // Keyboard shortcut: Ctrl+V (or Cmd+V on Mac)
             document.addEventListener('keydown', function(e) {
-                // Check if Ctrl+V or Cmd+V
                 if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-                    // Check if the focus is on the file input or anywhere in the form
                     const target = e.target;
                     if (target.closest && target.closest('#testForm')) {
-                        // Check if we're not typing in a text input/textarea
                         if (!target.closest('input[type="text"]') && !target.closest('textarea')) {
                             e.preventDefault();
                             pasteFromClipboard();
@@ -792,7 +842,6 @@ class App(BaseHTTPRequestHandler):
                 }
             });
             
-            // Remove image
             removeImgBtn.addEventListener('click', function() {
                 chartInput.value = '';
                 imagePreview.style.display = 'none';
@@ -806,7 +855,6 @@ class App(BaseHTTPRequestHandler):
                 }, 1500);
             });
             
-            // Also support paste on the paste button itself
             pasteBtn.addEventListener('paste', function(e) {
                 e.preventDefault();
                 pasteFromClipboard();
@@ -1089,6 +1137,7 @@ Return plain text with clear headings."""
         self.send(200, page('Submissions', f"""
         <h1>📋 Student submissions</h1>
         <p>Each student is identified by their name. Students can take the same test multiple times.</p>
+        <p>Each attempt has a unique identifier (UUID) for complete isolation.</p>
         <table>
             <tr><th>Student</th><th>Test</th><th>Task 1</th><th>Task 2</th><th>Feedback</th><th>Work</th></tr>
             {data}
@@ -1104,4 +1153,5 @@ if __name__ == '__main__':
     print(f"📁 Data directory: {DATA}")
     print(f"💾 Database: {DB_PATH}")
     print(f"🖼️ Uploads: {UPLOADS}")
+    print(f"🔒 Each student attempt has a unique UUID for complete data isolation")
     ThreadingHTTPServer(("0.0.0.0", port), App).serve_forever()
