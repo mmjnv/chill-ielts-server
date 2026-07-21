@@ -620,43 +620,40 @@
     .tab .status.done { background: var(--accent-green); }
 
     /* ============================================================
-       EXAM CONTAINER
+       EXAM CONTAINER - Inspera-style independent scrolling
        ============================================================ */
     .exam-wrapper {
       flex: 1;
-      overflow: auto;
-      position: relative;
-      background: var(--bg-primary);
-      transition: background 0.2s;
+      overflow: hidden;
+      min-height: 0;
     }
     
     .exam-container {
       display: flex;
-      min-height: 100%;
-      min-width: 100%;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
     }
     
+    /* ============================================================
+       QUESTION PANEL - Independent scrolling
+       ============================================================ */
     .question-panel {
       flex: 1 1 50%;
       padding: 34px clamp(22px, 4vw, 65px);
       overflow-y: auto;
-      min-width: 300px;
-      background: var(--bg-primary);
-      transition: background 0.2s;
-      height: 100%;
-    }
-    .answer-panel {
-      flex: 1 1 50%;
-      padding: 30px clamp(20px, 3vw, 46px);
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
       min-height: 0;
+      overscroll-behavior: contain;
       background: var(--bg-primary);
       transition: background 0.2s;
-      min-width: 300px;
-      height: 100%;
     }
-
+    .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text-primary); }
+    
+    /* ============================================================
+       DIVIDER
+       ============================================================ */
     .divider {
       width: 8px;
       background: var(--divider-color);
@@ -687,10 +684,39 @@
     }
 
     /* ============================================================
-       QUESTION AREA
+       ANSWER PANEL - Fixed layout with scrolling editor
        ============================================================ */
+    .answer-panel {
+      flex: 1 1 50%;
+      padding: 30px clamp(20px, 3vw, 46px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+      background: var(--bg-primary);
+      transition: background 0.2s;
+    }
+    
+    .answer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .answer-head strong { font-size: 18px; color: var(--text-primary); }
+    .word-count {
+      color: var(--text-secondary);
+      white-space: nowrap;
+      transition: color 0.2s;
+      font-size: 14px;
+    }
+    .word-count.ok { color: var(--accent-green); font-weight: 700; }
+    .save-state { font-size: 12px; color: var(--accent-green); font-weight: 700; }
+    
     .label { color: var(--accent-blue); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-    .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text-primary); }
     .instructions {
       background: var(--bg-secondary);
       border-left: 4px solid var(--accent-orange);
@@ -720,42 +746,24 @@
     .task-image.hidden { display: none; }
 
     /* ============================================================
-       ANSWER AREA
+       EDITOR WRAPPER - Takes remaining space
        ============================================================ */
-    .answer-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-    .answer-head strong { font-size: 18px; color: var(--text-primary); }
-    .word-count {
-      color: var(--text-secondary);
-      white-space: nowrap;
-      transition: color 0.2s;
-      font-size: 14px;
-    }
-    .word-count.ok { color: var(--accent-green); font-weight: 700; }
-    .save-state { font-size: 12px; color: var(--accent-green); font-weight: 700; }
-
     .editor-wrapper {
       flex: 1;
-      position: relative;
       min-height: 0;
+      overflow: hidden;
       border: 2px solid var(--border-color);
       border-radius: 4px;
       transition: border 0.2s;
-      overflow: auto;
     }
     .editor-wrapper:focus-within { border-color: var(--accent-blue); }
 
+    /* ============================================================
+       EDITOR - Independent scrolling with proper sizing
+       ============================================================ */
     .editor {
       width: 100%;
       height: 100%;
-      min-height: 400px;
       padding: 18px 20px;
       outline: none;
       line-height: 1.7;
@@ -764,6 +772,8 @@
       color: var(--text-primary);
       transition: all 0.2s;
       overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
       word-wrap: break-word;
       white-space: pre-wrap;
       font-family: inherit;
@@ -944,9 +954,10 @@
       <button class="tab" data-task="2" role="tab" aria-selected="false">Task 2 <i class="status"></i></button>
     </nav>
 
-    <!-- Exam wrapper -->
+    <!-- Exam wrapper - Inspera-style independent scrolling -->
     <div class="exam-wrapper" id="examWrapper">
       <div class="exam-container" id="examContainer">
+        <!-- Question panel - scrolls independently -->
         <section class="question-panel" id="questionPanel" role="complementary" aria-label="Task question">
           <div class="label" id="taskLabel">Writing task 1</div>
           <h1 id="taskTitle">Describe the information</h1>
@@ -955,8 +966,10 @@
           <img id="taskImage" class="task-image hidden" alt="Task chart">
         </section>
 
+        <!-- Draggable divider -->
         <div class="divider" id="divider" role="separator" aria-label="Resize panels"></div>
 
+        <!-- Answer panel - fixed layout with scrolling editor -->
         <section class="answer-panel" id="answerPanel" role="main" aria-label="Your answer">
           <div class="answer-head">
             <strong>Your answer</strong>
@@ -973,7 +986,7 @@
   </div>
 
   <!-- ============================================================
-       JAVASCRIPT - REFACTORED PERSISTENCE LAYER
+       JAVASCRIPT
        ============================================================ -->
   <script>
     (function() {
@@ -1002,7 +1015,7 @@
       };
 
       // ============================================================
-      // STATE - Organized by task
+      // STATE
       // ============================================================
       const state = {
         test: null,
@@ -1024,7 +1037,7 @@
         toolbarCollapsed: false,
         isInitialized: false,
         
-        // Task-specific state - each task has its own complete state
+        // Task-specific state
         tasks: {
           1: {
             text: '',
@@ -1042,16 +1055,11 @@
           }
         },
         
-        // Current active task
         activeTask: 1,
-        
-        // Timer
         seconds: CONFIG.TIMER_DURATION,
         timerInterval: null,
         warningShown5Min: false,
         warningShown1Min: false,
-        
-        // UI state
         isDragging: false,
         hasRecovered: false,
         cursorPosition: 0,
@@ -1105,7 +1113,7 @@
       }
 
       // ============================================================
-      // STORAGE KEY HELPER - Task-aware
+      // STORAGE KEY HELPER
       // ============================================================
       function storageKey(suffix) {
         if (!state.code || !state.studentName) {
@@ -1227,32 +1235,21 @@
       }
 
       // ============================================================
-      // TASK DATA MANAGEMENT - Core refactor
+      // TASK DATA MANAGEMENT
       // ============================================================
-      
-      // Save a specific task's complete state
       function saveTaskState(taskNo) {
         const task = state.tasks[taskNo];
         if (!task) return;
         
-        // Save text
         const plainText = getPlainText(DOM.editor.innerHTML);
         task.text = plainText;
         
-        // Save highlights
         const highlights = getHighlightData();
         task.highlights = highlights;
-        
-        // Save cursor position
         task.cursorPosition = state.cursorPosition;
-        
-        // Save scroll position
         task.scrollPosition = DOM.editor.scrollTop;
-        
-        // Save word count
         task.wordCount = getWordCount(plainText);
         
-        // Persist to localStorage
         saveToLocalStorage(getTaskStorageKey(taskNo, 'data'), {
           text: task.text,
           highlights: task.highlights,
@@ -1262,7 +1259,6 @@
         });
       }
       
-      // Load a specific task's complete state
       function loadTaskState(taskNo) {
         const saved = loadFromLocalStorage(getTaskStorageKey(taskNo, 'data'));
         if (!saved) return false;
@@ -1276,31 +1272,9 @@
         
         return true;
       }
-      
-      // Switch to a task and restore its state
-      function switchToTask(taskNo) {
-        // Save current task state first
-        saveTaskState(state.activeTask);
-        
-        // Update active task
-        state.activeTask = taskNo;
-        
-        // Load and render the task
-        renderTask();
-        
-        // Update UI
-        updateCandidateInfo();
-        document.querySelectorAll('.tab').forEach(b => {
-          b.classList.toggle('active', +b.dataset.task === taskNo);
-          b.setAttribute('aria-selected', +b.dataset.task === taskNo ? 'true' : 'false');
-        });
-        
-        // Focus editor
-        setTimeout(() => DOM.editor.focus(), 100);
-      }
 
       // ============================================================
-      // HIGHLIGHT ENGINE - Uses task-specific data
+      // HIGHLIGHT ENGINE
       // ============================================================
       function getHighlightData() {
         const highlights = [];
@@ -1570,15 +1544,13 @@
       }
 
       // ============================================================
-      // STATE PERSISTENCE - Saves full session including both tasks
+      // STATE PERSISTENCE
       // ============================================================
       function saveFullState() {
         if (!state.code || !state.studentName) return;
         
-        // Save current task
         saveTaskState(state.activeTask);
         
-        // Save full session metadata
         const sessionData = {
           activeTask: state.activeTask,
           seconds: state.seconds,
@@ -1597,13 +1569,8 @@
           toolbarCollapsed: state.toolbarCollapsed,
         };
         saveToLocalStorage(storageKey('session'), sessionData);
-        
-        // Save divider position
         saveDividerPosition();
-        
-        // Save user preferences
         saveUserPreferences();
-        
         state.lastSaveTime = Date.now();
       }
 
@@ -1631,11 +1598,9 @@
         state.dividerRatio = sessionData.dividerRatio || 0.5;
         state.toolbarCollapsed = sessionData.toolbarCollapsed || false;
         
-        // Load both tasks
         loadTaskState(1);
         loadTaskState(2);
         
-        // Restore current task to editor
         const task = state.tasks[state.activeTask];
         if (task && task.text) {
           DOM.editor.innerText = task.text;
@@ -1798,7 +1763,7 @@
       }
 
       // ============================================================
-      // AUTOSAVE - Now saves current task only
+      // AUTOSAVE
       // ============================================================
       let autosaveTimer = null;
       let debounceTimer = null;
@@ -1841,12 +1806,10 @@
           return;
         }
         
-        // Save current task state
         saveTaskState(state.activeTask);
         saveFullState();
         updateSaveStatus('Autosaved ✓');
         
-        // Only send the current task to server
         const payload = {
           attemptToken: state.attemptToken,
           task1Answer: state.tasks[1].text || '',
@@ -1896,7 +1859,7 @@
       }
 
       // ============================================================
-      // SUBMIT - Clean, no premature cleanup
+      // SUBMIT
       // ============================================================
       async function retrySubmission() {
         if (state.isFinished || !state.isSubmitted) return;
@@ -1946,7 +1909,6 @@
         DOM.finishBtn.disabled = true;
         DOM.finishBtn.textContent = 'Submitting...';
         
-        // Save everything before submission
         saveTaskState(1);
         saveTaskState(2);
         saveFullState();
@@ -1979,17 +1941,10 @@
               DOM.saveStatus.textContent = '✅ Submitted to teacher';
               clearInterval(state.timerInterval);
               clearInterval(autosaveTimer);
-              
-              // Remove beforeunload handler
               window.removeEventListener('beforeunload', beforeUnloadHandler);
-              
-              // Mark editor as readonly but keep content visible
               DOM.editor.contentEditable = "false";
               DOM.editor.classList.add('readonly');
-              
-              // Re-render to show submitted state
               renderTask();
-              
               alert('✅ Test submitted successfully! Your answers have been sent to your teacher.');
               return;
             }
@@ -2007,7 +1962,7 @@
       }
 
       // ============================================================
-      // BEFORE UNLOAD - Only warns about unsaved work
+      // BEFORE UNLOAD
       // ============================================================
       function beforeUnloadHandler(e) {
         if (!state.isFinished && state.code && state.studentName) {
@@ -2143,7 +2098,7 @@
       }
 
       // ============================================================
-      // RENDER TASK - Uses task-specific data
+      // RENDER TASK
       // ============================================================
       function renderTask() {
         if (!state.test) return;
@@ -2165,23 +2120,19 @@
           DOM.taskImage.classList.add('hidden');
         }
         
-        // Load task data
         const task = state.tasks[state.activeTask];
         if (task && task.text) {
           DOM.editor.innerText = task.text;
           applyHighlightsToEditor(task.highlights || []);
         }
         
-        // Update word count
         updateWordCount();
         
-        // Update tabs
         document.querySelectorAll('.tab').forEach(b => {
           b.classList.toggle('active', +b.dataset.task === state.activeTask);
           b.setAttribute('aria-selected', +b.dataset.task === state.activeTask ? 'true' : 'false');
         });
         
-        // Restore cursor and scroll
         setTimeout(() => {
           restoreCursorPosition();
           if (task && task.scrollPosition) {
@@ -2189,7 +2140,6 @@
           }
         }, 50);
         
-        // Set editor readonly if submitted
         DOM.editor.contentEditable = state.isSubmitted ? "false" : "true";
         if (state.isSubmitted) {
           DOM.editor.classList.add('readonly');
@@ -2202,24 +2152,17 @@
       }
 
       // ============================================================
-      // SWITCH TASK - Clean, uses task-aware switching
+      // SWITCH TASK
       // ============================================================
       function switchTask(taskNumber) {
         if (taskNumber === state.activeTask) {
-          // Already on this task
           return;
         }
         
-        // Save current task state before switching
         saveTaskState(state.activeTask);
-        
-        // Switch
         state.activeTask = taskNumber;
-        
-        // Render the new task
         renderTask();
         
-        // Update tabs
         document.querySelectorAll('.tab').forEach(btn => {
           btn.classList.toggle('active', +btn.dataset.task === taskNumber);
           btn.setAttribute(
@@ -2238,7 +2181,7 @@
       async function startTest() {
         const code = DOM.accessCode.value.trim().toUpperCase();
         const name = DOM.studentName.value.trim();
-        
+
         if (!name) {
           DOM.gateError.textContent = 'Please enter your full name.';
           return;
@@ -2247,27 +2190,26 @@
           DOM.gateError.textContent = 'Please enter an access code.';
           return;
         }
-        
+
         state.code = code;
         state.studentName = name;
-        
+
         DOM.startBtn.disabled = true;
         DOM.startBtn.textContent = 'Loading test…';
         DOM.gateError.textContent = '';
-        
+
         try {
           const response = await fetch(`${CONFIG.API_URL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`, {
             cache: 'no-store'
           });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || 'That code could not be found or is no longer active.');
-          
+
           state.test = data;
           state.attemptToken = data.attemptToken || null;
           state.attemptUuid = data.attemptUuid || null;
           state.startTime = Date.now();
-          
-          // Load full state - restores both tasks
+
           const hasRecovered = loadFullState();
           if (hasRecovered) {
             state.hasRecovered = true;
@@ -2276,26 +2218,33 @@
               DOM.recoveryNotice.classList.add('hidden');
             }, 5000);
           }
-          
+
           DOM.gate.classList.add('hidden');
           DOM.player.classList.remove('hidden');
           DOM.player.style.display = 'flex';
-          
+
           DOM.examName.textContent = data.title || 'Writing practice';
           updateCandidateInfo();
-          
+
           loadUserPreferences();
           updateToolbarUI();
-          
+
+          // FIX: Render the task first, then apply zoom after layout is complete
           renderTask();
+
+          // Apply zoom after render to ensure proper sizing
+          requestAnimationFrame(() => {
+            setZoom(state.zoom);
+          });
+
           startTimer();
           startAutosave();
           saveFullState();
           updateOnlineStatus();
-          
+
           window.addEventListener('beforeunload', beforeUnloadHandler);
           state.isInitialized = true;
-          
+
         } catch (error) {
           DOM.gateError.textContent = error.message;
           DOM.startBtn.disabled = false;
@@ -2427,9 +2376,9 @@
         initDivider();
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Refactored persistence layer');
-        console.log('📝 Each task has independent state (text, highlights, cursor, scroll)');
-        console.log('🔒 No data loss on task switching or after submission');
+        console.log('✅ Chill IELTS - Inspera-style independent scrolling');
+        console.log('📝 Task panel and editor scroll independently');
+        console.log('🔒 Browser window never scrolls');
       }
 
       if (document.readyState === 'loading') {
