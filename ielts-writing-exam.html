@@ -25,7 +25,7 @@
       --highlight-color: #ffeb3b;
       --highlight-opacity: 0.5;
       --font-size-base: 15px;
-      --transition-speed: 0.3s;
+      --transition-speed: 0.2s;
       --divider-color: #d8e0e8;
       --editor-bg: #ffffff;
       --editor-text: #1c2733;
@@ -34,6 +34,13 @@
       --danger-color: #dc3545;
       --online-color: #087e54;
       --offline-color: #dc3545;
+      --toolbar-bg: #f0f2f5;
+      --toolbar-border: #d0d5dc;
+      --toolbar-btn-bg: #ffffff;
+      --toolbar-btn-hover: #e8eaed;
+      --toolbar-btn-active: #d0d5dc;
+      --toolbar-text: #1c2733;
+      --toolbar-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     [data-theme="dark"] {
@@ -56,12 +63,26 @@
       --danger-color: #ff6b6b;
       --online-color: #4aae7a;
       --offline-color: #ff6b6b;
+      --toolbar-bg: #2a2a4e;
+      --toolbar-border: #3a3a5e;
+      --toolbar-btn-bg: #3a3a5e;
+      --toolbar-btn-hover: #4a4a6e;
+      --toolbar-btn-active: #5a5a7e;
+      --toolbar-text: #e8e8f0;
+      --toolbar-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    /* Font sizes */
-    [data-font-size="small"] { --font-size-base: 13px; }
-    [data-font-size="medium"] { --font-size-base: 15px; }
-    [data-font-size="large"] { --font-size-base: 18px; }
+    /* Font sizes - defined as CSS variables for dynamic sizing */
+    [data-font-size="12"] { --font-size-base: 12px; }
+    [data-font-size="13"] { --font-size-base: 13px; }
+    [data-font-size="14"] { --font-size-base: 14px; }
+    [data-font-size="15"] { --font-size-base: 15px; }
+    [data-font-size="16"] { --font-size-base: 16px; }
+    [data-font-size="18"] { --font-size-base: 18px; }
+    [data-font-size="20"] { --font-size-base: 20px; }
+    [data-font-size="22"] { --font-size-base: 22px; }
+    [data-font-size="24"] { --font-size-base: 24px; }
+    [data-font-size="28"] { --font-size-base: 28px; }
 
     /* ============================================================
        BASE STYLES
@@ -204,43 +225,111 @@
     .finish:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* ============================================================
-       TOOLBAR ROW
+       TOOLBAR ROW - IMPROVED
        ============================================================ */
     .toolbar-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 28px;
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
+      gap: 6px;
+      padding: 6px 20px;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
       flex-wrap: wrap;
       flex-shrink: 0;
       transition: all var(--transition-speed);
-      min-height: 44px;
+      min-height: 46px;
+      box-shadow: var(--toolbar-shadow);
     }
+    
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 8px;
+      border-right: 1px solid var(--toolbar-border);
+    }
+    .toolbar-group:last-child {
+      border-right: none;
+      margin-left: auto;
+    }
+    .toolbar-group-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+    
     .toolbar-btn {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
+      background: var(--toolbar-btn-bg);
+      color: var(--toolbar-text);
+      border: 1px solid var(--toolbar-border);
       padding: 4px 10px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 13px;
       transition: all var(--transition-speed);
       min-height: 30px;
+      min-width: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-weight: 500;
+      white-space: nowrap;
     }
     .toolbar-btn:hover {
-      background: var(--navy);
-      color: #fff;
-      border-color: var(--navy);
+      background: var(--toolbar-btn-hover);
+      border-color: var(--blue);
+    }
+    .toolbar-btn:active {
+      background: var(--toolbar-btn-active);
+      transform: scale(0.95);
     }
     .toolbar-btn.active {
       background: var(--navy);
       color: #fff;
       border-color: var(--navy);
     }
-    .toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .separator { color: var(--muted); margin: 0 2px; }
+    .toolbar-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .toolbar-btn .icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+    
+    .font-size-selector {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .font-size-selector .toolbar-btn {
+      font-size: 12px;
+      padding: 4px 6px;
+      min-width: 28px;
+    }
+    .font-size-selector .toolbar-btn.active {
+      background: var(--navy);
+      color: #fff;
+    }
+    .font-size-value {
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 30px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .separator {
+      color: var(--toolbar-border);
+      margin: 0 2px;
+      user-select: none;
+    }
+    
     .status-text {
       color: var(--muted);
       font-size: 12px;
@@ -248,6 +337,7 @@
     }
     .status-text.online { color: var(--online-color); }
     .status-text.offline { color: var(--offline-color); }
+    
     .recovery-notice {
       color: var(--good);
       font-size: 13px;
@@ -467,54 +557,6 @@
     }
 
     /* ============================================================
-       HIGHLIGHT TOOLBAR (floating)
-       ============================================================ */
-    .highlight-toolbar {
-      position: fixed;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      box-shadow: 0 4px 16px var(--shadow);
-      padding: 4px;
-      display: none;
-      gap: 4px;
-      z-index: 1000;
-      transition: all var(--transition-speed);
-      pointer-events: none;
-    }
-    .highlight-toolbar.visible {
-      display: flex;
-      pointer-events: auto;
-    }
-    .highlight-toolbar button {
-      background: var(--panel);
-      border: none;
-      padding: 6px 14px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 13px;
-      color: var(--text);
-      transition: all var(--transition-speed);
-      white-space: nowrap;
-    }
-    .highlight-toolbar button:hover {
-      background: var(--navy);
-      color: #fff;
-    }
-    .highlight-toolbar .hl-yellow {
-      background: var(--highlight-color);
-      opacity: 0.8;
-    }
-    .highlight-toolbar .hl-yellow:hover {
-      opacity: 1;
-      background: var(--highlight-color);
-    }
-    [data-theme="dark"] .highlight-toolbar .hl-yellow {
-      background: #ffd700;
-      color: #1a1a2e;
-    }
-
-    /* ============================================================
        FOOTER NOTE
        ============================================================ */
     .foot-note { color: var(--muted); font-size: 13px; padding-top: 12px; flex-shrink: 0; }
@@ -533,7 +575,9 @@
       .brand { min-width: 0; }
       .brand span, .exam-title { display: none; }
       .top-controls { margin-left: auto; }
-      .toolbar-row { padding: 6px 14px; }
+      .toolbar-row { padding: 6px 10px; gap: 4px; }
+      .toolbar-group { padding: 0 4px; }
+      .toolbar-group-label { display: none; }
       .tabs { padding: 0 10px; overflow-x: auto; height: 48px; }
       .exam-container { flex-direction: column; overflow-y: auto; }
       .question-panel { border-right: 0; border-bottom: 1px solid var(--border); min-height: 40vh; }
@@ -542,13 +586,14 @@
       .timer { font-size: 18px; }
       .finish { padding: 9px 11px; }
       .editor { min-height: 250px; }
+      .font-size-selector .toolbar-btn { font-size: 10px; padding: 2px 4px; min-width: 22px; }
     }
 
     /* ============================================================
        PRINT
        ============================================================ */
     @media print {
-      .top-controls, .tabs, .divider, .highlight-toolbar, .finish, .toolbar-row { display: none !important; }
+      .top-controls, .tabs, .divider, .finish, .toolbar-row { display: none !important; }
       .exam-container { display: block !important; }
       .question-panel, .answer-panel { padding: 20px !important; border: none !important; }
       .editor { border: 1px solid #ccc !important; min-height: 300px !important; }
@@ -591,14 +636,45 @@
       </div>
     </header>
 
-    <!-- Toolbar Row -->
+    <!-- Toolbar Row - Improved with professional design -->
     <div class="toolbar-row" id="toolbarRow">
-      <button class="toolbar-btn" id="fontSmall" title="Small font (Ctrl+0)">A</button>
-      <button class="toolbar-btn" id="fontMedium" title="Medium font (Ctrl+=)" style="font-weight:700;">A</button>
-      <button class="toolbar-btn" id="fontLarge" title="Large font (Ctrl++)" style="font-size:20px;">A</button>
-      <span class="separator">|</span>
-      <button class="toolbar-btn" id="themeToggle" aria-label="Toggle dark mode">🌓 Dark</button>
-      <span class="separator">|</span>
+      <!-- Highlight Tools -->
+      <div class="toolbar-group">
+        <span class="toolbar-group-label">Highlight</span>
+        <button class="toolbar-btn" id="highlightBtn" title="Highlight selected text (Ctrl+Shift+H)">
+          <span class="icon">🖍️</span> Highlight
+        </button>
+        <button class="toolbar-btn" id="removeHighlightBtn" title="Remove highlight (Ctrl+Shift+R)">
+          <span class="icon">✖️</span> Remove
+        </button>
+      </div>
+
+      <!-- Font Size Controls -->
+      <div class="toolbar-group">
+        <span class="toolbar-group-label">Size</span>
+        <div class="font-size-selector" id="fontSizeSelector">
+          <button class="toolbar-btn" data-size="12" title="12px">12</button>
+          <button class="toolbar-btn" data-size="13" title="13px">13</button>
+          <button class="toolbar-btn" data-size="14" title="14px">14</button>
+          <button class="toolbar-btn active" data-size="15" title="15px (default)">15</button>
+          <button class="toolbar-btn" data-size="16" title="16px">16</button>
+          <button class="toolbar-btn" data-size="18" title="18px">18</button>
+          <button class="toolbar-btn" data-size="20" title="20px">20</button>
+          <button class="toolbar-btn" data-size="22" title="22px">22</button>
+          <button class="toolbar-btn" data-size="24" title="24px">24</button>
+          <button class="toolbar-btn" data-size="28" title="28px">28</button>
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <div class="toolbar-group" style="border-right: none;">
+        <button class="toolbar-btn" id="themeToggle" aria-label="Toggle dark mode">
+          <span class="icon" id="themeIcon">🌓</span>
+          <span id="themeLabel">Dark</span>
+        </button>
+      </div>
+
+      <!-- Status Information -->
       <span class="status-text" id="saveStatus">🟢 Online · Autosave: ready</span>
       <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered successfully</span>
       <span class="time-warning" id="timeWarning">⏰ Time has expired. Your work is still being saved.</span>
@@ -631,10 +707,6 @@
         </div>
         <div class="editor-wrapper">
           <div class="editor" id="editor" contenteditable="true" spellcheck="false" autocorrect="off" autocapitalize="sentences" role="textbox" aria-multiline="true" aria-label="Your writing answer"></div>
-          <div class="highlight-toolbar" id="highlightToolbar" role="toolbar" aria-label="Highlight tools">
-            <button class="hl-yellow" id="hlYellow" aria-label="Highlight selected text">🖍️ Highlight</button>
-            <button id="hlRemove" aria-label="Remove highlight from selected text">✖️ Remove</button>
-          </div>
         </div>
         <div class="foot-note">Spelling assistance is disabled for exam conditions. Check the word count before finishing.</div>
       </section>
@@ -661,6 +733,8 @@
         RETRY_BACKOFF: 2000,
         TIMER_DURATION: 3600,
         MAX_HIGHLIGHTS: 200,
+        FONT_SIZES: ['12', '13', '14', '15', '16', '18', '20', '22', '24', '28'],
+        DEFAULT_FONT_SIZE: '15',
       };
 
       // ============================================================
@@ -683,6 +757,8 @@
         pendingAutosaves: [],
         submissionRetryCount: 0,
         highlightData: [],
+        fontSize: CONFIG.DEFAULT_FONT_SIZE,
+        theme: 'light',
       };
 
       // ============================================================
@@ -717,10 +793,12 @@
         DOM.questionPanel = $('questionPanel');
         DOM.answerPanel = $('answerPanel');
         DOM.examContainer = $('examContainer');
-        DOM.highlightToolbar = $('highlightToolbar');
-        DOM.hlYellow = $('hlYellow');
-        DOM.hlRemove = $('hlRemove');
         DOM.themeToggle = $('themeToggle');
+        DOM.themeIcon = $('themeIcon');
+        DOM.themeLabel = $('themeLabel');
+        DOM.highlightBtn = $('highlightBtn');
+        DOM.removeHighlightBtn = $('removeHighlightBtn');
+        DOM.fontSizeSelector = $('fontSizeSelector');
         DOM.toolbarRow = $('toolbarRow');
       }
 
@@ -810,9 +888,7 @@
         if (state.isOnline) {
           statusText.textContent = '🟢 Online · Autosave: ready';
           statusText.className = 'status-text online';
-          // Process pending autosaves
           processPendingAutosaves();
-          // Retry submission if needed
           if (state.isSubmitted && !state.isFinished) {
             retrySubmission();
           }
@@ -830,14 +906,11 @@
       // ============================================================
       function getHighlightData() {
         const highlights = [];
-        const nodes = DOM.editor.childNodes;
         const fullText = getPlainText(DOM.editor.innerHTML);
         
-        // Find all highlight spans
         const highlightSpans = DOM.editor.querySelectorAll('.highlight');
         highlightSpans.forEach(span => {
           const text = span.textContent;
-          // Find position in full text
           const index = fullText.indexOf(text);
           if (index !== -1) {
             highlights.push({
@@ -848,7 +921,6 @@
           }
         });
         
-        // Merge overlapping highlights
         return mergeHighlights(highlights);
       }
 
@@ -885,10 +957,8 @@
         const fullText = getPlainText(DOM.editor.innerHTML);
         if (!fullText) return false;
         
-        // Clear existing highlights
         clearHighlightsFromEditor();
         
-        // Rebuild with highlights
         let html = '';
         let lastIndex = 0;
         const sorted = saved.sort((a, b) => a.start - b.start);
@@ -934,7 +1004,6 @@
         const text = range.toString();
         if (!text.trim()) return;
         
-        // Check if already highlighted
         let parent = range.commonAncestorContainer;
         if (parent.nodeType === Node.TEXT_NODE) parent = parent.parentNode;
         if (parent.classList && parent.classList.contains('highlight')) return;
@@ -947,7 +1016,6 @@
           saveFullState();
           updateSaveStatus('Highlight applied');
         } catch (e) {
-          // Fallback: insert at cursor
           const textNode = document.createTextNode(text);
           const span = document.createElement('span');
           span.className = 'highlight';
@@ -978,7 +1046,6 @@
           saveFullState();
           updateSaveStatus('Highlight removed');
         } else {
-          // Remove all highlights in selection
           const highlights = DOM.editor.querySelectorAll('.highlight');
           highlights.forEach(el => {
             if (selection.containsNode(el, true)) {
@@ -1008,27 +1075,20 @@
           attemptToken: state.attemptToken,
           hasRecovered: state.hasRecovered,
           highlightData: state.highlightData,
+          fontSize: state.fontSize,
+          theme: state.theme,
         };
         saveToLocalStorage(getStorageKey('fullState'), fullState);
         
-        // Save editor content as plain text
         const plainText = getPlainText(DOM.editor.innerHTML);
         localStorage.setItem(getTaskKey(state.taskNo), plainText);
         
-        // Save highlights
         saveHighlights();
-        
-        // Save cursor and scroll
         saveCursorAndScroll();
-        
-        // Save divider position (percentage)
         saveDividerPosition();
         
-        // Save font and theme
-        const fontSize = document.documentElement.getAttribute('data-font-size') || 'medium';
-        localStorage.setItem('chill-font-size', fontSize);
-        const theme = document.documentElement.getAttribute('data-theme') || 'light';
-        localStorage.setItem('chill-theme', theme);
+        localStorage.setItem('chill-font-size', state.fontSize);
+        localStorage.setItem('chill-theme', state.theme);
         
         state.lastSaveTime = Date.now();
       }
@@ -1047,27 +1107,22 @@
         state.attemptToken = fullState.attemptToken || null;
         state.hasRecovered = fullState.hasRecovered || false;
         state.highlightData = fullState.highlightData || [];
+        state.fontSize = fullState.fontSize || CONFIG.DEFAULT_FONT_SIZE;
+        state.theme = fullState.theme || 'light';
         
-        // Restore editor content
         const savedText = localStorage.getItem(getTaskKey(state.taskNo));
         if (savedText !== null) {
           DOM.editor.innerText = savedText;
         }
         
-        // Restore highlights
         restoreHighlights();
-        
-        // Restore cursor and scroll
         restoreCursorAndScroll();
-        
-        // Restore divider position
         restoreDividerPosition();
         
-        // Restore font and theme
         const savedFont = localStorage.getItem('chill-font-size');
-        if (savedFont) document.documentElement.setAttribute('data-font-size', savedFont);
+        if (savedFont) state.fontSize = savedFont;
         const savedTheme = localStorage.getItem('chill-theme');
-        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme) state.theme = savedTheme;
         
         return true;
       }
@@ -1178,7 +1233,6 @@
           }
         });
 
-        // Handle window resize
         window.addEventListener('resize', throttle(() => {
           if (window.innerWidth > 800) {
             applyDividerRatio(dividerRatio);
@@ -1237,7 +1291,6 @@
         DOM.wordCount.textContent = `${words} words · minimum ${min}`;
         DOM.wordCount.classList.toggle('ok', words >= min);
         
-        // Update tab status
         const tab = document.querySelector(`.tab[data-task="${state.taskNo}"] .status`);
         if (tab) tab.classList.toggle('done', words > 0);
       }
@@ -1267,7 +1320,6 @@
               body: JSON.stringify(data)
             });
           } catch (_) {
-            // Re-queue on failure
             pendingAutosaves.push(data);
           }
         });
@@ -1282,11 +1334,9 @@
           return;
         }
         
-        // Save to localStorage
         saveFullState();
         updateSaveStatus('Autosaved ✓');
         
-        // Build payload
         const payload = {
           attemptToken: state.attemptToken,
           task1Answer: state.taskNo === 1 ? plainText : '',
@@ -1296,18 +1346,15 @@
           clientTimestamp: Date.now(),
         };
         
-        // Send to server if online
         if (state.isOnline && state.attemptToken) {
           fetch(CONFIG.AUTOSAVE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           }).catch(() => {
-            // Queue for later
             pendingAutosaves.push(payload);
           });
         } else if (state.attemptToken) {
-          // Queue for when online
           pendingAutosaves.push(payload);
         }
       }
@@ -1353,7 +1400,6 @@
             DOM.finishBtn.textContent = '✅ Submitted';
             DOM.finishBtn.disabled = true;
             DOM.saveStatus.textContent = '✅ Submitted to teacher';
-            // Remove beforeunload handler
             window.removeEventListener('beforeunload', beforeUnloadHandler);
             return true;
           }
@@ -1361,7 +1407,6 @@
           // Will retry
         }
         
-        // Retry with backoff
         if (state.submissionRetryCount < CONFIG.MAX_RETRY_ATTEMPTS) {
           state.submissionRetryCount++;
           const delay = CONFIG.RETRY_BACKOFF * state.submissionRetryCount;
@@ -1378,7 +1423,6 @@
         DOM.finishBtn.disabled = true;
         DOM.finishBtn.textContent = 'Submitting...';
         
-        // Final autosave
         performAutosave();
         
         const plainText1 = localStorage.getItem(getTaskKey(1)) || '';
@@ -1412,7 +1456,6 @@
               return;
             }
           }
-          // If submission fails, save locally and retry
           saveToLocalStorage(getStorageKey('final'), payload);
           DOM.finishBtn.textContent = '⚠️ Saving...';
           alert('⚠️ Connection issue. Your test is saved locally and will be submitted automatically when online.');
@@ -1436,6 +1479,80 @@
           e.returnValue = '⚠️ You have unsaved work. Are you sure you want to leave?';
           return e.returnValue;
         }
+      }
+
+      // ============================================================
+      // FONT SIZE MANAGEMENT
+      // ============================================================
+      function setFontSize(size) {
+        if (!CONFIG.FONT_SIZES.includes(size)) return;
+        
+        state.fontSize = size;
+        document.documentElement.setAttribute('data-font-size', size);
+        localStorage.setItem('chill-font-size', size);
+        
+        // Update button states
+        const buttons = DOM.fontSizeSelector.querySelectorAll('.toolbar-btn');
+        buttons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.size === size);
+        });
+        
+        // Update font size display
+        const sizeDisplay = document.querySelector('.font-size-value');
+        if (sizeDisplay) sizeDisplay.textContent = size + 'px';
+        
+        saveFullState();
+      }
+
+      function increaseFontSize() {
+        const currentIndex = CONFIG.FONT_SIZES.indexOf(state.fontSize);
+        if (currentIndex < CONFIG.FONT_SIZES.length - 1) {
+          setFontSize(CONFIG.FONT_SIZES[currentIndex + 1]);
+        }
+      }
+
+      function decreaseFontSize() {
+        const currentIndex = CONFIG.FONT_SIZES.indexOf(state.fontSize);
+        if (currentIndex > 0) {
+          setFontSize(CONFIG.FONT_SIZES[currentIndex - 1]);
+        }
+      }
+
+      function initFontSizeControls() {
+        // Set initial font size
+        const savedFont = localStorage.getItem('chill-font-size') || CONFIG.DEFAULT_FONT_SIZE;
+        setFontSize(savedFont);
+        
+        // Add click handlers to font size buttons
+        const buttons = DOM.fontSizeSelector.querySelectorAll('.toolbar-btn');
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            setFontSize(btn.dataset.size);
+          });
+        });
+      }
+
+      // ============================================================
+      // THEME MANAGEMENT
+      // ============================================================
+      function toggleTheme() {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        localStorage.setItem('chill-theme', state.theme);
+        
+        DOM.themeIcon.textContent = state.theme === 'dark' ? '☀️' : '🌓';
+        DOM.themeLabel.textContent = state.theme === 'dark' ? 'Light' : 'Dark';
+        DOM.themeToggle.setAttribute('aria-label', `Toggle dark mode (currently ${state.theme})`);
+        
+        saveFullState();
+      }
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem('chill-theme') || 'light';
+        state.theme = savedTheme;
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        DOM.themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌓';
+        DOM.themeLabel.textContent = savedTheme === 'dark' ? 'Light' : 'Dark';
       }
 
       // ============================================================
@@ -1472,7 +1589,6 @@
           state.attemptToken = data.attemptToken || null;
           state.startTime = Date.now();
           
-          // Check for recovery
           const hasRecovered = loadFullState();
           if (hasRecovered) {
             state.hasRecovered = true;
@@ -1482,31 +1598,19 @@
             }, 5000);
           }
           
-          // Show player
           DOM.gate.classList.add('hidden');
           DOM.player.classList.remove('hidden');
           DOM.player.style.display = 'flex';
           
-          // Set exam info
           DOM.examName.textContent = data.title || 'Writing practice';
           DOM.studentDisplay.textContent = `Candidate: ${name} · Two tasks · Autosave on`;
           
-          // Render initial task
           renderTask();
-          
-          // Start timer
           startTimer();
-          
-          // Start autosave
           startAutosave();
-          
-          // Initial save
           saveFullState();
-          
-          // Update online status
           updateOnlineStatus();
           
-          // Add beforeunload handler
           window.addEventListener('beforeunload', beforeUnloadHandler);
           
         } catch (error) {
@@ -1539,7 +1643,6 @@
           DOM.taskImage.classList.add('hidden');
         }
         
-        // Restore content if not recovered
         if (!state.hasRecovered) {
           const savedText = localStorage.getItem(getTaskKey(state.taskNo));
           if (savedText !== null) {
@@ -1547,20 +1650,16 @@
           }
         }
         
-        // Restore highlights
         restoreHighlights();
         updateWordCount();
         
-        // Update tabs
         document.querySelectorAll('.tab').forEach(b => {
           b.classList.toggle('active', +b.dataset.task === state.taskNo);
           b.setAttribute('aria-selected', +b.dataset.task === state.taskNo ? 'true' : 'false');
         });
         
-        // Restore cursor
         restoreCursorAndScroll();
         
-        // Focus editor
         setTimeout(() => DOM.editor.focus(), 100);
       }
 
@@ -1569,7 +1668,6 @@
       // ============================================================
       function switchTask(taskNumber) {
         if (state.isSubmitted) return;
-        // Save current task
         performAutosave();
         state.taskNo = taskNumber;
         saveToLocalStorage(getStorageKey('task'), taskNumber);
@@ -1578,84 +1676,51 @@
       }
 
       // ============================================================
-      // HIGHLIGHT TOOLBAR
+      // KEYBOARD SHORTCUTS
       // ============================================================
-      function initHighlightToolbar() {
-        let hideTimeout = null;
-
-        DOM.editor.addEventListener('mouseup', (e) => {
-          const selection = window.getSelection();
-          const text = selection.toString().trim();
-          
-          if (text && DOM.editor.contains(selection.anchorNode)) {
-            const rect = DOM.editor.getBoundingClientRect();
-            const selRect = selection.getRangeAt(0).getBoundingClientRect();
-            
-            let top = selRect.top - 50;
-            let left = selRect.left + selRect.width / 2 - 80;
-            
-            top = Math.max(10, Math.min(top, window.innerHeight - 100));
-            left = Math.max(10, Math.min(left, window.innerWidth - 180));
-            
-            DOM.highlightToolbar.style.left = `${left}px`;
-            DOM.highlightToolbar.style.top = `${top}px`;
-            DOM.highlightToolbar.classList.add('visible');
-            
-            clearTimeout(hideTimeout);
-          } else {
-            hideTimeout = setTimeout(() => {
-              DOM.highlightToolbar.classList.remove('visible');
-            }, 300);
-          }
-        });
-
-        DOM.editor.addEventListener('mousedown', () => {
-          clearTimeout(hideTimeout);
-        });
-
-        DOM.editor.addEventListener('keydown', () => {
-          DOM.highlightToolbar.classList.remove('visible');
-        });
-
-        DOM.hlYellow.addEventListener('click', () => {
-          applyHighlightToSelection();
-          DOM.highlightToolbar.classList.remove('visible');
-        });
-
-        DOM.hlRemove.addEventListener('click', () => {
-          removeHighlightAtSelection();
-          DOM.highlightToolbar.classList.remove('visible');
-        });
-
-        DOM.editor.addEventListener('scroll', () => {
-          DOM.highlightToolbar.classList.remove('visible');
-        });
-      }
-
-      // ============================================================
-      // THEME TOGGLE
-      // ============================================================
-      function toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('chill-theme', newTheme);
-        DOM.themeToggle.textContent = newTheme === 'dark' ? '☀️ Light' : '🌓 Dark';
-        DOM.themeToggle.setAttribute('aria-label', `Toggle dark mode (currently ${newTheme})`);
-      }
-
-      // ============================================================
-      // FONT SIZE
-      // ============================================================
-      function setFontSize(size) {
-        document.documentElement.setAttribute('data-font-size', size);
-        localStorage.setItem('chill-font-size', size);
+      function handleKeyboardShortcuts(e) {
+        // Ctrl+1, Ctrl+2 for task switching
+        if (e.ctrlKey && (e.key === '1' || e.key === '2')) {
+          e.preventDefault();
+          const taskNum = parseInt(e.key);
+          if (taskNum === 1 || taskNum === 2) switchTask(taskNum);
+        }
         
-        document.querySelectorAll('.toolbar-btn').forEach(b => {
-          if (b.id === 'fontSmall' || b.id === 'fontMedium' || b.id === 'fontLarge') {
-            b.classList.toggle('active', b.id === `font${size.charAt(0).toUpperCase() + size.slice(1)}`);
-          }
-        });
+        // Ctrl+Enter for finish
+        if (e.ctrlKey && e.key === 'Enter') {
+          e.preventDefault();
+          if (!state.isSubmitted) finishTest();
+        }
+        
+        // Ctrl+Shift+H for highlight
+        if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+          e.preventDefault();
+          applyHighlightToSelection();
+        }
+        
+        // Ctrl+Shift+R for remove highlight
+        if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+          e.preventDefault();
+          removeHighlightAtSelection();
+        }
+        
+        // Ctrl++ for increase font size
+        if (e.ctrlKey && e.key === '+' && !e.shiftKey) {
+          e.preventDefault();
+          increaseFontSize();
+        }
+        
+        // Ctrl+- for decrease font size
+        if (e.ctrlKey && e.key === '-') {
+          e.preventDefault();
+          decreaseFontSize();
+        }
+        
+        // Ctrl+0 for reset font size
+        if (e.ctrlKey && e.key === '0') {
+          e.preventDefault();
+          setFontSize(CONFIG.DEFAULT_FONT_SIZE);
+        }
       }
 
       // ============================================================
@@ -1680,52 +1745,16 @@
       }
 
       // ============================================================
-      // KEYBOARD SHORTCUTS
-      // ============================================================
-      function handleKeyboardShortcuts(e) {
-        // Ctrl+1, Ctrl+2 for task switching
-        if (e.ctrlKey && (e.key === '1' || e.key === '2')) {
-          e.preventDefault();
-          const taskNum = parseInt(e.key);
-          if (taskNum === 1 || taskNum === 2) switchTask(taskNum);
-        }
-        // Ctrl+Enter for finish
-        if (e.ctrlKey && e.key === 'Enter') {
-          e.preventDefault();
-          if (!state.isSubmitted) finishTest();
-        }
-        // Ctrl+0 for small font
-        if (e.ctrlKey && e.key === '0') {
-          e.preventDefault();
-          setFontSize('small');
-        }
-        // Ctrl+= for medium font
-        if (e.ctrlKey && e.key === '=') {
-          e.preventDefault();
-          setFontSize('medium');
-        }
-        // Ctrl++ for large font
-        if (e.ctrlKey && e.key === '+') {
-          e.preventDefault();
-          setFontSize('large');
-        }
-      }
-
-      // ============================================================
       // INITIALIZATION
       // ============================================================
       function init() {
-        // Get DOM references
         initDomRefs();
         
-        // Set initial theme
-        const savedTheme = localStorage.getItem('chill-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        DOM.themeToggle.textContent = savedTheme === 'dark' ? '☀️ Light' : '🌓 Dark';
+        // Initialize theme
+        initTheme();
         
-        // Set initial font
-        const savedFont = localStorage.getItem('chill-font-size') || 'medium';
-        setFontSize(savedFont);
+        // Initialize font size controls
+        initFontSizeControls();
         
         // Event listeners
         DOM.startBtn.addEventListener('click', startTest);
@@ -1734,16 +1763,16 @@
         DOM.finishBtn.addEventListener('click', finishTest);
         DOM.themeToggle.addEventListener('click', toggleTheme);
         
-        document.getElementById('fontSmall').addEventListener('click', () => setFontSize('small'));
-        document.getElementById('fontMedium').addEventListener('click', () => setFontSize('medium'));
-        document.getElementById('fontLarge').addEventListener('click', () => setFontSize('large'));
+        // Highlight buttons
+        DOM.highlightBtn.addEventListener('click', applyHighlightToSelection);
+        DOM.removeHighlightBtn.addEventListener('click', removeHighlightAtSelection);
         
         // Tab switching
         document.querySelectorAll('.tab').forEach(b => {
           b.addEventListener('click', () => switchTask(+b.dataset.task));
         });
         
-        // Editor input with debounce
+        // Editor input
         DOM.editor.addEventListener('input', () => {
           updateWordCount();
           debouncedAutosave();
@@ -1764,14 +1793,14 @@
         document.addEventListener('keydown', handleKeyboardShortcuts);
         
         // Initialize components
-        initHighlightToolbar();
         initDivider();
         
         // Update online status
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Production quality implementation');
-        console.log('📝 Features: Plain text submission, highlight engine, autosave queue, offline support');
+        console.log('✅ Chill IELTS - Professional UI with improved toolbar');
+        console.log('📝 Features: Permanent toolbar, font size selector, keyboard shortcuts');
+        console.log('🎯 Shortcuts: Ctrl+Shift+H (highlight), Ctrl+Shift+R (remove), Ctrl++ (increase), Ctrl+- (decrease)');
       }
 
       // Initialize when DOM is ready
