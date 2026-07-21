@@ -5,52 +5,1783 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Chill IELTS | Writing practice</title>
   <style>
-    :root { --ink:#1c2733; --muted:#607080; --line:#d8e0e8; --navy:#123758; --blue:#1769aa; --panel:#f6f8fa; --orange:#ff5a16; --good:#087e54; }
-    * { box-sizing:border-box } body { margin:0; font:15px/1.5 Arial,sans-serif; color:var(--ink); background:#fff } button,input,textarea { font:inherit }
-    .top { height:74px; display:flex; align-items:center; gap:16px; padding:10px 28px; border-bottom:1px solid var(--line); box-shadow:0 1px 5px #1a36500c; background:#fff }
-    .brand { display:flex; align-items:center; gap:11px; font-weight:700; letter-spacing:.1px; min-width:238px }.brand img { width:46px; height:46px; object-fit:contain }.brand small { display:block; color:var(--muted); font-weight:400; letter-spacing:0 }
-    .exam-title { border-left:1px solid var(--line); padding-left:20px; color:#40515f; flex:1 }.exam-title strong { display:block; color:var(--ink) }.timer { font-size:22px; font-weight:700; color:var(--navy); font-variant-numeric:tabular-nums }.finish { border:0; background:var(--orange); color:#fff; padding:11px 18px; border-radius:4px; cursor:pointer; font-weight:700 }.finish:hover{filter:brightness(.94)}
-    .tabs { height:54px; border-bottom:1px solid var(--line); display:flex; align-items:stretch; padding:0 28px; gap:4px }.tab { background:none; border:0; border-bottom:4px solid transparent; padding:0 22px; cursor:pointer; color:#526372; font-weight:700 }.tab.active { color:var(--navy); border-bottom-color:var(--orange) }.tab .status { display:inline-block; margin-left:8px; width:8px;height:8px;border-radius:50%;background:#b8c3cc}.tab .status.done {background:var(--good)}
-    .exam { display:grid; grid-template-columns:minmax(390px,1.12fr) minmax(400px,1fr); min-height:calc(100vh - 128px) }.question { padding:34px clamp(22px,4vw,65px); border-right:1px solid var(--line); overflow:auto }.answer { padding:30px clamp(20px,3vw,46px); display:flex; flex-direction:column; min-height:0 }.label { color:var(--blue); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em }.question h1 { font-size:29px; margin:6px 0 18px }.instructions { background:#fff7f2; border-left:4px solid var(--orange); padding:14px 16px; margin:18px 0 24px }.prompt { font-size:19px; line-height:1.65; max-width:850px; white-space:pre-line }.task-image { display:block; width:100%; max-width:900px; max-height:560px; object-fit:contain; margin:28px auto 0; border:1px solid var(--line); box-shadow:0 3px 12px #12375814 }.answer-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px }.answer-head strong { font-size:18px }.word-count { color:var(--muted); white-space:nowrap }.word-count.ok { color:var(--good); font-weight:700 }.save-state { font-size:12px; color:var(--good); font-weight:700; margin-left:auto }.writing { width:100%; flex:1; min-height:450px; padding:20px; resize:none; border:1px solid #aab8c4; border-radius:3px; outline:none; line-height:1.7; font-size:16px }.writing:focus { border:2px solid var(--blue); padding:19px }.foot-note { color:var(--muted); font-size:13px; padding-top:12px }.hidden { display:none!important }
-    .gate { min-height:100vh; display:grid; place-items:center; background:linear-gradient(135deg,#edf4f8,#fff) }.card { width:min(460px,calc(100% - 40px)); padding:34px; background:white; border:1px solid var(--line); border-radius:8px; box-shadow:0 12px 32px #12375818; text-align:center }.card img { width:82px;height:82px;object-fit:contain }.card h1{margin:8px 0}.card p{color:var(--muted)}.code { width:100%; padding:14px; text-align:center; letter-spacing:.16em; text-transform:uppercase; border:1px solid #aab8c4; border-radius:4px; margin:14px 0 }.start { width:100%; border:0; border-radius:4px; background:var(--navy); color:#fff; padding:13px; cursor:pointer; font-weight:700 }.error{color:#bb1d16;min-height:24px;font-size:14px;margin:12px 0 0}
-    @media (max-width:800px){.top{padding:9px 14px}.brand{min-width:0}.brand span,.exam-title{display:none}.tabs{padding:0 10px}.exam{grid-template-columns:1fr}.question{border-right:0;border-bottom:1px solid var(--line);min-height:45vh}.answer{min-height:55vh}.timer{font-size:18px}.finish{padding:9px 11px}.writing{min-height:330px}}
+    /* ============================================================
+       CSS VARIABLES & THEMING
+       ============================================================ */
+    :root {
+      --ink: #1c2733;
+      --muted: #607080;
+      --line: #d8e0e8;
+      --navy: #123758;
+      --blue: #1769aa;
+      --panel: #f6f8fa;
+      --orange: #ff5a16;
+      --good: #087e54;
+      --bg: #ffffff;
+      --text: #1c2733;
+      --card-bg: #ffffff;
+      --border: #d8e0e8;
+      --shadow: #1a36500c;
+      --highlight-color: #ffeb3b;
+      --highlight-opacity: 0.5;
+      --font-size-base: 15px;
+      --transition-speed: 0.3s;
+      --divider-color: #d8e0e8;
+      --editor-bg: #ffffff;
+      --editor-text: #1c2733;
+      --warning-bg: #fff3cd;
+      --warning-text: #856404;
+      --danger-color: #dc3545;
+      --online-color: #087e54;
+      --offline-color: #dc3545;
+    }
+
+    [data-theme="dark"] {
+      --bg: #1a1a2e;
+      --text: #e8e8f0;
+      --card-bg: #16213e;
+      --border: #3a3a5e;
+      --shadow: #00000030;
+      --panel: #1a1a3e;
+      --ink: #e8e8f0;
+      --muted: #a8a8c0;
+      --line: #3a3a5e;
+      --highlight-color: #ffd700;
+      --highlight-opacity: 0.3;
+      --divider-color: #3a3a5e;
+      --editor-bg: #1a1a3e;
+      --editor-text: #e8e8f0;
+      --warning-bg: #2a2a1e;
+      --warning-text: #ffd700;
+      --danger-color: #ff6b6b;
+      --online-color: #4aae7a;
+      --offline-color: #ff6b6b;
+    }
+
+    /* Font sizes */
+    [data-font-size="small"] { --font-size-base: 13px; }
+    [data-font-size="medium"] { --font-size-base: 15px; }
+    [data-font-size="large"] { --font-size-base: 18px; }
+
+    /* ============================================================
+       BASE STYLES
+       ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      font: var(--font-size-base)/1.5 Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      transition: background var(--transition-speed), color var(--transition-speed);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    button, input, textarea { font: inherit; }
+
+    /* ============================================================
+       LOGIN GATE
+       ============================================================ */
+    .gate {
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--panel), var(--bg));
+      transition: background var(--transition-speed);
+    }
+    .card {
+      width: min(460px, calc(100% - 40px));
+      padding: 34px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px var(--shadow);
+      text-align: center;
+      transition: all var(--transition-speed);
+    }
+    .card img { width: 82px; height: 82px; object-fit: contain; }
+    .card h1 { margin: 8px 0; color: var(--text); }
+    .card p { color: var(--muted); }
+    .code {
+      width: 100%;
+      padding: 14px;
+      text-align: center;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      margin: 14px 0;
+      background: var(--bg);
+      color: var(--text);
+      transition: all var(--transition-speed);
+    }
+    .code:focus { outline: none; border-color: var(--blue); }
+    .code#studentName { letter-spacing: 0; text-transform: none; }
+    .start {
+      width: 100%;
+      border: 0;
+      border-radius: 4px;
+      background: var(--navy);
+      color: #fff;
+      padding: 13px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background var(--transition-speed);
+    }
+    .start:hover { filter: brightness(1.1); }
+    .start:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error { color: var(--danger-color); min-height: 24px; font-size: 14px; margin: 12px 0 0; }
+
+    /* ============================================================
+       TOP HEADER
+       ============================================================ */
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 28px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 5px var(--shadow);
+      background: var(--card-bg);
+      transition: all var(--transition-speed);
+      flex-shrink: 0;
+      min-height: 74px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 700;
+      letter-spacing: .1px;
+      min-width: 238px;
+      color: var(--text);
+    }
+    .brand img { width: 46px; height: 46px; object-fit: contain; }
+    .brand small { display: block; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+    .exam-title {
+      border-left: 1px solid var(--border);
+      padding-left: 20px;
+      color: var(--muted);
+      flex: 1;
+      transition: border var(--transition-speed);
+    }
+    .exam-title strong { display: block; color: var(--text); }
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .timer {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+      transition: color var(--transition-speed);
+      min-width: 80px;
+      text-align: center;
+    }
+    .timer.warning {
+      color: var(--danger-color);
+      animation: blink 1s step-end infinite;
+    }
+    .timer.expired { color: var(--danger-color); }
+    @keyframes blink {
+      50% { opacity: 0.3; }
+    }
+    .finish {
+      border: 0;
+      background: var(--orange);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background var(--transition-speed);
+    }
+    .finish:hover { filter: brightness(.94); }
+    .finish:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ============================================================
+       TOOLBAR ROW
+       ============================================================ */
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      transition: all var(--transition-speed);
+      min-height: 44px;
+    }
+    .toolbar-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all var(--transition-speed);
+      min-height: 30px;
+    }
+    .toolbar-btn:hover {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+    .toolbar-btn.active {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+    .toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .separator { color: var(--muted); margin: 0 2px; }
+    .status-text {
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: auto;
+    }
+    .status-text.online { color: var(--online-color); }
+    .status-text.offline { color: var(--offline-color); }
+    .recovery-notice {
+      color: var(--good);
+      font-size: 13px;
+      font-weight: 700;
+      animation: fadeIn 0.5s ease;
+    }
+    .recovery-notice.hidden { display: none; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .time-warning {
+      background: var(--warning-bg);
+      color: var(--warning-text);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    .time-warning.visible { display: inline-block; }
+
+    /* ============================================================
+       TABS
+       ============================================================ */
+    .tabs {
+      display: flex;
+      align-items: stretch;
+      padding: 0 28px;
+      gap: 4px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      height: 54px;
+      transition: all var(--transition-speed);
+    }
+    .tab {
+      background: none;
+      border: 0;
+      border-bottom: 4px solid transparent;
+      padding: 0 22px;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+      transition: all var(--transition-speed);
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-bottom-color: var(--orange); }
+    .tab .status {
+      display: inline-block;
+      margin-left: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background var(--transition-speed);
+    }
+    .tab .status.done { background: var(--good); }
+
+    /* ============================================================
+       SPLIT VIEW WITH DRAGGABLE DIVIDER
+       ============================================================ */
+    .exam-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: var(--bg);
+      transition: background var(--transition-speed);
+    }
+    .question-panel {
+      flex: 1 1 50%;
+      padding: 34px clamp(22px, 4vw, 65px);
+      overflow-y: auto;
+      min-width: 200px;
+      background: var(--bg);
+      transition: background var(--transition-speed);
+    }
+    .answer-panel {
+      flex: 1 1 50%;
+      padding: 30px clamp(20px, 3vw, 46px);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--bg);
+      transition: background var(--transition-speed);
+      min-width: 200px;
+    }
+
+    /* Draggable divider - percentage based */
+    .divider {
+      width: 8px;
+      background: var(--divider-color);
+      cursor: col-resize;
+      flex-shrink: 0;
+      position: relative;
+      transition: background var(--transition-speed);
+      user-select: none;
+    }
+    .divider:hover,
+    .divider.active {
+      background: var(--blue);
+    }
+    .divider::after {
+      content: '⋮';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      font-size: 20px;
+      opacity: 0.5;
+    }
+    .divider:hover::after,
+    .divider.active::after {
+      color: var(--blue);
+      opacity: 0.8;
+    }
+
+    /* ============================================================
+       QUESTION AREA
+       ============================================================ */
+    .label { color: var(--blue); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text); }
+    .instructions {
+      background: var(--panel);
+      border-left: 4px solid var(--orange);
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+      color: var(--text);
+      transition: background var(--transition-speed);
+    }
+    .prompt {
+      font-size: var(--font-size-base);
+      line-height: 1.65;
+      max-width: 850px;
+      white-space: pre-line;
+      color: var(--text);
+    }
+    .task-image {
+      display: block;
+      width: 100%;
+      max-width: 900px;
+      max-height: 560px;
+      object-fit: contain;
+      margin: 28px auto 0;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 12px var(--shadow);
+      transition: border var(--transition-speed);
+    }
+    .task-image.hidden { display: none; }
+
+    /* ============================================================
+       ANSWER AREA WITH CONTENTEDITABLE
+       ============================================================ */
+    .answer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .answer-head strong { font-size: 18px; color: var(--text); }
+    .word-count {
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color var(--transition-speed);
+      font-size: 14px;
+    }
+    .word-count.ok { color: var(--good); font-weight: 700; }
+    .save-state { font-size: 12px; color: var(--good); font-weight: 700; }
+
+    .editor-wrapper {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      transition: border var(--transition-speed);
+      overflow: hidden;
+    }
+    .editor-wrapper:focus-within { border-color: var(--blue); }
+
+    .editor {
+      width: 100%;
+      height: 100%;
+      min-height: 400px;
+      padding: 18px 20px;
+      outline: none;
+      line-height: 1.7;
+      font-size: var(--font-size-base);
+      background: var(--editor-bg);
+      color: var(--editor-text);
+      transition: all var(--transition-speed);
+      overflow-y: auto;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+    .editor:empty::before {
+      content: 'Type your answer here...';
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .editor .highlight {
+      background-color: var(--highlight-color);
+      opacity: var(--highlight-opacity);
+      border-radius: 2px;
+      padding: 1px 0;
+    }
+    [data-theme="dark"] .editor .highlight {
+      background-color: #ffd700;
+      opacity: 0.3;
+    }
+
+    /* ============================================================
+       HIGHLIGHT TOOLBAR (floating)
+       ============================================================ */
+    .highlight-toolbar {
+      position: fixed;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 4px 16px var(--shadow);
+      padding: 4px;
+      display: none;
+      gap: 4px;
+      z-index: 1000;
+      transition: all var(--transition-speed);
+      pointer-events: none;
+    }
+    .highlight-toolbar.visible {
+      display: flex;
+      pointer-events: auto;
+    }
+    .highlight-toolbar button {
+      background: var(--panel);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      transition: all var(--transition-speed);
+      white-space: nowrap;
+    }
+    .highlight-toolbar button:hover {
+      background: var(--navy);
+      color: #fff;
+    }
+    .highlight-toolbar .hl-yellow {
+      background: var(--highlight-color);
+      opacity: 0.8;
+    }
+    .highlight-toolbar .hl-yellow:hover {
+      opacity: 1;
+      background: var(--highlight-color);
+    }
+    [data-theme="dark"] .highlight-toolbar .hl-yellow {
+      background: #ffd700;
+      color: #1a1a2e;
+    }
+
+    /* ============================================================
+       FOOTER NOTE
+       ============================================================ */
+    .foot-note { color: var(--muted); font-size: 13px; padding-top: 12px; flex-shrink: 0; }
+
+    /* ============================================================
+       HIDDEN STATE
+       ============================================================ */
+    .hidden { display: none !important; }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 800px) {
+      body { overflow-y: auto; height: auto; }
+      .top { padding: 9px 14px; flex-wrap: wrap; height: auto; gap: 8px; }
+      .brand { min-width: 0; }
+      .brand span, .exam-title { display: none; }
+      .top-controls { margin-left: auto; }
+      .toolbar-row { padding: 6px 14px; }
+      .tabs { padding: 0 10px; overflow-x: auto; height: 48px; }
+      .exam-container { flex-direction: column; overflow-y: auto; }
+      .question-panel { border-right: 0; border-bottom: 1px solid var(--border); min-height: 40vh; }
+      .answer-panel { min-height: 50vh; }
+      .divider { display: none; width: 0; }
+      .timer { font-size: 18px; }
+      .finish { padding: 9px 11px; }
+      .editor { min-height: 250px; }
+    }
+
+    /* ============================================================
+       PRINT
+       ============================================================ */
+    @media print {
+      .top-controls, .tabs, .divider, .highlight-toolbar, .finish, .toolbar-row { display: none !important; }
+      .exam-container { display: block !important; }
+      .question-panel, .answer-panel { padding: 20px !important; border: none !important; }
+      .editor { border: 1px solid #ccc !important; min-height: 300px !important; }
+    }
   </style>
 </head>
 <body>
+  <!-- ============================================================
+       LOGIN GATE
+       ============================================================ -->
   <section class="gate" id="gate">
-    <main class="card"><img src="chill-ielts-logo.png" alt="Chill IELTS logo"><h1>Writing practice</h1><p>Enter your name and the access code given by your teacher.</p><input class="code" id="studentName" maxlength="80" placeholder="Your full name" autocomplete="name" style="letter-spacing:0;text-transform:none"><input class="code" id="accessCode" maxlength="20" placeholder="Access code" autocomplete="off"><button class="start" id="start">Start test</button><div class="error" id="gateError"></div></main>
+    <main class="card">
+      <img src="chill-ielts-logo.png" alt="Chill IELTS logo">
+      <h1>Writing practice</h1>
+      <p>Enter your name and the access code given by your teacher.</p>
+      <input class="code" id="studentName" maxlength="80" placeholder="Your full name" autocomplete="name">
+      <input class="code" id="accessCode" maxlength="20" placeholder="Access code" autocomplete="off">
+      <button class="start" id="startBtn">Start test</button>
+      <div class="error" id="gateError"></div>
+    </main>
   </section>
-  <div id="player" class="hidden">
-    <header class="top"><div class="brand"><img src="chill-ielts-logo.png" alt="Chill IELTS logo"><span>Chill IELTS<small>Computer-delivered practice</small></span></div><div class="exam-title"><strong id="examName">Writing practice</strong><span id="studentDisplay">Two tasks · Your work saves on this device</span></div><div class="timer" id="timer">60:00</div><button class="finish" id="finish">Finish test</button></header>
-    <nav class="tabs"><button class="tab active" data-task="1">Task 1 <i class="status"></i></button><button class="tab" data-task="2">Task 2 <i class="status"></i></button></nav>
-    <main class="exam"><section class="question"><div class="label" id="taskLabel">Writing task 1</div><h1 id="taskTitle">Describe the information</h1><div class="instructions" id="instructions"></div><div class="prompt" id="prompt"></div><img id="taskImage" class="task-image hidden" alt="Task chart"></section><section class="answer"><div class="answer-head"><strong>Your answer</strong><span class="save-state" id="saveState">Saved</span><span class="word-count" id="wordCount">0 words</span></div><textarea class="writing" id="writing" spellcheck="false" autocorrect="off" autocapitalize="sentences" placeholder="Type your answer here..."></textarea><div class="foot-note">Spelling assistance is disabled for exam conditions. Check the word count before finishing.</div></section></main>
+
+  <!-- ============================================================
+       PLAYER / EXAM INTERFACE
+       ============================================================ -->
+  <div id="player" class="hidden" style="display:flex;flex-direction:column;height:100vh;">
+    <!-- Header -->
+    <header class="top">
+      <div class="brand">
+        <img src="chill-ielts-logo.png" alt="Chill IELTS logo">
+        <span>Chill IELTS<small>Computer-delivered practice</small></span>
+      </div>
+      <div class="exam-title">
+        <strong id="examName">Writing practice</strong>
+        <span id="studentDisplay">Two tasks · Your work saves on this device</span>
+      </div>
+      <div class="top-controls">
+        <div class="timer" id="timer">60:00</div>
+        <button class="finish" id="finishBtn">Finish test</button>
+      </div>
+    </header>
+
+    <!-- Toolbar Row -->
+    <div class="toolbar-row" id="toolbarRow">
+      <button class="toolbar-btn" id="fontSmall" title="Small font (Ctrl+0)">A</button>
+      <button class="toolbar-btn" id="fontMedium" title="Medium font (Ctrl+=)" style="font-weight:700;">A</button>
+      <button class="toolbar-btn" id="fontLarge" title="Large font (Ctrl++)" style="font-size:20px;">A</button>
+      <span class="separator">|</span>
+      <button class="toolbar-btn" id="themeToggle" aria-label="Toggle dark mode">🌓 Dark</button>
+      <span class="separator">|</span>
+      <span class="status-text" id="saveStatus">🟢 Online · Autosave: ready</span>
+      <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered successfully</span>
+      <span class="time-warning" id="timeWarning">⏰ Time has expired. Your work is still being saved.</span>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-task="1" role="tab" aria-selected="true">Task 1 <i class="status"></i></button>
+      <button class="tab" data-task="2" role="tab" aria-selected="false">Task 2 <i class="status"></i></button>
+    </nav>
+
+    <!-- Exam split view -->
+    <div class="exam-container" id="examContainer">
+      <section class="question-panel" id="questionPanel" role="complementary" aria-label="Task question">
+        <div class="label" id="taskLabel">Writing task 1</div>
+        <h1 id="taskTitle">Describe the information</h1>
+        <div class="instructions" id="instructions"></div>
+        <div class="prompt" id="prompt"></div>
+        <img id="taskImage" class="task-image hidden" alt="Task chart">
+      </section>
+
+      <!-- Draggable divider -->
+      <div class="divider" id="divider" role="separator" aria-label="Resize panels"></div>
+
+      <section class="answer-panel" id="answerPanel" role="main" aria-label="Your answer">
+        <div class="answer-head">
+          <strong>Your answer</strong>
+          <span class="save-state" id="saveState">Saved</span>
+          <span class="word-count" id="wordCount">0 words</span>
+        </div>
+        <div class="editor-wrapper">
+          <div class="editor" id="editor" contenteditable="true" spellcheck="false" autocorrect="off" autocapitalize="sentences" role="textbox" aria-multiline="true" aria-label="Your writing answer"></div>
+          <div class="highlight-toolbar" id="highlightToolbar" role="toolbar" aria-label="Highlight tools">
+            <button class="hl-yellow" id="hlYellow" aria-label="Highlight selected text">🖍️ Highlight</button>
+            <button id="hlRemove" aria-label="Remove highlight from selected text">✖️ Remove</button>
+          </div>
+        </div>
+        <div class="foot-note">Spelling assistance is disabled for exam conditions. Check the word count before finishing.</div>
+      </section>
+    </div>
   </div>
+
+  <!-- ============================================================
+       JAVASCRIPT - PRODUCTION QUALITY IMPLEMENTATION
+       ============================================================ -->
   <script>
-    // Paste your Google Apps Script web-app URL here when it is deployed. Leave empty to use the built-in demo.
-    // When this file is opened from the Chill IELTS server, this safely loads only the test
-    // assigned to the student's access code. Keep this as '/api/test' for the server version.
-    const TASK_API_URL = '/api/test';
-    const DEMO_TASK = { title:'Practice set 12345', task1:{ title:'Describe the information', prompt:'The chart below shows the percentage of households with internet access in three countries between 2010 and 2025.\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant.', imageUrl:'' }, task2:{ title:'Discuss both views and give your opinion', prompt:'Some people believe that schools should teach children how to manage money. Others think this is the responsibility of parents.\n\nDiscuss both views and give your own opinion.' } };
-    let test, taskNo=1, seconds=3600, interval, code='', studentName='';
-    const $=id=>document.getElementById(id);
-    async function getTask(accessCode, name){
-      if (!TASK_API_URL) { if(accessCode!=='12345') throw new Error('This access code is not available. Try the demo code 12345.'); return DEMO_TASK; }
-      const response=await fetch(`${TASK_API_URL}?code=${encodeURIComponent(accessCode)}&name=${encodeURIComponent(name)}`,{cache:'no-store'});
-      const data=await response.json();
-      if(!response.ok) throw new Error(data.error||'That code could not be found or is no longer active.');
-      return data;
-    }
-    async function start(){
-      const input=$('accessCode'); code=input.value.trim().toUpperCase(); studentName=$('studentName').value.trim(); if(!studentName) return $('gateError').textContent='Please enter your full name.'; if(!code) return $('gateError').textContent='Please enter an access code.';
-      $('start').disabled=true; $('start').textContent='Loading test…'; $('gateError').textContent='';
-      try { test=await getTask(code,studentName); $('gate').classList.add('hidden'); $('player').classList.remove('hidden'); $('examName').textContent=test.title||'Writing practice'; $('studentDisplay').textContent=`Candidate: ${studentName} · Two tasks · Autosave on`; restore(); render(); interval=setInterval(tick,1000); }
-      catch(error){ $('gateError').textContent=error.message; $('start').disabled=false; $('start').textContent='Start test'; }
-    }
-    function render(){ const t=test[`task${taskNo}`]; $('taskLabel').textContent=`Writing task ${taskNo}`; $('taskTitle').textContent=t.title; $('instructions').innerHTML=taskNo===1?'You should spend about <b>20 minutes</b> on this task.<br>Write at least <b>150 words</b>.':'You should spend about <b>40 minutes</b> on this task.<br>Write at least <b>250 words</b>.'; $('prompt').textContent=t.prompt; $('taskImage').src=t.imageUrl||''; $('taskImage').classList.toggle('hidden',!t.imageUrl); $('writing').value=localStorage.getItem(key(taskNo))||''; updateCount(); document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',+b.dataset.task===taskNo)); }
-    function key(n){return `chill-writing-${code}-task${n}`} function updateCount(){const n=$('writing').value.trim()?$('writing').value.trim().split(/\s+/).length:0,min=taskNo===1?150:250; $('wordCount').textContent=`${n} words · minimum ${min}`; $('wordCount').classList.toggle('ok',n>=min); document.querySelector(`.tab[data-task="${taskNo}"] .status`).classList.toggle('done',n>0);}
-    function tick(){seconds--; if(seconds<=0){seconds=0; finish();} const m=Math.floor(seconds/60),s=seconds%60;$('timer').textContent=`${m}:${String(s).padStart(2,'0')}`;localStorage.setItem(`chill-time-${code}`,seconds)}
-    function restore(){const saved=Number(localStorage.getItem(`chill-time-${code}`));if(saved>0&&saved<=3600)seconds=saved;}
-    async function finish(){clearInterval(interval); const payload={attemptToken:test.attemptToken||'',task1Answer:localStorage.getItem(key(1))||'',task2Answer:localStorage.getItem(key(2))||'',secondsRemaining:seconds}; try { if(payload.attemptToken) await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); } catch (_) { /* The answer stays safely stored in this browser if the connection drops. */ } localStorage.removeItem(`chill-time-${code}`);alert('Test finished. Your answers have been submitted when online and remain saved on this device.');}
-    $('start').addEventListener('click',start); $('accessCode').addEventListener('keydown',e=>{if(e.key==='Enter')start()}); $('studentName').addEventListener('keydown',e=>{if(e.key==='Enter')$('accessCode').focus()}); $('writing').addEventListener('input',()=>{localStorage.setItem(key(taskNo),$('writing').value);$('saveState').textContent='Saved';updateCount()}); document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{taskNo=+b.dataset.task;render()})); $('finish').addEventListener('click',()=>{if(confirm('Finish this test? Your answers will remain saved on this device.'))finish()});
+    (function() {
+      'use strict';
+
+      // ============================================================
+      // CONFIGURATION
+      // ============================================================
+      const CONFIG = {
+        API_URL: '/api/test',
+        SUBMIT_URL: '/api/submissions',
+        AUTOSAVE_URL: '/api/autosave',
+        AUTOSAVE_INTERVAL: 15000,
+        DEBOUNCE_DELAY: 500,
+        MAX_RETRY_ATTEMPTS: 5,
+        RETRY_BACKOFF: 2000,
+        TIMER_DURATION: 3600,
+        MAX_HIGHLIGHTS: 200,
+      };
+
+      // ============================================================
+      // STATE
+      // ============================================================
+      const state = {
+        test: null,
+        taskNo: 1,
+        seconds: CONFIG.TIMER_DURATION,
+        code: '',
+        studentName: '',
+        isSubmitted: false,
+        isFinished: false,
+        attemptToken: null,
+        startTime: null,
+        lastSaveTime: Date.now(),
+        isDragging: false,
+        hasRecovered: false,
+        isOnline: navigator.onLine,
+        pendingAutosaves: [],
+        submissionRetryCount: 0,
+        highlightData: [],
+      };
+
+      // ============================================================
+      // DOM REFS
+      // ============================================================
+      const DOM = {};
+      const $ = (id) => document.getElementById(id);
+      
+      function initDomRefs() {
+        DOM.gate = $('gate');
+        DOM.player = $('player');
+        DOM.accessCode = $('accessCode');
+        DOM.studentName = $('studentName');
+        DOM.gateError = $('gateError');
+        DOM.startBtn = $('startBtn');
+        DOM.examName = $('examName');
+        DOM.studentDisplay = $('studentDisplay');
+        DOM.timer = $('timer');
+        DOM.finishBtn = $('finishBtn');
+        DOM.taskLabel = $('taskLabel');
+        DOM.taskTitle = $('taskTitle');
+        DOM.instructions = $('instructions');
+        DOM.prompt = $('prompt');
+        DOM.taskImage = $('taskImage');
+        DOM.editor = $('editor');
+        DOM.wordCount = $('wordCount');
+        DOM.saveState = $('saveState');
+        DOM.saveStatus = $('saveStatus');
+        DOM.timeWarning = $('timeWarning');
+        DOM.recoveryNotice = $('recoveryNotice');
+        DOM.divider = $('divider');
+        DOM.questionPanel = $('questionPanel');
+        DOM.answerPanel = $('answerPanel');
+        DOM.examContainer = $('examContainer');
+        DOM.highlightToolbar = $('highlightToolbar');
+        DOM.hlYellow = $('hlYellow');
+        DOM.hlRemove = $('hlRemove');
+        DOM.themeToggle = $('themeToggle');
+        DOM.toolbarRow = $('toolbarRow');
+      }
+
+      // ============================================================
+      // UTILITY FUNCTIONS
+      // ============================================================
+      function getStorageKey(suffix) {
+        return `chill-${state.code}-${suffix}`;
+      }
+
+      function getTaskKey(taskNo) {
+        return getStorageKey(`task${taskNo}`);
+      }
+
+      function getHighlightKey() {
+        return getStorageKey('highlights-v2');
+      }
+
+      function getPlainText(html) {
+        if (!html) return '';
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return div.textContent || '';
+      }
+
+      function getWordCount(text) {
+        if (!text || !text.trim()) return 0;
+        return text.trim().split(/\s+/).length;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function debounce(func, delay) {
+        let timer;
+        return function(...args) {
+          clearTimeout(timer);
+          timer = setTimeout(() => func.apply(this, args), delay);
+        };
+      }
+
+      function throttle(func, limit) {
+        let inThrottle;
+        return function(...args) {
+          if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+          }
+        };
+      }
+
+      function saveToLocalStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          // Ignore storage errors
+        }
+      }
+
+      function loadFromLocalStorage(key) {
+        try {
+          const data = localStorage.getItem(key);
+          return data ? JSON.parse(data) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function removeFromLocalStorage(key) {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          // Ignore
+        }
+      }
+
+      // ============================================================
+      // ONLINE/OFFLINE MANAGEMENT
+      // ============================================================
+      function updateOnlineStatus() {
+        state.isOnline = navigator.onLine;
+        const statusText = DOM.saveStatus;
+        if (state.isOnline) {
+          statusText.textContent = '🟢 Online · Autosave: ready';
+          statusText.className = 'status-text online';
+          // Process pending autosaves
+          processPendingAutosaves();
+          // Retry submission if needed
+          if (state.isSubmitted && !state.isFinished) {
+            retrySubmission();
+          }
+        } else {
+          statusText.textContent = '🔴 Offline · Saving locally';
+          statusText.className = 'status-text offline';
+        }
+      }
+
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+
+      // ============================================================
+      // HIGHLIGHT ENGINE - DOM Range Based
+      // ============================================================
+      function getHighlightData() {
+        const highlights = [];
+        const nodes = DOM.editor.childNodes;
+        const fullText = getPlainText(DOM.editor.innerHTML);
+        
+        // Find all highlight spans
+        const highlightSpans = DOM.editor.querySelectorAll('.highlight');
+        highlightSpans.forEach(span => {
+          const text = span.textContent;
+          // Find position in full text
+          const index = fullText.indexOf(text);
+          if (index !== -1) {
+            highlights.push({
+              start: index,
+              end: index + text.length,
+              text: text
+            });
+          }
+        });
+        
+        // Merge overlapping highlights
+        return mergeHighlights(highlights);
+      }
+
+      function mergeHighlights(highlights) {
+        if (highlights.length <= 1) return highlights;
+        
+        const sorted = [...highlights].sort((a, b) => a.start - b.start);
+        const merged = [];
+        let current = sorted[0];
+        
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i].start <= current.end) {
+            current.end = Math.max(current.end, sorted[i].end);
+            current.text = sorted[i].text;
+          } else {
+            merged.push(current);
+            current = sorted[i];
+          }
+        }
+        merged.push(current);
+        return merged;
+      }
+
+      function saveHighlights() {
+        const highlights = getHighlightData();
+        state.highlightData = highlights;
+        saveToLocalStorage(getHighlightKey(), highlights);
+      }
+
+      function restoreHighlights() {
+        const saved = loadFromLocalStorage(getHighlightKey());
+        if (!saved || !saved.length) return false;
+        
+        const fullText = getPlainText(DOM.editor.innerHTML);
+        if (!fullText) return false;
+        
+        // Clear existing highlights
+        clearHighlightsFromEditor();
+        
+        // Rebuild with highlights
+        let html = '';
+        let lastIndex = 0;
+        const sorted = saved.sort((a, b) => a.start - b.start);
+        
+        sorted.forEach(h => {
+          const start = Math.max(0, Math.min(h.start, fullText.length));
+          const end = Math.min(h.end, fullText.length);
+          if (start >= end) return;
+          
+          const text = fullText.substring(start, end);
+          if (!text.trim()) return;
+          
+          html += escapeHtml(fullText.substring(lastIndex, start));
+          html += `<span class="highlight">${escapeHtml(text)}</span>`;
+          lastIndex = end;
+        });
+        html += escapeHtml(fullText.substring(lastIndex));
+        
+        DOM.editor.innerHTML = html;
+        state.highlightData = saved;
+        return true;
+      }
+
+      function clearHighlightsFromEditor() {
+        const highlights = DOM.editor.querySelectorAll('.highlight');
+        highlights.forEach(el => {
+          const parent = el.parentNode;
+          const textNode = document.createTextNode(el.textContent);
+          parent.replaceChild(textNode, el);
+        });
+        DOM.editor.normalize();
+        state.highlightData = [];
+        saveHighlights();
+      }
+
+      function applyHighlightToSelection() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) return;
+        
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) return;
+        
+        const text = range.toString();
+        if (!text.trim()) return;
+        
+        // Check if already highlighted
+        let parent = range.commonAncestorContainer;
+        if (parent.nodeType === Node.TEXT_NODE) parent = parent.parentNode;
+        if (parent.classList && parent.classList.contains('highlight')) return;
+        
+        try {
+          const span = document.createElement('span');
+          span.className = 'highlight';
+          range.surroundContents(span);
+          saveHighlights();
+          saveFullState();
+          updateSaveStatus('Highlight applied');
+        } catch (e) {
+          // Fallback: insert at cursor
+          const textNode = document.createTextNode(text);
+          const span = document.createElement('span');
+          span.className = 'highlight';
+          span.appendChild(textNode);
+          range.deleteContents();
+          range.insertNode(span);
+          saveHighlights();
+          saveFullState();
+        }
+      }
+
+      function removeHighlightAtSelection() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) return;
+        
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) return;
+        
+        let node = range.commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        
+        if (node.classList && node.classList.contains('highlight')) {
+          const parent = node.parentNode;
+          const textNode = document.createTextNode(node.textContent);
+          parent.replaceChild(textNode, node);
+          parent.normalize();
+          saveHighlights();
+          saveFullState();
+          updateSaveStatus('Highlight removed');
+        } else {
+          // Remove all highlights in selection
+          const highlights = DOM.editor.querySelectorAll('.highlight');
+          highlights.forEach(el => {
+            if (selection.containsNode(el, true)) {
+              const parent = el.parentNode;
+              const textNode = document.createTextNode(el.textContent);
+              parent.replaceChild(textNode, el);
+              parent.normalize();
+            }
+          });
+          saveHighlights();
+          saveFullState();
+        }
+      }
+
+      // ============================================================
+      // STATE PERSISTENCE
+      // ============================================================
+      function saveFullState() {
+        if (!state.code) return;
+        
+        const fullState = {
+          taskNo: state.taskNo,
+          seconds: state.seconds,
+          startTime: state.startTime,
+          isSubmitted: state.isSubmitted,
+          isFinished: state.isFinished,
+          attemptToken: state.attemptToken,
+          hasRecovered: state.hasRecovered,
+          highlightData: state.highlightData,
+        };
+        saveToLocalStorage(getStorageKey('fullState'), fullState);
+        
+        // Save editor content as plain text
+        const plainText = getPlainText(DOM.editor.innerHTML);
+        localStorage.setItem(getTaskKey(state.taskNo), plainText);
+        
+        // Save highlights
+        saveHighlights();
+        
+        // Save cursor and scroll
+        saveCursorAndScroll();
+        
+        // Save divider position (percentage)
+        saveDividerPosition();
+        
+        // Save font and theme
+        const fontSize = document.documentElement.getAttribute('data-font-size') || 'medium';
+        localStorage.setItem('chill-font-size', fontSize);
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
+        localStorage.setItem('chill-theme', theme);
+        
+        state.lastSaveTime = Date.now();
+      }
+
+      function loadFullState() {
+        if (!state.code) return false;
+        
+        const fullState = loadFromLocalStorage(getStorageKey('fullState'));
+        if (!fullState) return false;
+        
+        state.taskNo = fullState.taskNo || 1;
+        state.seconds = fullState.seconds || CONFIG.TIMER_DURATION;
+        state.startTime = fullState.startTime || Date.now();
+        state.isSubmitted = fullState.isSubmitted || false;
+        state.isFinished = fullState.isFinished || false;
+        state.attemptToken = fullState.attemptToken || null;
+        state.hasRecovered = fullState.hasRecovered || false;
+        state.highlightData = fullState.highlightData || [];
+        
+        // Restore editor content
+        const savedText = localStorage.getItem(getTaskKey(state.taskNo));
+        if (savedText !== null) {
+          DOM.editor.innerText = savedText;
+        }
+        
+        // Restore highlights
+        restoreHighlights();
+        
+        // Restore cursor and scroll
+        restoreCursorAndScroll();
+        
+        // Restore divider position
+        restoreDividerPosition();
+        
+        // Restore font and theme
+        const savedFont = localStorage.getItem('chill-font-size');
+        if (savedFont) document.documentElement.setAttribute('data-font-size', savedFont);
+        const savedTheme = localStorage.getItem('chill-theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        return true;
+      }
+
+      // ============================================================
+      // CURSOR AND SCROLL MANAGEMENT
+      // ============================================================
+      function saveCursorAndScroll() {
+        const selection = window.getSelection();
+        if (selection.rangeCount && DOM.editor.contains(selection.anchorNode)) {
+          const range = selection.getRangeAt(0);
+          const position = range.startOffset;
+          saveToLocalStorage(getStorageKey('cursor'), position);
+        }
+        saveToLocalStorage(getStorageKey('questionScroll'), DOM.questionPanel.scrollTop);
+        saveToLocalStorage(getStorageKey('editorScroll'), DOM.editor.scrollTop);
+      }
+
+      function restoreCursorAndScroll() {
+        const position = loadFromLocalStorage(getStorageKey('cursor'));
+        if (position !== null) {
+          try {
+            const textNode = DOM.editor.firstChild;
+            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+              const range = document.createRange();
+              range.setStart(textNode, Math.min(position, textNode.textContent.length));
+              range.collapse(true);
+              const selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          } catch (e) {
+            // Ignore cursor restoration errors
+          }
+        }
+        
+        const questionScroll = loadFromLocalStorage(getStorageKey('questionScroll'));
+        if (questionScroll !== null) {
+          setTimeout(() => { DOM.questionPanel.scrollTop = questionScroll; }, 100);
+        }
+        
+        const editorScroll = loadFromLocalStorage(getStorageKey('editorScroll'));
+        if (editorScroll !== null) {
+          setTimeout(() => { DOM.editor.scrollTop = editorScroll; }, 100);
+        }
+      }
+
+      // ============================================================
+      // DIVIDER MANAGEMENT - PERCENTAGE BASED
+      // ============================================================
+      let dividerRatio = 0.5;
+
+      function saveDividerPosition() {
+        if (window.innerWidth <= 800) return;
+        const rect = DOM.examContainer.getBoundingClientRect();
+        const questionWidth = DOM.questionPanel.offsetWidth;
+        dividerRatio = rect.width > 0 ? questionWidth / rect.width : 0.5;
+        localStorage.setItem(`chill-divider-${state.code}`, dividerRatio);
+      }
+
+      function restoreDividerPosition() {
+        if (window.innerWidth <= 800) return;
+        const saved = localStorage.getItem(`chill-divider-${state.code}`);
+        if (saved) {
+          dividerRatio = parseFloat(saved);
+          if (!isNaN(dividerRatio) && dividerRatio > 0.1 && dividerRatio < 0.9) {
+            applyDividerRatio(dividerRatio);
+          }
+        }
+      }
+
+      function applyDividerRatio(ratio) {
+        if (window.innerWidth <= 800) return;
+        const percentage = (ratio * 100).toFixed(2);
+        DOM.questionPanel.style.flex = `1 1 ${percentage}%`;
+        DOM.answerPanel.style.flex = `1 1 ${(100 - parseFloat(percentage))}%`;
+        dividerRatio = ratio;
+      }
+
+      function initDivider() {
+        let startX, startRatio;
+
+        DOM.divider.addEventListener('mousedown', (e) => {
+          if (window.innerWidth <= 800) return;
+          state.isDragging = true;
+          DOM.divider.classList.add('active');
+          startX = e.clientX;
+          startRatio = dividerRatio;
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', throttle((e) => {
+          if (!state.isDragging) return;
+          const rect = DOM.examContainer.getBoundingClientRect();
+          const deltaX = (e.clientX - startX) / rect.width;
+          let newRatio = Math.max(0.15, Math.min(0.85, startRatio + deltaX));
+          applyDividerRatio(newRatio);
+        }, 16));
+
+        document.addEventListener('mouseup', () => {
+          if (state.isDragging) {
+            state.isDragging = false;
+            DOM.divider.classList.remove('active');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            saveDividerPosition();
+          }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', throttle(() => {
+          if (window.innerWidth > 800) {
+            applyDividerRatio(dividerRatio);
+          }
+        }, 200));
+      }
+
+      // ============================================================
+      // TIMER MANAGEMENT
+      // ============================================================
+      let timerInterval = null;
+
+      function updateTimer() {
+        if (state.seconds <= 0) {
+          DOM.timer.textContent = '00:00';
+          DOM.timer.classList.add('expired');
+          DOM.timer.classList.remove('warning');
+          DOM.timeWarning.classList.add('visible');
+          return;
+        }
+        const m = Math.floor(state.seconds / 60);
+        const s = state.seconds % 60;
+        DOM.timer.textContent = `${m}:${String(s).padStart(2, '0')}`;
+        
+        if (state.seconds <= 300) {
+          DOM.timer.classList.add('warning');
+          DOM.timer.classList.remove('expired');
+        } else {
+          DOM.timer.classList.remove('warning');
+          DOM.timer.classList.remove('expired');
+        }
+        DOM.timeWarning.classList.remove('visible');
+      }
+
+      function tick() {
+        if (state.isSubmitted) return;
+        state.seconds--;
+        if (state.seconds < 0) state.seconds = 0;
+        updateTimer();
+        saveToLocalStorage(getStorageKey('timer'), state.seconds);
+      }
+
+      function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        updateTimer();
+        timerInterval = setInterval(tick, 1000);
+      }
+
+      // ============================================================
+      // WORD COUNT - PLAIN TEXT ONLY
+      // ============================================================
+      function updateWordCount() {
+        const plainText = getPlainText(DOM.editor.innerHTML);
+        const words = getWordCount(plainText);
+        const min = state.taskNo === 1 ? 150 : 250;
+        DOM.wordCount.textContent = `${words} words · minimum ${min}`;
+        DOM.wordCount.classList.toggle('ok', words >= min);
+        
+        // Update tab status
+        const tab = document.querySelector(`.tab[data-task="${state.taskNo}"] .status`);
+        if (tab) tab.classList.toggle('done', words > 0);
+      }
+
+      // ============================================================
+      // AUTOSAVE WITH QUEUE
+      // ============================================================
+      let autosaveTimer = null;
+      let debounceTimer = null;
+      const pendingAutosaves = [];
+
+      function updateSaveStatus(message) {
+        DOM.saveState.textContent = message || 'Saved';
+      }
+
+      function processPendingAutosaves() {
+        if (!state.isOnline || pendingAutosaves.length === 0) return;
+        
+        const batch = [...pendingAutosaves];
+        pendingAutosaves.length = 0;
+        
+        batch.forEach(async (data) => {
+          try {
+            await fetch(CONFIG.AUTOSAVE_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+          } catch (_) {
+            // Re-queue on failure
+            pendingAutosaves.push(data);
+          }
+        });
+      }
+
+      function performAutosave() {
+        if (state.isSubmitted || !state.code) return;
+        
+        const plainText = getPlainText(DOM.editor.innerHTML);
+        if (!plainText.trim()) {
+          updateSaveStatus('Empty');
+          return;
+        }
+        
+        // Save to localStorage
+        saveFullState();
+        updateSaveStatus('Autosaved ✓');
+        
+        // Build payload
+        const payload = {
+          attemptToken: state.attemptToken,
+          task1Answer: state.taskNo === 1 ? plainText : '',
+          task2Answer: state.taskNo === 2 ? plainText : '',
+          remainingTime: state.seconds,
+          elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
+          clientTimestamp: Date.now(),
+        };
+        
+        // Send to server if online
+        if (state.isOnline && state.attemptToken) {
+          fetch(CONFIG.AUTOSAVE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).catch(() => {
+            // Queue for later
+            pendingAutosaves.push(payload);
+          });
+        } else if (state.attemptToken) {
+          // Queue for when online
+          pendingAutosaves.push(payload);
+        }
+      }
+
+      function debouncedAutosave() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          performAutosave();
+          debounceTimer = null;
+        }, CONFIG.DEBOUNCE_DELAY);
+      }
+
+      function startAutosave() {
+        if (autosaveTimer) clearInterval(autosaveTimer);
+        autosaveTimer = setInterval(performAutosave, CONFIG.AUTOSAVE_INTERVAL);
+      }
+
+      // ============================================================
+      // SUBMIT WITH RETRY
+      // ============================================================
+      async function retrySubmission() {
+        if (state.isFinished || !state.isSubmitted) return;
+        
+        const payload = {
+          attemptToken: state.attemptToken || '',
+          task1Answer: localStorage.getItem(getTaskKey(1)) || '',
+          task2Answer: localStorage.getItem(getTaskKey(2)) || '',
+          secondsRemaining: state.seconds,
+          elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
+          clientTimestamp: Date.now(),
+        };
+        
+        try {
+          const response = await fetch(CONFIG.SUBMIT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+            state.isFinished = true;
+            state.submissionRetryCount = 0;
+            DOM.finishBtn.textContent = '✅ Submitted';
+            DOM.finishBtn.disabled = true;
+            DOM.saveStatus.textContent = '✅ Submitted to teacher';
+            // Remove beforeunload handler
+            window.removeEventListener('beforeunload', beforeUnloadHandler);
+            return true;
+          }
+        } catch (_) {
+          // Will retry
+        }
+        
+        // Retry with backoff
+        if (state.submissionRetryCount < CONFIG.MAX_RETRY_ATTEMPTS) {
+          state.submissionRetryCount++;
+          const delay = CONFIG.RETRY_BACKOFF * state.submissionRetryCount;
+          setTimeout(retrySubmission, delay);
+        }
+        return false;
+      }
+
+      async function finishTest() {
+        if (state.isSubmitted) return;
+        if (!confirm('Finish this test? Your answers will be submitted to your teacher.')) return;
+        
+        state.isSubmitted = true;
+        DOM.finishBtn.disabled = true;
+        DOM.finishBtn.textContent = 'Submitting...';
+        
+        // Final autosave
+        performAutosave();
+        
+        const plainText1 = localStorage.getItem(getTaskKey(1)) || '';
+        const plainText2 = localStorage.getItem(getTaskKey(2)) || '';
+        
+        const payload = {
+          attemptToken: state.attemptToken || '',
+          task1Answer: plainText1,
+          task2Answer: plainText2,
+          secondsRemaining: state.seconds,
+          elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
+          clientTimestamp: Date.now(),
+        };
+        
+        try {
+          if (payload.attemptToken) {
+            const response = await fetch(CONFIG.SUBMIT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+              state.isFinished = true;
+              DOM.finishBtn.textContent = '✅ Submitted';
+              DOM.saveStatus.textContent = '✅ Submitted to teacher';
+              clearInterval(timerInterval);
+              clearInterval(autosaveTimer);
+              window.removeEventListener('beforeunload', beforeUnloadHandler);
+              alert('✅ Test submitted successfully! Your answers have been sent to your teacher.');
+              return;
+            }
+          }
+          // If submission fails, save locally and retry
+          saveToLocalStorage(getStorageKey('final'), payload);
+          DOM.finishBtn.textContent = '⚠️ Saving...';
+          alert('⚠️ Connection issue. Your test is saved locally and will be submitted automatically when online.');
+          retrySubmission();
+        } catch (_) {
+          saveToLocalStorage(getStorageKey('final'), payload);
+          DOM.finishBtn.textContent = '⚠️ Saving...';
+          alert('⚠️ Connection issue. Your test is saved locally and will be submitted automatically when online.');
+          retrySubmission();
+        }
+      }
+
+      // ============================================================
+      // BEFORE UNLOAD HANDLER
+      // ============================================================
+      function beforeUnloadHandler(e) {
+        if (!state.isSubmitted && state.code) {
+          performAutosave();
+          saveFullState();
+          e.preventDefault();
+          e.returnValue = '⚠️ You have unsaved work. Are you sure you want to leave?';
+          return e.returnValue;
+        }
+      }
+
+      // ============================================================
+      // START TEST
+      // ============================================================
+      async function startTest() {
+        const code = DOM.accessCode.value.trim().toUpperCase();
+        const name = DOM.studentName.value.trim();
+        
+        if (!name) {
+          DOM.gateError.textContent = 'Please enter your full name.';
+          return;
+        }
+        if (!code) {
+          DOM.gateError.textContent = 'Please enter an access code.';
+          return;
+        }
+        
+        state.code = code;
+        state.studentName = name;
+        
+        DOM.startBtn.disabled = true;
+        DOM.startBtn.textContent = 'Loading test…';
+        DOM.gateError.textContent = '';
+        
+        try {
+          const response = await fetch(`${CONFIG.API_URL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`, {
+            cache: 'no-store'
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'That code could not be found or is no longer active.');
+          
+          state.test = data;
+          state.attemptToken = data.attemptToken || null;
+          state.startTime = Date.now();
+          
+          // Check for recovery
+          const hasRecovered = loadFullState();
+          if (hasRecovered) {
+            state.hasRecovered = true;
+            DOM.recoveryNotice.classList.remove('hidden');
+            setTimeout(() => {
+              DOM.recoveryNotice.classList.add('hidden');
+            }, 5000);
+          }
+          
+          // Show player
+          DOM.gate.classList.add('hidden');
+          DOM.player.classList.remove('hidden');
+          DOM.player.style.display = 'flex';
+          
+          // Set exam info
+          DOM.examName.textContent = data.title || 'Writing practice';
+          DOM.studentDisplay.textContent = `Candidate: ${name} · Two tasks · Autosave on`;
+          
+          // Render initial task
+          renderTask();
+          
+          // Start timer
+          startTimer();
+          
+          // Start autosave
+          startAutosave();
+          
+          // Initial save
+          saveFullState();
+          
+          // Update online status
+          updateOnlineStatus();
+          
+          // Add beforeunload handler
+          window.addEventListener('beforeunload', beforeUnloadHandler);
+          
+        } catch (error) {
+          DOM.gateError.textContent = error.message;
+          DOM.startBtn.disabled = false;
+          DOM.startBtn.textContent = 'Start test';
+        }
+      }
+
+      // ============================================================
+      // RENDER TASK
+      // ============================================================
+      function renderTask() {
+        if (!state.test) return;
+        
+        const t = state.test[`task${state.taskNo}`];
+        if (!t) return;
+        
+        DOM.taskLabel.textContent = `Writing task ${state.taskNo}`;
+        DOM.taskTitle.textContent = t.title;
+        DOM.instructions.innerHTML = state.taskNo === 1
+          ? 'You should spend about <b>20 minutes</b> on this task.<br>Write at least <b>150 words</b>.'
+          : 'You should spend about <b>40 minutes</b> on this task.<br>Write at least <b>250 words</b>.';
+        DOM.prompt.textContent = t.prompt;
+        
+        if (t.imageUrl) {
+          DOM.taskImage.src = t.imageUrl;
+          DOM.taskImage.classList.remove('hidden');
+        } else {
+          DOM.taskImage.classList.add('hidden');
+        }
+        
+        // Restore content if not recovered
+        if (!state.hasRecovered) {
+          const savedText = localStorage.getItem(getTaskKey(state.taskNo));
+          if (savedText !== null) {
+            DOM.editor.innerText = savedText;
+          }
+        }
+        
+        // Restore highlights
+        restoreHighlights();
+        updateWordCount();
+        
+        // Update tabs
+        document.querySelectorAll('.tab').forEach(b => {
+          b.classList.toggle('active', +b.dataset.task === state.taskNo);
+          b.setAttribute('aria-selected', +b.dataset.task === state.taskNo ? 'true' : 'false');
+        });
+        
+        // Restore cursor
+        restoreCursorAndScroll();
+        
+        // Focus editor
+        setTimeout(() => DOM.editor.focus(), 100);
+      }
+
+      // ============================================================
+      // SWITCH TASK
+      // ============================================================
+      function switchTask(taskNumber) {
+        if (state.isSubmitted) return;
+        // Save current task
+        performAutosave();
+        state.taskNo = taskNumber;
+        saveToLocalStorage(getStorageKey('task'), taskNumber);
+        renderTask();
+        DOM.editor.focus();
+      }
+
+      // ============================================================
+      // HIGHLIGHT TOOLBAR
+      // ============================================================
+      function initHighlightToolbar() {
+        let hideTimeout = null;
+
+        DOM.editor.addEventListener('mouseup', (e) => {
+          const selection = window.getSelection();
+          const text = selection.toString().trim();
+          
+          if (text && DOM.editor.contains(selection.anchorNode)) {
+            const rect = DOM.editor.getBoundingClientRect();
+            const selRect = selection.getRangeAt(0).getBoundingClientRect();
+            
+            let top = selRect.top - 50;
+            let left = selRect.left + selRect.width / 2 - 80;
+            
+            top = Math.max(10, Math.min(top, window.innerHeight - 100));
+            left = Math.max(10, Math.min(left, window.innerWidth - 180));
+            
+            DOM.highlightToolbar.style.left = `${left}px`;
+            DOM.highlightToolbar.style.top = `${top}px`;
+            DOM.highlightToolbar.classList.add('visible');
+            
+            clearTimeout(hideTimeout);
+          } else {
+            hideTimeout = setTimeout(() => {
+              DOM.highlightToolbar.classList.remove('visible');
+            }, 300);
+          }
+        });
+
+        DOM.editor.addEventListener('mousedown', () => {
+          clearTimeout(hideTimeout);
+        });
+
+        DOM.editor.addEventListener('keydown', () => {
+          DOM.highlightToolbar.classList.remove('visible');
+        });
+
+        DOM.hlYellow.addEventListener('click', () => {
+          applyHighlightToSelection();
+          DOM.highlightToolbar.classList.remove('visible');
+        });
+
+        DOM.hlRemove.addEventListener('click', () => {
+          removeHighlightAtSelection();
+          DOM.highlightToolbar.classList.remove('visible');
+        });
+
+        DOM.editor.addEventListener('scroll', () => {
+          DOM.highlightToolbar.classList.remove('visible');
+        });
+      }
+
+      // ============================================================
+      // THEME TOGGLE
+      // ============================================================
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('chill-theme', newTheme);
+        DOM.themeToggle.textContent = newTheme === 'dark' ? '☀️ Light' : '🌓 Dark';
+        DOM.themeToggle.setAttribute('aria-label', `Toggle dark mode (currently ${newTheme})`);
+      }
+
+      // ============================================================
+      // FONT SIZE
+      // ============================================================
+      function setFontSize(size) {
+        document.documentElement.setAttribute('data-font-size', size);
+        localStorage.setItem('chill-font-size', size);
+        
+        document.querySelectorAll('.toolbar-btn').forEach(b => {
+          if (b.id === 'fontSmall' || b.id === 'fontMedium' || b.id === 'fontLarge') {
+            b.classList.toggle('active', b.id === `font${size.charAt(0).toUpperCase() + size.slice(1)}`);
+          }
+        });
+      }
+
+      // ============================================================
+      // VISIBILITY CHANGE HANDLER
+      // ============================================================
+      function handleVisibilityChange() {
+        if (document.hidden && state.code) {
+          performAutosave();
+          saveFullState();
+        }
+      }
+
+      // ============================================================
+      // PASTE HANDLER - PLAIN TEXT ONLY
+      // ============================================================
+      function handlePaste(e) {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text/plain');
+        if (text) {
+          document.execCommand('insertText', false, text);
+        }
+      }
+
+      // ============================================================
+      // KEYBOARD SHORTCUTS
+      // ============================================================
+      function handleKeyboardShortcuts(e) {
+        // Ctrl+1, Ctrl+2 for task switching
+        if (e.ctrlKey && (e.key === '1' || e.key === '2')) {
+          e.preventDefault();
+          const taskNum = parseInt(e.key);
+          if (taskNum === 1 || taskNum === 2) switchTask(taskNum);
+        }
+        // Ctrl+Enter for finish
+        if (e.ctrlKey && e.key === 'Enter') {
+          e.preventDefault();
+          if (!state.isSubmitted) finishTest();
+        }
+        // Ctrl+0 for small font
+        if (e.ctrlKey && e.key === '0') {
+          e.preventDefault();
+          setFontSize('small');
+        }
+        // Ctrl+= for medium font
+        if (e.ctrlKey && e.key === '=') {
+          e.preventDefault();
+          setFontSize('medium');
+        }
+        // Ctrl++ for large font
+        if (e.ctrlKey && e.key === '+') {
+          e.preventDefault();
+          setFontSize('large');
+        }
+      }
+
+      // ============================================================
+      // INITIALIZATION
+      // ============================================================
+      function init() {
+        // Get DOM references
+        initDomRefs();
+        
+        // Set initial theme
+        const savedTheme = localStorage.getItem('chill-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        DOM.themeToggle.textContent = savedTheme === 'dark' ? '☀️ Light' : '🌓 Dark';
+        
+        // Set initial font
+        const savedFont = localStorage.getItem('chill-font-size') || 'medium';
+        setFontSize(savedFont);
+        
+        // Event listeners
+        DOM.startBtn.addEventListener('click', startTest);
+        DOM.accessCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTest(); });
+        DOM.studentName.addEventListener('keydown', (e) => { if (e.key === 'Enter') DOM.accessCode.focus(); });
+        DOM.finishBtn.addEventListener('click', finishTest);
+        DOM.themeToggle.addEventListener('click', toggleTheme);
+        
+        document.getElementById('fontSmall').addEventListener('click', () => setFontSize('small'));
+        document.getElementById('fontMedium').addEventListener('click', () => setFontSize('medium'));
+        document.getElementById('fontLarge').addEventListener('click', () => setFontSize('large'));
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(b => {
+          b.addEventListener('click', () => switchTask(+b.dataset.task));
+        });
+        
+        // Editor input with debounce
+        DOM.editor.addEventListener('input', () => {
+          updateWordCount();
+          debouncedAutosave();
+          saveFullState();
+        });
+        
+        DOM.editor.addEventListener('keyup', () => {
+          saveCursorAndScroll();
+        });
+        
+        // Paste handler
+        DOM.editor.addEventListener('paste', handlePaste);
+        
+        // Visibility change
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+        
+        // Initialize components
+        initHighlightToolbar();
+        initDivider();
+        
+        // Update online status
+        updateOnlineStatus();
+        
+        console.log('✅ Chill IELTS - Production quality implementation');
+        console.log('📝 Features: Plain text submission, highlight engine, autosave queue, offline support');
+      }
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
   </script>
-</body></html>
+</body>
+</html>
