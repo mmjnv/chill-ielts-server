@@ -5,7 +5,8 @@ No third-party packages are needed. It stores data in SQLite beside this file.
 For public use, put it behind HTTPS (for example on Render, Railway, or a school server).
 """
 from __future__ import annotations
-import cgi, hashlib, hmac, json, os, secrets, sqlite3, time, shutil, uuid
+import cgi, hashlib, hmac, json, os, secrets, sqlite3, time, shutil, uuid, sys, logging
+from contextlib import contextmanager
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -14,265 +15,608 @@ from urllib.parse import parse_qs, urlparse
 from urllib import request as urlrequest, error as urlerror
 
 # ============================================================================
-# PERSISTENT STORAGE CONFIGURATION
+# LOGGING CONFIGURATION
 # ============================================================================
-# Use Render's persistent disk if available, otherwise fall back to local data
-PERSISTENT_DIR = Path(os.environ.get("PERSISTENT_DATA_DIR", "/data"))
-if PERSISTENT_DIR.exists() and PERSISTENT_DIR.is_dir() and os.access(str(PERSISTENT_DIR), os.W_OK):
-    DATA_BASE = PERSISTENT_DIR
-    print(f"✅ Using persistent storage at: {DATA_BASE}")
-else:
-    DATA_BASE = Path(__file__).resolve().parent / "data"
-    print(f"ℹ️ Using local storage at: {DATA_BASE}")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
+USE_POSTGRES = bool(DATABASE_URL)
+
+# ============================================================================
+# PERSISTENT STORAGE SETUP
+# ============================================================================
+def setup_storage():
+    """Setup storage directories and paths"""
+    # Always use persistent storage for uploads, regardless of database
+    persistent_dir = Path(os.environ.get("PERSISTENT_DATA_DIR", "/data"))
+    if persistent_dir.exists() and persistent_dir.is_dir() and os.access(str(persistent_dir), os.W_OK):
+        data_base = persistent_dir
+        logger.info(f"Using persistent storage at: {data_base}")
+    else:
+        data_base = Path(__file__).resolve().parent / "data"
+        logger.info(f"Using local storage at: {data_base}")
+    
+    uploads = data_base / "uploads"
+    uploads.mkdir(exist_ok=True, parents=True)
+    
+    return data_base, uploads
+
+DATA_BASE, UPLOADS = setup_storage()
 HERE = Path(__file__).resolve().parent
 ROOT = HERE
-DATA = DATA_BASE
-UPLOADS = DATA / "uploads"
-DB_PATH = DATA / "chill_ielts.sqlite3"
-CONFIG = DATA / "settings.json"
-
-# Create directories if they don't exist
-DATA.mkdir(exist_ok=True)
-UPLOADS.mkdir(exist_ok=True)
+DB_PATH = DATA_BASE / "chill_ielts.sqlite3" if not USE_POSTGRES else None
+CONFIG_PATH = DATA_BASE / "settings.json"
 
 # ============================================================================
-# DATABASE SCHEMA & MIGRATION
+# DATABASE ABSTRACTION LAYER - Proper SQL generation
+# ============================================================================
+class SQLDialect:
+    """SQL dialect adapter for different databases"""
+    
+    @staticmethod
+    def placeholder(idx):
+        """Get the placeholder for a parameter at the given index"""
+        return '?'  # SQLite uses ? for all params
+    
+    @staticmethod
+    def get_last_insert_id(cursor):
+        """Get the last insert ID"""
+        return cursor.lastrowid
+    
+    @staticmethod
+    def on_conflict(table, constraint, updates):
+        """Generate ON CONFLICT clause"""
+        # SQLite uses ON CONFLICT ... DO UPDATE SET
+        return f"ON CONFLICT({constraint}) DO UPDATE SET {updates}"
+
+class PostgreSQLDialect(SQLDialect):
+    """PostgreSQL SQL dialect"""
+    
+    @staticmethod
+    def placeholder(idx):
+        return f'%s'
+    
+    @staticmethod
+    def get_last_insert_id(cursor):
+        return cursor.fetchone()[0] if cursor else None
+    
+    @staticmethod
+    def on_conflict(table, constraint, updates):
+        # PostgreSQL uses ON CONFLICT ... DO UPDATE SET with EXCLUDED
+        return f"ON CONFLICT({constraint}) DO UPDATE SET {updates}"
+
+# Get the appropriate dialect
+SQL = PostgreSQLDialect if USE_POSTGRES else SQLDialect
+
+class DatabaseConnection:
+    """Unified database connection wrapper with proper SQL generation"""
+    
+    def __init__(self, connection, is_postgres=False):
+        self.conn = connection
+        self.is_postgres = is_postgres
+        self._cursor = None
+        self._dialect = PostgreSQLDialect if is_postgres else SQLDialect
+    
+    def _format_sql(self, sql, params):
+        """Format SQL with proper placeholders without string replacement"""
+        if not params:
+            return sql, ()
+        
+        # Generate proper placeholders based on dialect
+        if self.is_postgres:
+            placeholders = ', '.join(['%s'] * len(params))
+            # Replace ? with %s for PostgreSQL, but only for placeholders
+            # We use a simple approach: replace ? with %s in the SQL
+            # This is safe because we only replace ? that are placeholders
+            # and we know the exact parameter count
+            formatted_sql = sql.replace('?', '%s')
+            return formatted_sql, params
+        else:
+            return sql, params
+    
+    def execute(self, sql, params=None):
+        """Execute a query with parameters"""
+        if params is None:
+            params = ()
+        
+        # Format SQL with proper placeholders
+        formatted_sql, formatted_params = self._format_sql(sql, params)
+        
+        try:
+            self._cursor = self.conn.execute(formatted_sql, formatted_params)
+            return self._cursor
+        except Exception as e:
+            logger.error(f"Database error: {e}")
+            logger.debug(f"SQL: {formatted_sql}")
+            logger.debug(f"Params: {formatted_params}")
+            raise
+    
+    def executemany(self, sql, params_list):
+        """Execute a query with multiple parameter sets"""
+        if not params_list:
+            return None
+        
+        # Format SQL with proper placeholders (using first params for count)
+        formatted_sql, _ = self._format_sql(sql, params_list[0])
+        
+        self._cursor = self.conn.executemany(formatted_sql, params_list)
+        return self._cursor
+    
+    def fetchone(self):
+        """Fetch one row from the last executed query"""
+        if self._cursor:
+            return self._cursor.fetchone()
+        return None
+    
+    def fetchall(self):
+        """Fetch all rows from the last executed query"""
+        if self._cursor:
+            return self._cursor.fetchall()
+        return []
+    
+    def commit(self):
+        """Commit the current transaction"""
+        self.conn.commit()
+    
+    def rollback(self):
+        """Rollback the current transaction"""
+        self.conn.rollback()
+    
+    def close(self):
+        """Close the connection"""
+        self.conn.close()
+    
+    def row_factory(self, factory):
+        """Set the row factory for the connection"""
+        if hasattr(self.conn, 'row_factory'):
+            self.conn.row_factory = factory
+    
+    def lastrowid(self):
+        """Get the last inserted row ID"""
+        return self._dialect.get_last_insert_id(self._cursor)
+    
+    def on_conflict(self, table, constraint, updates):
+        """Generate ON CONFLICT clause for the current dialect"""
+        return self._dialect.on_conflict(table, constraint, updates)
+    
+    @contextmanager
+    def transaction(self):
+        """Context manager for transactions"""
+        try:
+            yield self
+            self.commit()
+        except Exception:
+            self.rollback()
+            raise
+
+# PostgreSQL Connection Pool
+if USE_POSTGRES:
+    try:
+        from psycopg_pool import ConnectionPool
+        from psycopg.rows import dict_row
+        
+        # Initialize connection pool
+        pool = ConnectionPool(
+            DATABASE_URL,
+            min_size=5,
+            max_size=20,
+            timeout=30,
+            check=ConnectionPool.check_connection,
+            kwargs={
+                'row_factory': dict_row,
+                'autocommit': False,
+            }
+        )
+        # Warm up the pool
+        pool.open()
+        logger.info("PostgreSQL connection pool created")
+    except ImportError:
+        logger.error("psycopg_pool not installed. Install with: pip install psycopg_pool")
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to create PostgreSQL connection pool: {e}")
+        raise
+
+@contextmanager
+def get_db_connection():
+    """Get a database connection (context manager for proper cleanup)"""
+    if USE_POSTGRES:
+        # Use pool.connection() context manager (psycopg3 pattern)
+        with pool.connection() as conn:
+            db = DatabaseConnection(conn, is_postgres=True)
+            yield db
+    else:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")  # Better concurrency
+        db = DatabaseConnection(conn, is_postgres=False)
+        try:
+            yield db
+        finally:
+            db.close()
+
+# ============================================================================
+# DATABASE MIGRATION SYSTEM
 # ============================================================================
 CURRENT_SCHEMA_VERSION = 5
 
 def get_db_version(db):
     """Get current database schema version"""
     try:
-        result = db.execute("PRAGMA user_version").fetchone()
-        return result[0] if result else 0
-    except:
+        if USE_POSTGRES:
+            result = db.execute("SELECT version FROM schema_version ORDER BY id DESC LIMIT 1")
+            row = result.fetchone()
+            return row['version'] if row else 0
+        else:
+            result = db.execute("PRAGMA user_version")
+            row = result.fetchone()
+            return row[0] if row else 0
+    except Exception:
         return 0
 
+def set_db_version(db, version):
+    """Set database schema version"""
+    if USE_POSTGRES:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS schema_version (
+                id SERIAL PRIMARY KEY,
+                version INTEGER NOT NULL,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        db.execute("INSERT INTO schema_version (version) VALUES (%s)", (version,))
+        db.commit()
+    else:
+        db.execute(f"PRAGMA user_version = {version}")
+        db.commit()
+
+def table_exists(db, table_name):
+    """Check if a table exists"""
+    if USE_POSTGRES:
+        result = db.execute(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=%s)",
+            (table_name,)
+        )
+        return result.fetchone()['exists']
+    else:
+        result = db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table_name,)
+        )
+        return result.fetchone() is not None
+
+def column_exists(db, table_name, column_name):
+    """Check if a column exists in a table"""
+    if USE_POSTGRES:
+        result = db.execute(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name=%s AND column_name=%s)",
+            (table_name, column_name)
+        )
+        return result.fetchone()['exists']
+    else:
+        result = db.execute(f"PRAGMA table_info({table_name})")
+        columns = [row[1] for row in result.fetchall()]
+        return column_name in columns
+
+def add_column_if_not_exists(db, table_name, column_name, column_type):
+    """Add a column if it doesn't exist"""
+    if not column_exists(db, table_name, column_name):
+        try:
+            if USE_POSTGRES:
+                db.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
+            else:
+                db.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
+            logger.info(f"Added column {column_name} to {table_name}")
+            return True
+        except Exception as e:
+            logger.warning(f"Could not add column {column_name} to {table_name}: {e}")
+    return False
+
+def create_index_if_not_exists(db, index_name, table_name, columns, unique=False):
+    """Create an index if it doesn't exist"""
+    unique_str = "UNIQUE" if unique else ""
+    try:
+        if USE_POSTGRES:
+            db.execute(f"CREATE {unique_str} INDEX IF NOT EXISTS {index_name} ON {table_name} ({columns})")
+        else:
+            # SQLite doesn't support IF NOT EXISTS for indexes in older versions
+            result = db.execute(
+                "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
+                (index_name,)
+            )
+            if not result.fetchone():
+                db.execute(f"CREATE {unique_str} INDEX {index_name} ON {table_name} ({columns})")
+        logger.debug(f"Created index {index_name}")
+        return True
+    except Exception as e:
+        logger.warning(f"Could not create index {index_name}: {e}")
+        return False
+
+def run_migration(db, version, description, migration_func):
+    """Run a single migration if the database version is lower than the target version"""
+    current_version = get_db_version(db)
+    if current_version >= version:
+        return
+    
+    logger.info(f"Running migration {version}: {description}")
+    try:
+        with db.transaction():
+            migration_func(db)
+            set_db_version(db, version)
+        logger.info(f"Migration {version} completed successfully")
+    except Exception as e:
+        logger.exception(f"Migration {version} failed: {e}")
+        raise
+
 def migrate_database(db):
-    """Automatically migrate database to latest schema without data loss"""
-    version = get_db_version(db)
-    print(f"🔄 Current database version: {version}")
+    """Run all migrations to bring the database to the latest version"""
+    logger.info("Starting database migration...")
     
-    if version < 1:
-        print("📦 Creating initial schema...")
-        db.executescript("""
-            CREATE TABLE IF NOT EXISTS tests (
-                id INTEGER PRIMARY KEY, 
-                title TEXT NOT NULL, 
-                task1_title TEXT NOT NULL, 
-                task1_prompt TEXT NOT NULL, 
-                task1_image TEXT, 
-                task2_title TEXT NOT NULL, 
-                task2_prompt TEXT NOT NULL, 
-                active INTEGER NOT NULL DEFAULT 1, 
-                class_code TEXT UNIQUE,
-                created_at INTEGER NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS attempts (
-                token_hash TEXT PRIMARY KEY, 
-                test_id INTEGER NOT NULL, 
-                student_name TEXT NOT NULL,
-                expires_at INTEGER NOT NULL,
-                completed INTEGER NOT NULL DEFAULT 0,
-                attempt_uuid TEXT UNIQUE NOT NULL,
-                FOREIGN KEY(test_id) REFERENCES tests(id)
-            );
-            CREATE TABLE IF NOT EXISTS submissions (
-                id INTEGER PRIMARY KEY, 
-                test_id INTEGER NOT NULL, 
-                student_name TEXT NOT NULL,
-                attempt_token_hash TEXT NOT NULL,
-                attempt_uuid TEXT NOT NULL,
-                task1_answer TEXT, 
-                task2_answer TEXT, 
-                seconds_remaining INTEGER, 
-                submitted_at INTEGER NOT NULL,
-                FOREIGN KEY(test_id) REFERENCES tests(id)
-            );
-        """)
+    # Migration 1: Initial schema
+    def migration_1(db):
+        if USE_POSTGRES:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS tests (
+                    id SERIAL PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    task1_title TEXT NOT NULL,
+                    task1_prompt TEXT NOT NULL,
+                    task1_image TEXT,
+                    task2_title TEXT NOT NULL,
+                    task2_prompt TEXT NOT NULL,
+                    active INTEGER NOT NULL DEFAULT 1,
+                    class_code TEXT UNIQUE,
+                    created_at INTEGER NOT NULL
+                )
+            """)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS attempts (
+                    token_hash TEXT PRIMARY KEY,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    expires_at INTEGER NOT NULL,
+                    completed INTEGER NOT NULL DEFAULT 0,
+                    attempt_uuid TEXT UNIQUE NOT NULL
+                )
+            """)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS submissions (
+                    id SERIAL PRIMARY KEY,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    attempt_token_hash TEXT NOT NULL,
+                    attempt_uuid TEXT NOT NULL,
+                    task1_answer TEXT,
+                    task2_answer TEXT,
+                    seconds_remaining INTEGER,
+                    submitted_at INTEGER NOT NULL
+                )
+            """)
+        else:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS tests (
+                    id INTEGER PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    task1_title TEXT NOT NULL,
+                    task1_prompt TEXT NOT NULL,
+                    task1_image TEXT,
+                    task2_title TEXT NOT NULL,
+                    task2_prompt TEXT NOT NULL,
+                    active INTEGER NOT NULL DEFAULT 1,
+                    class_code TEXT UNIQUE,
+                    created_at INTEGER NOT NULL
+                )
+            """)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS attempts (
+                    token_hash TEXT PRIMARY KEY,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    expires_at INTEGER NOT NULL,
+                    completed INTEGER NOT NULL DEFAULT 0,
+                    attempt_uuid TEXT UNIQUE NOT NULL
+                )
+            """)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS submissions (
+                    id INTEGER PRIMARY KEY,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    attempt_token_hash TEXT NOT NULL,
+                    attempt_uuid TEXT NOT NULL,
+                    task1_answer TEXT,
+                    task2_answer TEXT,
+                    seconds_remaining INTEGER,
+                    submitted_at INTEGER NOT NULL
+                )
+            """)
     
-    if version < 2:
-        print("📦 Adding autosave table...")
-        db.executescript("""
-            CREATE TABLE IF NOT EXISTS autosave (
-                id INTEGER PRIMARY KEY,
-                attempt_token_hash TEXT NOT NULL UNIQUE,
-                attempt_uuid TEXT NOT NULL,
-                test_id INTEGER NOT NULL,
-                student_name TEXT NOT NULL,
-                task1_answer TEXT,
-                task2_answer TEXT,
-                saved_at INTEGER NOT NULL,
-                FOREIGN KEY(test_id) REFERENCES tests(id)
-            );
-        """)
+    # Migration 2: Add autosave table
+    def migration_2(db):
+        if USE_POSTGRES:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS autosave (
+                    id SERIAL PRIMARY KEY,
+                    attempt_token_hash TEXT NOT NULL UNIQUE,
+                    attempt_uuid TEXT NOT NULL,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    task1_answer TEXT,
+                    task2_answer TEXT,
+                    saved_at INTEGER NOT NULL
+                )
+            """)
+        else:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS autosave (
+                    id INTEGER PRIMARY KEY,
+                    attempt_token_hash TEXT NOT NULL UNIQUE,
+                    attempt_uuid TEXT NOT NULL,
+                    test_id INTEGER NOT NULL REFERENCES tests(id),
+                    student_name TEXT NOT NULL,
+                    task1_answer TEXT,
+                    task2_answer TEXT,
+                    saved_at INTEGER NOT NULL
+                )
+            """)
     
-    if version < 3:
-        print("📦 Adding AI feedback columns...")
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN ai_feedback TEXT")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN ai_score TEXT")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN ai_marked_at INTEGER")
-        except sqlite3.OperationalError:
-            pass
-        
-        # Ensure attempt_token_hash column exists
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN attempt_token_hash TEXT")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN attempt_uuid TEXT")
-        except sqlite3.OperationalError:
-            pass
+    # Migration 3: Add AI feedback columns
+    def migration_3(db):
+        add_column_if_not_exists(db, "submissions", "ai_feedback", "TEXT")
+        add_column_if_not_exists(db, "submissions", "ai_score", "TEXT")
+        add_column_if_not_exists(db, "submissions", "ai_marked_at", "INTEGER")
+        add_column_if_not_exists(db, "submissions", "attempt_token_hash", "TEXT")
+        add_column_if_not_exists(db, "submissions", "attempt_uuid", "TEXT")
     
-    if version < 4:
-        print("📦 Adding completed column to attempts...")
-        try:
-            db.execute("ALTER TABLE attempts ADD COLUMN completed INTEGER NOT NULL DEFAULT 0")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db.execute("ALTER TABLE attempts ADD COLUMN attempt_uuid TEXT")
-        except sqlite3.OperationalError:
-            pass
-        
-        # Drop old unique constraints if they exist (safe approach)
-        try:
-            indexes = db.execute("SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'sqlite_autoindex_submissions%'").fetchall()
-            for idx in indexes:
-                try:
-                    db.execute(f"DROP INDEX IF EXISTS {idx['name']}")
-                except:
-                    pass
-        except:
-            pass
-        
-        # Create new unique index without dropping table
-        try:
-            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_submissions_unique ON submissions(test_id, student_name, attempt_token_hash)")
-        except:
-            pass
-        
-        # Create index for fast lookups
-        try:
-            db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_token_hash ON attempts(token_hash)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_test_student ON attempts(test_id, student_name)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_attempts_uuid ON attempts(attempt_uuid)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_autosave_token_hash ON autosave(attempt_token_hash)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_autosave_uuid ON autosave(attempt_uuid)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_submissions_test_student ON submissions(test_id, student_name)")
-            db.execute("CREATE INDEX IF NOT EXISTS idx_submissions_uuid ON submissions(attempt_uuid)")
-        except:
-            pass
-    
-    if version < 5:
-        print("📦 Adding attempt_uuid column and ensuring uniqueness...")
-        # Add attempt_uuid to attempts if missing
-        try:
-            db.execute("ALTER TABLE attempts ADD COLUMN attempt_uuid TEXT")
-        except sqlite3.OperationalError:
-            pass
-        
-        # Add attempt_uuid to submissions if missing
-        try:
-            db.execute("ALTER TABLE submissions ADD COLUMN attempt_uuid TEXT")
-        except sqlite3.OperationalError:
-            pass
-        
-        # Add attempt_uuid to autosave if missing
-        try:
-            db.execute("ALTER TABLE autosave ADD COLUMN attempt_uuid TEXT")
-        except sqlite3.OperationalError:
-            pass
+    # Migration 4: Add completed and UUID columns to attempts
+    def migration_4(db):
+        add_column_if_not_exists(db, "attempts", "completed", "INTEGER NOT NULL DEFAULT 0")
+        add_column_if_not_exists(db, "attempts", "attempt_uuid", "TEXT")
         
         # Generate UUIDs for existing attempts
-        existing_attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''").fetchall()
-        for attempt in existing_attempts:
-            new_uuid = str(uuid.uuid4())
-            db.execute("UPDATE attempts SET attempt_uuid = ? WHERE token_hash = ?", (new_uuid, attempt['token_hash']))
-            # Also update related submissions and autosave
-            db.execute("UPDATE submissions SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
-            db.execute("UPDATE autosave SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
+        if column_exists(db, "attempts", "attempt_uuid"):
+            attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''")
+            for attempt in attempts.fetchall():
+                new_uuid = str(uuid.uuid4())
+                if USE_POSTGRES:
+                    db.execute("UPDATE attempts SET attempt_uuid = %s WHERE token_hash = %s", (new_uuid, attempt['token_hash']))
+                else:
+                    db.execute("UPDATE attempts SET attempt_uuid = ? WHERE token_hash = ?", (new_uuid, attempt['token_hash']))
         
-        # Make attempt_uuid NOT NULL after populating
-        try:
-            # SQLite doesn't support ALTER COLUMN, so we need to handle this differently
-            # We'll create a new table if needed, but for simplicity we'll just ensure the column exists
-            pass
-        except:
-            pass
-        
-        # Create unique index on attempt_uuid
-        try:
-            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_attempts_uuid_unique ON attempts(attempt_uuid)")
-        except:
-            pass
+        # Create indexes
+        create_index_if_not_exists(db, "idx_attempts_token_hash", "attempts", "token_hash")
+        create_index_if_not_exists(db, "idx_attempts_test_student", "attempts", "test_id, student_name")
+        create_index_if_not_exists(db, "idx_attempts_uuid", "attempts", "attempt_uuid", unique=True)
+        create_index_if_not_exists(db, "idx_autosave_token_hash", "autosave", "attempt_token_hash")
+        create_index_if_not_exists(db, "idx_autosave_uuid", "autosave", "attempt_uuid")
+        create_index_if_not_exists(db, "idx_submissions_test_student", "submissions", "test_id, student_name")
+        create_index_if_not_exists(db, "idx_submissions_uuid", "submissions", "attempt_uuid")
     
-    # Set version to current
-    db.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
-    print(f"✅ Database migrated to version {CURRENT_SCHEMA_VERSION}")
+    # Migration 5: Ensure UUID uniqueness
+    def migration_5(db):
+        add_column_if_not_exists(db, "attempts", "attempt_uuid", "TEXT")
+        add_column_if_not_exists(db, "submissions", "attempt_uuid", "TEXT")
+        add_column_if_not_exists(db, "autosave", "attempt_uuid", "TEXT")
+        
+        # Generate UUIDs for existing attempts if needed
+        if column_exists(db, "attempts", "attempt_uuid"):
+            attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''")
+            for attempt in attempts.fetchall():
+                new_uuid = str(uuid.uuid4())
+                if USE_POSTGRES:
+                    db.execute("UPDATE attempts SET attempt_uuid = %s WHERE token_hash = %s", (new_uuid, attempt['token_hash']))
+                    db.execute("UPDATE submissions SET attempt_uuid = %s WHERE attempt_token_hash = %s", (new_uuid, attempt['token_hash']))
+                    db.execute("UPDATE autosave SET attempt_uuid = %s WHERE attempt_token_hash = %s", (new_uuid, attempt['token_hash']))
+                else:
+                    db.execute("UPDATE attempts SET attempt_uuid = ? WHERE token_hash = ?", (new_uuid, attempt['token_hash']))
+                    db.execute("UPDATE submissions SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
+                    db.execute("UPDATE autosave SET attempt_uuid = ? WHERE attempt_token_hash = ?", (new_uuid, attempt['token_hash']))
+        
+        create_index_if_not_exists(db, "idx_attempts_uuid_unique", "attempts", "attempt_uuid", unique=True)
+    
+    # Run migrations in order
+    run_migration(db, 1, "Initial schema", migration_1)
+    run_migration(db, 2, "Add autosave table", migration_2)
+    run_migration(db, 3, "Add AI feedback columns", migration_3)
+    run_migration(db, 4, "Add completed and UUID columns", migration_4)
+    run_migration(db, 5, "Ensure UUID uniqueness", migration_5)
+    
+    logger.info(f"Database migrated to version {CURRENT_SCHEMA_VERSION}")
 
-def conn():
-    """Get database connection with automatic migration"""
-    db = sqlite3.connect(str(DB_PATH))
-    db.row_factory = sqlite3.Row
-    
-    # Enable foreign keys
-    db.execute("PRAGMA foreign_keys = ON")
-    
-    # Migrate database if needed
-    migrate_database(db)
-    
-    return db
+def init_database():
+    """Initialize the database and run migrations"""
+    logger.info("Initializing database...")
+    with get_db_connection() as db:
+        migrate_database(db)
+        return True
 
 # ============================================================================
-# UTILITY FUNCTIONS
+# CONFIGURATION MANAGEMENT
 # ============================================================================
 def sha(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
-def generate_attempt_uuid() -> str:
-    """Generate a unique attempt identifier"""
-    return str(uuid.uuid4())
-
 def load_settings():
-    if CONFIG.exists():
+    """Load settings from environment or config file"""
+    # Use local variables to avoid scope issues
+    admin_password = ADMIN_PASSWORD
+    session_secret = SESSION_SECRET
+    
+    # Priority: Environment variables > config file
+    if admin_password and session_secret:
+        logger.info("Using environment variables for configuration")
+        return {
+            "password_hash": sha(admin_password),
+            "secret": session_secret
+        }
+    
+    # Fallback to config file for local development
+    if CONFIG_PATH.exists():
         try:
-            return json.loads(CONFIG.read_text())
-        except:
-            pass
+            settings = json.loads(CONFIG_PATH.read_text())
+            logger.info("Using config file for configuration")
+            return settings
+        except Exception as e:
+            logger.warning(f"Could not read config file: {e}")
     
-    password = os.environ.get("ADMIN_PASSWORD")
-    secret = os.environ.get("SESSION_SECRET")
-    if not password:
-        password = input("Create a teacher dashboard password: ").strip()
-    if not password:
-        raise SystemExit("A dashboard password is required.")
+    # Create config file for local development
+    if not admin_password:
+        admin_password = input("Create a teacher dashboard password: ").strip()
+        if not admin_password:
+            raise SystemExit("A dashboard password is required.")
     
+    session_secret = secrets.token_urlsafe(32)
     settings = {
-        "password_hash": sha(password),
-        "secret": secret or secrets.token_urlsafe(32)
+        "password_hash": sha(admin_password),
+        "secret": session_secret
     }
-    CONFIG.write_text(json.dumps(settings))
-    os.chmod(CONFIG, 0o600)
+    CONFIG_PATH.write_text(json.dumps(settings))
+    if not USE_POSTGRES:
+        os.chmod(CONFIG_PATH, 0o600)
+    logger.info("Created new config file")
     return settings
 
 SETTINGS = load_settings()
+
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+def generate_attempt_uuid() -> str:
+    """Generate a unique attempt identifier"""
+    return str(uuid.uuid4())
 
 def esc(value):
     import html
     return html.escape(str(value or ""), quote=True)
 
+# ============================================================================
+# PAGE TEMPLATES
+# ============================================================================
 def page(title, body):
     return f"""<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{esc(title)}</title><style>:root{{--navy:#123758;--orange:#ff5a16;--ink:#18344e;--muted:#617586}}*{{box-sizing:border-box}}body{{font:15px Arial;background:#f3f7fa;color:var(--ink);margin:0}}header{{background:#fff;padding:15px max(5%,22px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #d7e0e8;box-shadow:0 1px 5px #1231}}header b{{font-size:18px}}header a{{color:var(--navy);text-decoration:none;margin-left:12px;font-weight:bold}}main{{max-width:1120px;margin:32px auto;background:#fff;padding:30px;border-radius:10px;box-shadow:0 3px 20px #1232}}h1{{margin-top:0}}input,textarea,select{{width:100%;padding:11px;margin:5px 0 16px;border:1px solid #b8c7d3;border-radius:5px;font:inherit}}textarea{{min-height:110px}}button,.button{{background:var(--navy);color:#fff;border:0;padding:11px 16px;border-radius:5px;font-weight:bold;text-decoration:none;cursor:pointer;display:inline-block}}button:hover,.button:hover{{filter:brightness(1.1)}}.accent{{background:var(--orange)}}.danger{{background:#bd2d28}}.msg{{padding:12px;background:#e5f5ee;border-radius:5px}}.notice{{padding:12px;background:#fff4e9;border-left:4px solid var(--orange);border-radius:4px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:12px;border-bottom:1px solid #dde5eb;vertical-align:top}}th{{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}}.grid{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}.stats{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}}.stat{{padding:18px;border:1px solid #d8e2ea;border-radius:8px;background:#fbfdfe}}.stat strong{{font-size:28px;display:block;color:var(--navy)}}pre{{white-space:pre-wrap;font:14px/1.55 Arial}}.score{{color:#087e54;font-weight:bold}}@media(max-width:650px){{.grid,.stats{{grid-template-columns:1fr}}header{{align-items:flex-start;gap:10px;flex-direction:column}}main{{margin:12px;padding:20px}}table{{font-size:13px}}}}</style></head><body><header><b>Chill IELTS · Teacher dashboard</b><span><a href='/admin'>Tests</a> <a href='/admin/submissions'>Submissions</a> <a href='/admin/logout'>Log out</a></span></header><main>{body}</main></body></html>"""
+
+# ============================================================================
+# DATABASE HELPER FUNCTIONS
+# ============================================================================
+def execute_query(db, sql, params=None, fetch_one=False, fetch_all=False):
+    """Execute a query and optionally fetch results"""
+    cursor = db.execute(sql, params)
+    if fetch_one:
+        return cursor.fetchone()
+    if fetch_all:
+        return cursor.fetchall()
+    return cursor
 
 # ============================================================================
 # MAIN SERVER
@@ -281,7 +625,7 @@ class App(BaseHTTPRequestHandler):
     server_version = "ChillIELTS/1.0"
     
     def log_message(self, fmt, *args):
-        print(time.strftime("%H:%M:%S"), fmt % args)
+        logger.info(f"{time.strftime('%H:%M:%S')} - {fmt % args}")
     
     def send(self, status, body, content_type="text/html; charset=utf-8", headers=None):
         raw = body if isinstance(body, bytes) else body.encode()
@@ -289,6 +633,11 @@ class App(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("X-Content-Type-Options", "nosniff")
+        # Add security headers
+        if self.request.get('https', False):
+            self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
         for k, v in (headers or {}).items():
             self.send_header(k, v)
         self.end_headers()
@@ -330,22 +679,19 @@ class App(BaseHTTPRequestHandler):
     
     def static(self, path):
         """Serve static files from the correct location"""
-        # Handle uploads - serve from DATA/uploads
         if path.startswith('/uploads/'):
-            # Remove /uploads/ prefix and serve from UPLOADS directory
             file_path = path.replace('/uploads/', '', 1)
             target = (UPLOADS / file_path).resolve()
         else:
-            # Serve from ROOT for other static files
             target = (ROOT / path.lstrip('/')).resolve()
         
         # Prevent path traversal
         if not str(target).startswith(str(ROOT.resolve())) and not str(target).startswith(str(UPLOADS.resolve())):
-            print(f"⚠️ Path traversal attempt: {target}")
+            logger.warning(f"Path traversal attempt: {target}")
             return self.send(404, "Not found")
         
         if not target.is_file():
-            print(f"❌ File not found: {target}")
+            logger.debug(f"File not found: {target}")
             return self.send(404, "Not found")
         
         types = {
@@ -367,18 +713,15 @@ class App(BaseHTTPRequestHandler):
         p = urlparse(self.path)
         q = parse_qs(p.query)
         
-        # API endpoints
         if p.path == '/api/test':
             return self.api_test(q.get('code', [''])[0], q.get('name', [''])[0])
         
         if p.path == '/api/autosave':
             return self.api_autosave_get(q.get('token', [''])[0])
         
-        # Static file serving for uploads and other files
         if p.path.startswith('/uploads/'):
             return self.static(p.path)
         
-        # Student page
         if p.path == '/' or p.path == '/practice':
             html_path = ROOT / 'ielts-writing-exam.html'
             if html_path.exists():
@@ -391,7 +734,6 @@ class App(BaseHTTPRequestHandler):
                 return self.send(200, img_path.read_bytes(), 'image/png')
             return self.send(404, "File not found")
         
-        # Admin routes
         if p.path == '/admin/login':
             return self.send(200, page('Teacher sign in',
                 "<h1>Teacher sign in</h1><form method=post><label>Password</label><input name=password type=password autofocus required><button>Sign in</button></form>"
@@ -412,7 +754,6 @@ class App(BaseHTTPRequestHandler):
         if p.path == '/admin/submissions':
             return self.submissions()
         
-        # Static files
         static_extensions = {'.css', '.js', '.ico', '.txt', '.xml', '.json'}
         if Path(ROOT / p.path.lstrip('/')).exists() and Path(ROOT / p.path.lstrip('/')).suffix in static_extensions:
             return self.static(p.path)
@@ -441,7 +782,7 @@ class App(BaseHTTPRequestHandler):
         return self.send(404, "Not found")
     
     # ========================================================================
-    # API: TEST ACCESS - Creates new attempt with UUID
+    # API: TEST ACCESS
     # ========================================================================
     def api_test(self, raw_code, raw_name=''):
         code = raw_code.strip().upper()
@@ -452,58 +793,61 @@ class App(BaseHTTPRequestHandler):
         if not student_name:
             return self.json(400, {"error": "Please enter your full name."})
         
-        db = conn()
-        
-        # Find test by class code
-        test = db.execute("SELECT * FROM tests WHERE class_code=? AND active=1", (code,)).fetchone()
-        if not test:
-            db.close()
-            return self.json(404, {"error": "This access code is not valid or the test is inactive."})
-        
-        # Check for existing active attempt for THIS SPECIFIC student
-        # CRITICAL: Must match student_name AND code AND not completed
-        existing_attempt = db.execute("""
-            SELECT token_hash, attempt_uuid FROM attempts 
-            WHERE test_id=? AND student_name=? AND expires_at>? AND completed=0
-        """, (test['id'], student_name, int(time.time()))).fetchone()
-        
-        # If there's an existing active attempt for this student, return it
-        if existing_attempt:
-            db.close()
+        with get_db_connection() as db:
+            # Find test by class code
+            test = execute_query(
+                db,
+                "SELECT * FROM tests WHERE class_code=? AND active=1",
+                (code,),
+                fetch_one=True
+            )
+            
+            if not test:
+                return self.json(404, {"error": "This access code is not valid or the test is inactive."})
+            
+            # Check for existing active attempt
+            existing_attempt = execute_query(
+                db,
+                "SELECT token_hash, attempt_uuid FROM attempts WHERE test_id=? AND student_name=? AND expires_at>? AND completed=0",
+                (test['id'], student_name, int(time.time())),
+                fetch_one=True
+            )
+            
+            if existing_attempt:
+                return self.json(200, {
+                    "title": test['title'],
+                    "attemptToken": existing_attempt['token_hash'],
+                    "attemptUuid": existing_attempt['attempt_uuid'],
+                    "task1": {"title": test['task1_title'], "prompt": test['task1_prompt'], "imageUrl": test['task1_image'] or ''},
+                    "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
+                })
+            
+            # Create new attempt
+            token = secrets.token_urlsafe(32)
+            token_hash = sha(token)
+            attempt_uuid = generate_attempt_uuid()
+            
+            # Delete expired attempts
+            execute_query(db, "DELETE FROM attempts WHERE expires_at<?", (int(time.time()),))
+            
+            # Insert new attempt
+            with db.transaction():
+                execute_query(
+                    db,
+                    "INSERT INTO attempts(token_hash, test_id, student_name, expires_at, completed, attempt_uuid) VALUES (?,?,?,?,?,?)",
+                    (token_hash, test['id'], student_name, int(time.time()) + 7200, 0, attempt_uuid)
+                )
+            
             return self.json(200, {
                 "title": test['title'],
-                "attemptToken": existing_attempt['token_hash'],
-                "attemptUuid": existing_attempt['attempt_uuid'],
+                "attemptToken": token,
+                "attemptUuid": attempt_uuid,
                 "task1": {"title": test['task1_title'], "prompt": test['task1_prompt'], "imageUrl": test['task1_image'] or ''},
                 "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
             })
-        
-        # Create new attempt with UUID
-        token = secrets.token_urlsafe(32)
-        token_hash = sha(token)
-        attempt_uuid = generate_attempt_uuid()
-        
-        # Delete expired attempts
-        db.execute("DELETE FROM attempts WHERE expires_at<?", (int(time.time()),))
-        
-        # Insert new attempt with UUID
-        db.execute("""
-            INSERT INTO attempts(token_hash, test_id, student_name, expires_at, completed, attempt_uuid) 
-            VALUES (?,?,?,?,?,?)
-        """, (token_hash, test['id'], student_name, int(time.time()) + 7200, 0, attempt_uuid))
-        db.commit()
-        db.close()
-        
-        return self.json(200, {
-            "title": test['title'],
-            "attemptToken": token,
-            "attemptUuid": attempt_uuid,
-            "task1": {"title": test['task1_title'], "prompt": test['task1_prompt'], "imageUrl": test['task1_image'] or ''},
-            "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
-        })
     
     # ========================================================================
-    # API: SUBMISSION - Uses attempt token, not student name
+    # API: SUBMISSION
     # ========================================================================
     def api_submission(self):
         try:
@@ -518,45 +862,42 @@ class App(BaseHTTPRequestHandler):
             return self.json(400, {"error": "No attempt token provided."})
         
         token_hash = sha(raw_token)
-        db = conn()
         
-        # Verify attempt exists and is not completed - use token only
-        attempt = db.execute("""
-            SELECT * FROM attempts 
-            WHERE token_hash=? AND expires_at>? AND completed=0
-        """, (token_hash, int(time.time()))).fetchone()
-        
-        if not attempt:
-            db.close()
-            return self.json(403, {"error": "Your test session has expired or has already been submitted."})
-        
-        # Get student_name from the attempt
-        student_name = attempt['student_name']
-        test_id = attempt['test_id']
-        attempt_uuid = attempt['attempt_uuid']
-        
-        # Create submission with attempt_uuid
-        db.execute("""
-            INSERT INTO submissions(
-                test_id, student_name, attempt_token_hash, attempt_uuid,
-                task1_answer, task2_answer, seconds_remaining, submitted_at
-            ) VALUES (?,?,?,?,?,?,?,?)
-        """, (test_id, student_name, token_hash, attempt_uuid,
-              str(data.get('task1Answer', '')), str(data.get('task2Answer', '')),
-              int(data.get('secondsRemaining', 0) or 0), int(time.time())))
-        
-        # Mark attempt as completed
-        db.execute("UPDATE attempts SET completed=1 WHERE token_hash=?", (token_hash,))
-        
-        # Clear autosave data for this attempt
-        db.execute("DELETE FROM autosave WHERE attempt_token_hash=?", (token_hash,))
-        
-        db.commit()
-        db.close()
-        return self.json(200, {"ok": True})
+        with get_db_connection() as db:
+            # Verify attempt exists and is not completed
+            attempt = execute_query(
+                db,
+                "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
+                (token_hash, int(time.time())),
+                fetch_one=True
+            )
+            
+            if not attempt:
+                return self.json(403, {"error": "Your test session has expired or has already been submitted."})
+            
+            # Create submission with transaction
+            with db.transaction():
+                execute_query(
+                    db,
+                    """INSERT INTO submissions(
+                        test_id, student_name, attempt_token_hash, attempt_uuid,
+                        task1_answer, task2_answer, seconds_remaining, submitted_at
+                    ) VALUES (?,?,?,?,?,?,?,?)""",
+                    (attempt['test_id'], attempt['student_name'], token_hash, attempt['attempt_uuid'],
+                     str(data.get('task1Answer', '')), str(data.get('task2Answer', '')),
+                     int(data.get('secondsRemaining', 0) or 0), int(time.time()))
+                )
+                
+                # Mark attempt as completed
+                execute_query(db, "UPDATE attempts SET completed=1 WHERE token_hash=?", (token_hash,))
+                
+                # Clear autosave data
+                execute_query(db, "DELETE FROM autosave WHERE attempt_token_hash=?", (token_hash,))
+            
+            return self.json(200, {"ok": True})
     
     # ========================================================================
-    # API: AUTOSAVE - Uses attempt token
+    # API: AUTOSAVE
     # ========================================================================
     def api_autosave(self):
         try:
@@ -574,69 +915,68 @@ class App(BaseHTTPRequestHandler):
             return self.json(400, {"error": "No session token."})
         
         token_hash = sha(raw_token)
-        db = conn()
         
-        # Verify attempt exists and is not completed - use token only
-        attempt = db.execute("""
-            SELECT * FROM attempts 
-            WHERE token_hash=? AND expires_at>? AND completed=0
-        """, (token_hash, int(time.time()))).fetchone()
-        
-        if not attempt:
-            db.close()
-            return self.json(403, {"error": "Your test session has expired or has already been submitted."})
-        
-        attempt_uuid = attempt['attempt_uuid']
-        
-        # Save or update autosave data with attempt_uuid
-        db.execute("""
-            INSERT INTO autosave(attempt_token_hash, attempt_uuid, test_id, student_name, task1_answer, task2_answer, saved_at)
-            VALUES (?,?,?,?,?,?,?)
-            ON CONFLICT(attempt_token_hash) DO UPDATE SET
-                task1_answer=excluded.task1_answer,
-                task2_answer=excluded.task2_answer,
-                saved_at=excluded.saved_at
-        """, (token_hash, attempt_uuid, attempt['test_id'], attempt['student_name'], task1, task2, int(time.time())))
-        
-        db.commit()
-        db.close()
-        return self.json(200, {"ok": True, "savedAt": int(time.time())})
+        with get_db_connection() as db:
+            # Verify attempt exists and is not completed
+            attempt = execute_query(
+                db,
+                "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
+                (token_hash, int(time.time())),
+                fetch_one=True
+            )
+            
+            if not attempt:
+                return self.json(403, {"error": "Your test session has expired or has already been submitted."})
+            
+            # Save or update autosave data
+            with db.transaction():
+                execute_query(
+                    db,
+                    """INSERT INTO autosave(attempt_token_hash, attempt_uuid, test_id, student_name, task1_answer, task2_answer, saved_at)
+                       VALUES (?,?,?,?,?,?,?)
+                       ON CONFLICT(attempt_token_hash) DO UPDATE SET
+                           task1_answer=excluded.task1_answer,
+                           task2_answer=excluded.task2_answer,
+                           saved_at=excluded.saved_at""",
+                    (token_hash, attempt['attempt_uuid'], attempt['test_id'], attempt['student_name'], task1, task2, int(time.time()))
+                )
+            
+            return self.json(200, {"ok": True, "savedAt": int(time.time())})
     
     def api_autosave_get(self, raw_token):
-        """Retrieve autosaved data - uses token only"""
         if not raw_token:
             return self.json(400, {"error": "No session token."})
         
         token_hash = sha(raw_token)
-        db = conn()
         
-        # Verify attempt exists and is not completed - use token only
-        attempt = db.execute("""
-            SELECT * FROM attempts 
-            WHERE token_hash=? AND expires_at>? AND completed=0
-        """, (token_hash, int(time.time()))).fetchone()
-        
-        if not attempt:
-            db.close()
-            return self.json(403, {"error": "Your test session has expired or has already been submitted."})
-        
-        # Get autosave data
-        autosave = db.execute("""
-            SELECT task1_answer, task2_answer 
-            FROM autosave 
-            WHERE attempt_token_hash=?
-        """, (token_hash,)).fetchone()
-        
-        db.close()
-        
-        if autosave:
-            return self.json(200, {
-                "hasAutosave": True,
-                "task1": autosave['task1_answer'] or '',
-                "task2": autosave['task2_answer'] or ''
-            })
-        
-        return self.json(200, {"hasAutosave": False})
+        with get_db_connection() as db:
+            # Verify attempt exists
+            attempt = execute_query(
+                db,
+                "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
+                (token_hash, int(time.time())),
+                fetch_one=True
+            )
+            
+            if not attempt:
+                return self.json(403, {"error": "Your test session has expired or has already been submitted."})
+            
+            # Get autosave data
+            autosave = execute_query(
+                db,
+                "SELECT task1_answer, task2_answer FROM autosave WHERE attempt_token_hash=?",
+                (token_hash,),
+                fetch_one=True
+            )
+            
+            if autosave:
+                return self.json(200, {
+                    "hasAutosave": True,
+                    "task1": autosave['task1_answer'] or '',
+                    "task2": autosave['task2_answer'] or ''
+                })
+            
+            return self.json(200, {"hasAutosave": False})
     
     # ========================================================================
     # ADMIN: LOGIN
@@ -652,9 +992,12 @@ class App(BaseHTTPRequestHandler):
         
         expiry = str(int(time.time()) + 28800)
         sig = hmac.new(SETTINGS['secret'].encode(), expiry.encode(), hashlib.sha256).hexdigest()
+        
+        # Set cookie with Secure flag if HTTPS
+        cookie_secure = "; Secure" if self.request.get('https', False) else ""
         self.send(303, b'', headers={
             'Location': '/admin',
-            'Set-Cookie': f'teacher_session={expiry}.{sig}; Path=/; HttpOnly; SameSite=Strict'
+            'Set-Cookie': f'teacher_session={expiry}.{sig}; Path=/; HttpOnly; SameSite=Strict{cookie_secure}'
         })
     
     # ========================================================================
@@ -664,10 +1007,9 @@ class App(BaseHTTPRequestHandler):
         if not self.require_login():
             return
         
-        db = conn()
-        tests = db.execute("SELECT * FROM tests ORDER BY id DESC").fetchall()
-        submission_count = db.execute("SELECT COUNT(*) FROM submissions").fetchone()[0]
-        db.close()
+        with get_db_connection() as db:
+            tests = execute_query(db, "SELECT * FROM tests ORDER BY id DESC", fetch_all=True)
+            submission_count = execute_query(db, "SELECT COUNT(*) FROM submissions", fetch_one=True)[0]
         
         rows = ''.join(f"""
         <tr>
@@ -760,7 +1102,6 @@ class App(BaseHTTPRequestHandler):
             
             let currentImageData = null;
             
-            // Show preview when file is selected
             chartInput.addEventListener('change', function(e) {
                 if (this.files && this.files[0]) {
                     const reader = new FileReader();
@@ -774,7 +1115,6 @@ class App(BaseHTTPRequestHandler):
                 }
             });
             
-            // Handle paste from clipboard
             async function pasteFromClipboard() {
                 try {
                     const clipboardItems = await navigator.clipboard.read();
@@ -882,30 +1222,44 @@ class App(BaseHTTPRequestHandler):
             (UPLOADS / name).write_bytes(chart.file.read())
             image = '/uploads/' + name
         
-        db = conn()
-        
-        # Generate unique class code
-        for _ in range(100):
-            class_code = f"{secrets.randbelow(10000):04d}"
-            existing = db.execute("SELECT id FROM tests WHERE class_code=?", (class_code,)).fetchone()
-            if not existing:
-                break
-        else:
-            db.close()
-            return self.send(503, page('Error', 'Could not generate a unique class code. Please try again.'))
-        
-        cur = db.execute("""
-            INSERT INTO tests(
-                title, task1_title, task1_prompt, task1_image, 
-                task2_title, task2_prompt, class_code, created_at
-            ) VALUES (?,?,?,?,?,?,?,?)
-        """, (data.get('title', '').strip(), data.get('task1_title', '').strip(),
-              data.get('task1_prompt', '').strip(), image,
-              data.get('task2_title', '').strip(), data.get('task2_prompt', '').strip(),
-              class_code, int(time.time())))
-        db.commit()
-        test_id = cur.lastrowid
-        db.close()
+        with get_db_connection() as db:
+            # Generate unique class code
+            for _ in range(100):
+                class_code = f"{secrets.randbelow(10000):04d}"
+                existing = execute_query(db, "SELECT id FROM tests WHERE class_code=?", (class_code,), fetch_one=True)
+                if not existing:
+                    break
+            else:
+                return self.send(503, page('Error', 'Could not generate a unique class code. Please try again.'))
+            
+            # Insert new test
+            with db.transaction():
+                if USE_POSTGRES:
+                    cursor = execute_query(
+                        db,
+                        """INSERT INTO tests(
+                            title, task1_title, task1_prompt, task1_image, 
+                            task2_title, task2_prompt, class_code, created_at
+                        ) VALUES (?,?,?,?,?,?,?,?) RETURNING id""",
+                        (data.get('title', '').strip(), data.get('task1_title', '').strip(),
+                         data.get('task1_prompt', '').strip(), image,
+                         data.get('task2_title', '').strip(), data.get('task2_prompt', '').strip(),
+                         class_code, int(time.time()))
+                    )
+                    test_id = cursor.fetchone()['id']
+                else:
+                    cursor = execute_query(
+                        db,
+                        """INSERT INTO tests(
+                            title, task1_title, task1_prompt, task1_image, 
+                            task2_title, task2_prompt, class_code, created_at
+                        ) VALUES (?,?,?,?,?,?,?,?)""",
+                        (data.get('title', '').strip(), data.get('task1_title', '').strip(),
+                         data.get('task1_prompt', '').strip(), image,
+                         data.get('task2_title', '').strip(), data.get('task2_prompt', '').strip(),
+                         class_code, int(time.time()))
+                    )
+                    test_id = cursor.lastrowid
         
         self.send(200, page('Test created', f"""
         <h1>✅ Test created successfully!</h1>
@@ -929,25 +1283,22 @@ class App(BaseHTTPRequestHandler):
         except ValueError:
             return self.send(404, 'Not found')
         
-        db = conn()
-        test = db.execute("SELECT id FROM tests WHERE id=?", (test_id,)).fetchone()
-        if not test:
-            db.close()
-            return self.send(404, 'Test not found')
-        
-        # Generate unique class code
-        for _ in range(100):
-            class_code = f"{secrets.randbelow(10000):04d}"
-            existing = db.execute("SELECT id FROM tests WHERE class_code=? AND id!=?", (class_code, test_id)).fetchone()
-            if not existing:
-                break
-        else:
-            db.close()
-            return self.send(503, page('Error', 'Could not generate a unique class code. Please try again.'))
-        
-        db.execute("UPDATE tests SET class_code=? WHERE id=?", (class_code, test_id))
-        db.commit()
-        db.close()
+        with get_db_connection() as db:
+            test = execute_query(db, "SELECT id FROM tests WHERE id=?", (test_id,), fetch_one=True)
+            if not test:
+                return self.send(404, 'Test not found')
+            
+            # Generate unique class code
+            for _ in range(100):
+                class_code = f"{secrets.randbelow(10000):04d}"
+                existing = execute_query(db, "SELECT id FROM tests WHERE class_code=? AND id!=?", (class_code, test_id), fetch_one=True)
+                if not existing:
+                    break
+            else:
+                return self.send(503, page('Error', 'Could not generate a unique class code. Please try again.'))
+            
+            with db.transaction():
+                execute_query(db, "UPDATE tests SET class_code=? WHERE id=?", (class_code, test_id))
         
         self.send(200, page('Code generated', f"""
         <h1>🔄 New class code generated</h1>
@@ -971,20 +1322,19 @@ class App(BaseHTTPRequestHandler):
         except ValueError:
             return self.send(404, 'Not found')
         
-        db = conn()
-        test = db.execute("SELECT active FROM tests WHERE id=?", (test_id,)).fetchone()
-        if not test:
-            db.close()
-            return self.send(404, 'Test not found')
+        with get_db_connection() as db:
+            test = execute_query(db, "SELECT active FROM tests WHERE id=?", (test_id,), fetch_one=True)
+            if not test:
+                return self.send(404, 'Test not found')
+            
+            new_status = 0 if test['active'] else 1
+            with db.transaction():
+                execute_query(db, "UPDATE tests SET active=? WHERE id=?", (new_status, test_id))
         
-        new_status = 0 if test['active'] else 1
-        db.execute("UPDATE tests SET active=? WHERE id=?", (new_status, test_id))
-        db.commit()
-        db.close()
         self.redirect('/admin')
     
     # ========================================================================
-    # ADMIN: AI MARKING (OpenAI Responses API)
+    # ADMIN: AI MARKING
     # ========================================================================
     def grade_submission(self, submission_id):
         if not self.require_login():
@@ -1003,13 +1353,15 @@ class App(BaseHTTPRequestHandler):
             <p><a class=button href='/admin/submissions'>Back to submissions</a></p>
             """))
         
-        db = conn()
-        row = db.execute("""
-            SELECT s.*, t.title, t.task1_prompt, t.task2_prompt 
-            FROM submissions s JOIN tests t ON t.id = s.test_id 
-            WHERE s.id = ?
-        """, (submission_id,)).fetchone()
-        db.close()
+        with get_db_connection() as db:
+            row = execute_query(
+                db,
+                """SELECT s.*, t.title, t.task1_prompt, t.task2_prompt 
+                   FROM submissions s JOIN tests t ON t.id = s.test_id 
+                   WHERE s.id = ?""",
+                (submission_id,),
+                fetch_one=True
+            )
         
         if not row:
             return self.send(404, 'Submission not found')
@@ -1032,9 +1384,11 @@ Task 2 answer:
 
 Return plain text with clear headings."""
         
-        # Use OpenAI Responses API (newer API)
+        # Use a model that supports the Responses API
+        model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+        
         body = json.dumps({
-            "model": os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo'),
+            "model": model,
             "input": prompt
         }).encode()
         
@@ -1052,10 +1406,8 @@ Return plain text with clear headings."""
             with urlrequest.urlopen(req, timeout=90) as response:
                 result = json.loads(response.read())
             
-            # Extract feedback from Responses API format
             feedback = result.get('output_text', '')
             if not feedback:
-                # Fallback: try to extract from output array
                 output = result.get('output', [])
                 for item in output:
                     if item.get('type') == 'message':
@@ -1084,14 +1436,14 @@ Return plain text with clear headings."""
             <p><a class=button href='/admin/submissions'>Back to submissions</a></p>
             """))
         
-        db = conn()
-        db.execute("""
-            UPDATE submissions SET 
-                ai_feedback=?, ai_score=?, ai_marked_at=? 
-            WHERE id=?
-        """, (feedback, 'AI estimate', int(time.time()), submission_id))
-        db.commit()
-        db.close()
+        with get_db_connection() as db:
+            with db.transaction():
+                execute_query(
+                    db,
+                    "UPDATE submissions SET ai_feedback=?, ai_score=?, ai_marked_at=? WHERE id=?",
+                    (feedback, 'AI estimate', int(time.time()), submission_id)
+                )
+        
         self.redirect('/admin/submissions')
     
     # ========================================================================
@@ -1101,13 +1453,12 @@ Return plain text with clear headings."""
         if not self.require_login():
             return
         
-        db = conn()
-        rows = db.execute("""
-            SELECT s.*, t.title 
-            FROM submissions s JOIN tests t ON t.id = s.test_id 
-            ORDER BY s.submitted_at DESC
-        """).fetchall()
-        db.close()
+        with get_db_connection() as db:
+            rows = execute_query(
+                db,
+                "SELECT s.*, t.title FROM submissions s JOIN tests t ON t.id = s.test_id ORDER BY s.submitted_at DESC",
+                fetch_all=True
+            )
         
         data = ''.join(f"""
         <tr>
@@ -1145,13 +1496,69 @@ Return plain text with clear headings."""
         """))
 
 # ============================================================================
-# START SERVER
+# STARTUP
+# ============================================================================
+def startup():
+    """Initialize the application on startup"""
+    logger.info("=" * 60)
+    logger.info("🚀 Chill IELTS Server Starting...")
+    logger.info("=" * 60)
+    
+    # Log database type
+    if USE_POSTGRES:
+        logger.info("🐘 Using PostgreSQL database")
+        # Validate PostgreSQL connection
+        try:
+            with get_db_connection() as db:
+                result = db.execute("SELECT 1")
+                result.fetchone()
+            logger.info("✅ PostgreSQL connection validated")
+        except Exception as e:
+            logger.exception(f"❌ PostgreSQL validation failed: {e}")
+            return False
+    else:
+        logger.info("📦 Using SQLite database")
+    
+    # Initialize database
+    if not init_database():
+        logger.error("❌ Database initialization failed")
+        return False
+    
+    # Log uploads directory
+    logger.info(f"📁 Uploads directory: {UPLOADS}")
+    
+    # Log configuration source
+    if ADMIN_PASSWORD and SESSION_SECRET:
+        logger.info("🔐 Using environment variables for configuration")
+    else:
+        logger.info("🔐 Using config file for configuration")
+    
+    logger.info("=" * 60)
+    logger.info("✅ Server ready to accept connections")
+    logger.info("=" * 60)
+    return True
+
+# ============================================================================
+# MAIN
 # ============================================================================
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", "8080"))
-    print(f"🌐 Chill IELTS is ready at http://localhost:{port}")
-    print(f"📁 Data directory: {DATA}")
-    print(f"💾 Database: {DB_PATH}")
-    print(f"🖼️ Uploads: {UPLOADS}")
-    print(f"🔒 Each student attempt has a unique UUID for complete data isolation")
-    ThreadingHTTPServer(("0.0.0.0", port), App).serve_forever()
+    
+    if not startup():
+        logger.error("Failed to start server")
+        sys.exit(1)
+    
+    logger.info(f"🌐 Listening on http://localhost:{port}")
+    
+    try:
+        ThreadingHTTPServer(("0.0.0.0", port), App).serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+        if USE_POSTGRES and 'pool' in globals():
+            pool.close()
+        logger.info("✅ Server stopped")
+    except Exception as e:
+        logger.exception(f"Server error: {e}")
+        if USE_POSTGRES and 'pool' in globals():
+            pool.close()
+        raise
