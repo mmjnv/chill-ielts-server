@@ -41,6 +41,7 @@
       --toolbar-height: 42px;
       --transition-speed: 0.3s;
       --editor-font-size: 16px;
+      --question-font-size: 100%;
     }
 
     /* Theme: Dark Gray */
@@ -441,7 +442,7 @@
     }
 
     /* ============================================================
-       TOOLBAR - Collapsible
+       TOOLBAR - Collapsible with two size controls
        ============================================================ */
     .toolbar-row {
       display: flex;
@@ -545,6 +546,15 @@
       margin: 0 2px;
       user-select: none;
     }
+
+    .size-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin: 0 2px;
+    }
     
     .status-text {
       color: var(--text-secondary);
@@ -637,7 +647,7 @@
     }
     
     /* ============================================================
-       QUESTION PANEL - Independent scrolling - 46%
+       QUESTION PANEL - Independent scrolling with question font size
        ============================================================ */
     .question-panel {
       flex: 0 0 46%;
@@ -648,6 +658,7 @@
       overscroll-behavior: contain;
       background: var(--bg-primary);
       transition: background 0.2s;
+      font-size: var(--question-font-size);
     }
     .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text-primary); }
     
@@ -684,7 +695,7 @@
     }
 
     /* ============================================================
-       ANSWER PANEL - Fixed layout with scrolling editor - 54%
+       ANSWER PANEL - Fixed layout with scrolling editor
        ============================================================ */
     .answer-panel {
       flex: 0 0 54%;
@@ -759,7 +770,7 @@
     .editor-wrapper:focus-within { border-color: var(--accent-blue); }
 
     /* ============================================================
-       EDITOR - Independent scrolling with proper sizing
+       EDITOR - Independent scrolling with editor font size
        ============================================================ */
     .editor {
       width: 100%;
@@ -827,6 +838,7 @@
       .finish { padding: 7px 10px; font-size: 13px; }
       .editor { min-height: 200px; }
       .exam-title .info-details { font-size: 11px; gap: 6px; flex-direction: column; }
+      .size-label { display: none; }
     }
 
     /* ============================================================
@@ -889,8 +901,9 @@
       <div class="timer" id="timer">60:00</div>
     </header>
 
-    <!-- Toolbar -->
+    <!-- Toolbar - Updated with two independent size controls -->
     <div class="toolbar-row" id="toolbarRow">
+      <!-- Highlight Tools -->
       <div class="toolbar-group">
         <button class="toolbar-btn" id="highlightBtn" title="Highlight selected text (Ctrl+Shift+H)">
           <span class="icon">🖍️</span> Highlight
@@ -902,9 +915,11 @@
 
       <span class="separator">|</span>
 
+      <!-- Answer Size Control -->
       <div class="toolbar-group">
-        <button class="toolbar-btn" id="fontDecrease" title="Decrease font size (Ctrl+-)">A−</button>
-        <select class="toolbar-select" id="fontSizeSelect" title="Font size">
+        <span class="size-label">Answer</span>
+        <button class="toolbar-btn" id="fontDecrease" title="Decrease answer font size (Ctrl+-)">A−</button>
+        <select class="toolbar-select" id="fontSizeSelect" title="Answer font size">
           <option value="12">12</option><option value="14">14</option><option value="16">16</option>
           <option value="18">18</option><option value="20">20</option><option value="22">22</option>
           <option value="24">24</option><option value="26">26</option><option value="28">28</option>
@@ -914,22 +929,34 @@
           <option value="60">60</option><option value="64">64</option><option value="72">72</option>
           <option value="80">80</option><option value="90">90</option><option value="100">100</option>
         </select>
-        <button class="toolbar-btn" id="fontIncrease" title="Increase font size (Ctrl++)">A+</button>
+        <button class="toolbar-btn" id="fontIncrease" title="Increase answer font size (Ctrl++)">A+</button>
       </div>
 
       <span class="separator">|</span>
 
+      <!-- Question Size Control -->
       <div class="toolbar-group">
-        <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Zoom</span>
-        <select class="toolbar-select" id="zoomSelect" title="Page zoom">
-          <option value="90">90%</option><option value="95">95%</option><option value="100" selected>100%</option>
-          <option value="110">110%</option><option value="125">125%</option><option value="150">150%</option>
-          <option value="175">175%</option><option value="200">200%</option>
+        <span class="size-label">Question</span>
+        <button class="toolbar-btn" id="questionDecrease" title="Decrease question size">Q−</button>
+        <select class="toolbar-select" id="questionSizeSelect" title="Question size">
+          <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+          <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+          <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+          <option value="95">95%</option><option value="100" selected>100%</option>
+          <option value="105">105%</option><option value="110">110%</option><option value="115">115%</option>
+          <option value="120">120%</option><option value="125">125%</option><option value="130">130%</option>
+          <option value="135">135%</option><option value="140">140%</option><option value="145">145%</option>
+          <option value="150">150%</option><option value="155">155%</option><option value="160">160%</option>
+          <option value="165">165%</option><option value="170">170%</option><option value="175">175%</option>
+          <option value="180">180%</option><option value="185">185%</option><option value="190">190%</option>
+          <option value="195">195%</option><option value="200">200%</option>
         </select>
+        <button class="toolbar-btn" id="questionIncrease" title="Increase question size">Q+</button>
       </div>
 
       <span class="separator">|</span>
 
+      <!-- Theme Selector -->
       <div class="toolbar-group" style="border-right: none;">
         <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Theme</span>
         <select class="toolbar-select" id="themeSelect" title="Select theme">
@@ -943,6 +970,7 @@
         </select>
       </div>
 
+      <!-- Status Information -->
       <span class="status-text" id="saveStatus">🟢 Online · Autosave: ready</span>
       <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered</span>
       <span class="time-warning" id="timeWarning">⏰ Time expired · Still saving</span>
@@ -986,7 +1014,7 @@
   </div>
 
   <!-- ============================================================
-       JAVASCRIPT - FIXED: Clean architecture with single editor writer
+       JAVASCRIPT - COMPLETE FIXED VERSION
        ============================================================ -->
   <script>
     (function() {
@@ -1006,8 +1034,8 @@
         TIMER_DURATION: 3600,
         FONT_SIZES: ['12','14','16','18','20','22','24','26','28','30','32','34','36','40','44','48','52','56','60','64','72','80','90','100'],
         DEFAULT_FONT_SIZE: '16',
-        ZOOM_LEVELS: ['90','95','100','110','125','150','175','200'],
-        DEFAULT_ZOOM: '100',
+        QUESTION_SIZES: ['50','55','60','65','70','75','80','85','90','95','100','105','110','115','120','125','130','135','140','145','150','155','160','165','170','175','180','185','190','195','200'],
+        DEFAULT_QUESTION_SIZE: '100',
         THEMES: ['light', 'dark-gray', 'midnight', 'navy', 'warm', 'sepia', 'high-contrast'],
         DEFAULT_THEME: 'light',
         WARNING_5_MIN: 300,
@@ -1031,7 +1059,7 @@
         pendingAutosaves: [],
         submissionRetryCount: 0,
         fontSize: CONFIG.DEFAULT_FONT_SIZE,
-        zoom: CONFIG.DEFAULT_ZOOM,
+        questionSize: CONFIG.DEFAULT_QUESTION_SIZE,
         theme: CONFIG.DEFAULT_THEME,
         dividerRatio: 0.5,
         toolbarCollapsed: false,
@@ -1106,7 +1134,9 @@
         DOM.fontSizeSelect = $('fontSizeSelect');
         DOM.fontDecrease = $('fontDecrease');
         DOM.fontIncrease = $('fontIncrease');
-        DOM.zoomSelect = $('zoomSelect');
+        DOM.questionSizeSelect = $('questionSizeSelect');
+        DOM.questionDecrease = $('questionDecrease');
+        DOM.questionIncrease = $('questionIncrease');
         DOM.themeSelect = $('themeSelect');
         DOM.toolbarRow = $('toolbarRow');
         DOM.collapseBtn = $('collapseBtn');
@@ -1186,14 +1216,14 @@
       }
 
       // ============================================================
-      // USER PREFERENCES
+      // USER PREFERENCES - Single source of truth
       // ============================================================
       function saveUserPreferences() {
         if (!state.code || !state.studentName) return;
         const prefs = {
           theme: state.theme,
           fontSize: state.fontSize,
-          zoom: state.zoom,
+          questionSize: state.questionSize,
           toolbarCollapsed: state.toolbarCollapsed,
         };
         saveToLocalStorage(getUserPreferencesKey(), prefs);
@@ -1203,8 +1233,8 @@
         const prefs = loadFromLocalStorage(getUserPreferencesKey());
         if (prefs) {
           if (prefs.theme) setTheme(prefs.theme);
-          if (prefs.fontSize) setFontSize(prefs.fontSize);
-          if (prefs.zoom) setZoom(prefs.zoom);
+          if (prefs.fontSize) state.fontSize = prefs.fontSize;
+          if (prefs.questionSize) state.questionSize = prefs.questionSize;
           if (prefs.toolbarCollapsed !== undefined) {
             state.toolbarCollapsed = prefs.toolbarCollapsed;
             updateToolbarUI();
@@ -1235,30 +1265,33 @@
       }
 
       // ============================================================
-      // TASK DATA MANAGEMENT - Only saves/loads, never writes to editor
+      // TASK DATA MANAGEMENT - FINAL FIXED VERSION
       // ============================================================
       function saveTaskState(taskNo) {
         const task = state.tasks[taskNo];
         if (!task) return;
-        
-        // FIXED: Use textContent instead of innerHTML for consistency
-        task.text = DOM.editor.textContent || "";
-        
-        const highlights = getHighlightData();
-        task.highlights = highlights;
-        task.cursorPosition = state.cursorPosition;
-        task.scrollPosition = DOM.editor.scrollTop;
-        task.wordCount = getWordCount(task.text);
-        
+
+        // Only the visible task is allowed to read from the editor.
+        if (taskNo === state.activeTask) {
+            task.text = DOM.editor.textContent || "";
+            task.highlights = getHighlightData();
+            task.cursorPosition = state.cursorPosition;
+            task.scrollPosition = DOM.editor.scrollTop;
+            task.wordCount = getWordCount(task.text);
+        }
+
+        // Save whatever is currently stored in memory.
+        // Hidden tasks are saved exactly as they already exist,
+        // without reading from the editor.
         saveToLocalStorage(getTaskStorageKey(taskNo, 'data'), {
-          text: task.text,
-          highlights: task.highlights,
-          cursorPosition: task.cursorPosition,
-          scrollPosition: task.scrollPosition,
-          wordCount: task.wordCount
+            text: task.text,
+            highlights: task.highlights,
+            cursorPosition: task.cursorPosition,
+            scrollPosition: task.scrollPosition,
+            wordCount: task.wordCount
         });
       }
-      
+
       function loadTaskState(taskNo) {
         const saved = loadFromLocalStorage(getTaskStorageKey(taskNo, 'data'));
         if (!saved) return false;
@@ -1544,7 +1577,7 @@
       }
 
       // ============================================================
-      // STATE PERSISTENCE - Loads into state only, never writes to editor
+      // STATE PERSISTENCE
       // ============================================================
       function saveFullState() {
         if (!state.code || !state.studentName) return;
@@ -1561,7 +1594,7 @@
           attemptUuid: state.attemptUuid,
           hasRecovered: state.hasRecovered,
           fontSize: state.fontSize,
-          zoom: state.zoom,
+          questionSize: state.questionSize,
           theme: state.theme,
           dividerRatio: state.dividerRatio,
           studentName: state.studentName,
@@ -1593,12 +1626,11 @@
         state.attemptUuid = sessionData.attemptUuid || null;
         state.hasRecovered = sessionData.hasRecovered || false;
         state.fontSize = sessionData.fontSize || CONFIG.DEFAULT_FONT_SIZE;
-        state.zoom = sessionData.zoom || CONFIG.DEFAULT_ZOOM;
+        state.questionSize = sessionData.questionSize || CONFIG.DEFAULT_QUESTION_SIZE;
         state.theme = sessionData.theme || CONFIG.DEFAULT_THEME;
         state.dividerRatio = sessionData.dividerRatio || 0.5;
         state.toolbarCollapsed = sessionData.toolbarCollapsed || false;
         
-        // Load both tasks into state only - no editor writes
         loadTaskState(1);
         loadTaskState(2);
         
@@ -1848,7 +1880,7 @@
       }
 
       // ============================================================
-      // SUBMIT
+      // SUBMIT - Uses state.tasks, not editor directly
       // ============================================================
       async function retrySubmission() {
         if (state.isFinished || !state.isSubmitted) return;
@@ -1898,11 +1930,12 @@
         DOM.finishBtn.disabled = true;
         DOM.finishBtn.textContent = 'Submitting...';
         
-        saveTaskState(1);
-        saveTaskState(2);
+        // Save current task's state
+        saveTaskState(state.activeTask);
         saveFullState();
-        performAutosave();
+        forceAutosave();
         
+        // Build payload from state.tasks (safe, no DOM dependency)
         const payload = {
           attemptToken: state.attemptToken || '',
           task1Answer: state.tasks[1].text || '',
@@ -1965,7 +1998,7 @@
       }
 
       // ============================================================
-      // FONT SIZE MANAGEMENT
+      // ANSWER FONT SIZE MANAGEMENT - Cleaned up
       // ============================================================
       function setFontSize(size) {
         if (!CONFIG.FONT_SIZES.includes(size)) return;
@@ -1991,12 +2024,8 @@
       }
 
       function initFontSizeControls() {
-        const savedFont = localStorage.getItem('chill-font-size');
-        if (savedFont && CONFIG.FONT_SIZES.includes(savedFont)) {
-          setFontSize(savedFont);
-        } else {
-          setFontSize(CONFIG.DEFAULT_FONT_SIZE);
-        }
+        // Use the unified preference system - no separate localStorage keys
+        setFontSize(state.fontSize || CONFIG.DEFAULT_FONT_SIZE);
         
         DOM.fontSizeSelect.addEventListener('change', () => {
           setFontSize(DOM.fontSizeSelect.value);
@@ -2007,29 +2036,41 @@
       }
 
       // ============================================================
-      // ZOOM MANAGEMENT
+      // QUESTION SIZE MANAGEMENT - Cleaned up
       // ============================================================
-      function setZoom(zoom) {
-        if (!CONFIG.ZOOM_LEVELS.includes(zoom)) return;
-        state.zoom = zoom;
-        const scale = parseInt(zoom) / 100;
-        DOM.editor.style.transform = `scale(${scale})`;
-        DOM.editor.style.transformOrigin = 'top left';
-        DOM.editor.style.width = `${100 / scale}%`;
-        DOM.editor.style.height = `${100 / scale}%`;
-        DOM.prompt.style.fontSize = `calc(${state.fontSize}px * ${scale})`;
-        DOM.zoomSelect.value = zoom;
+      function setQuestionSize(size) {
+        if (!CONFIG.QUESTION_SIZES.includes(size)) return;
+        state.questionSize = size;
+        document.documentElement.style.setProperty('--question-font-size', size + '%');
+        DOM.questionSizeSelect.value = size;
         saveUserPreferences();
         if (state.code && state.studentName) saveFullState();
       }
 
-      function initZoomControls() {
-        const savedZoom = localStorage.getItem('chill-zoom') || CONFIG.DEFAULT_ZOOM;
-        setZoom(savedZoom);
+      function increaseQuestionSize() {
+        const currentIndex = CONFIG.QUESTION_SIZES.indexOf(state.questionSize);
+        if (currentIndex < CONFIG.QUESTION_SIZES.length - 1) {
+          setQuestionSize(CONFIG.QUESTION_SIZES[currentIndex + 1]);
+        }
+      }
+
+      function decreaseQuestionSize() {
+        const currentIndex = CONFIG.QUESTION_SIZES.indexOf(state.questionSize);
+        if (currentIndex > 0) {
+          setQuestionSize(CONFIG.QUESTION_SIZES[currentIndex - 1]);
+        }
+      }
+
+      function initQuestionSizeControls() {
+        // Use the unified preference system - no separate localStorage keys
+        setQuestionSize(state.questionSize || CONFIG.DEFAULT_QUESTION_SIZE);
         
-        DOM.zoomSelect.addEventListener('change', () => {
-          setZoom(DOM.zoomSelect.value);
+        DOM.questionSizeSelect.addEventListener('change', () => {
+          setQuestionSize(DOM.questionSizeSelect.value);
         });
+        
+        DOM.questionDecrease.addEventListener('click', decreaseQuestionSize);
+        DOM.questionIncrease.addEventListener('click', increaseQuestionSize);
       }
 
       // ============================================================
@@ -2045,8 +2086,7 @@
       }
 
       function initTheme() {
-        const savedTheme = localStorage.getItem('chill-theme') || CONFIG.DEFAULT_THEME;
-        setTheme(savedTheme);
+        setTheme(state.theme || CONFIG.DEFAULT_THEME);
         
         DOM.themeSelect.addEventListener('change', () => {
           setTheme(DOM.themeSelect.value);
@@ -2109,7 +2149,6 @@
           DOM.taskImage.classList.add('hidden');
         }
         
-        // FIXED: Use replaceChildren to clear editor completely
         const task = state.tasks[state.activeTask];
         DOM.editor.replaceChildren();
         DOM.editor.textContent = task ? (task.text || "") : "";
@@ -2151,7 +2190,7 @@
           return;
         }
         
-        // Before changing tasks, save everything for the current task
+        // Save current task with safety (will only read DOM if active)
         saveCursorPosition();
         saveTaskState(state.activeTask);
         saveFullState();
@@ -2159,7 +2198,7 @@
         state.activeTask = taskNumber;
         renderTask();
         
-        // Force save the new task to initialize it if empty
+        // Now save the newly loaded task (doesn't read DOM, just saves memory)
         saveTaskState(state.activeTask);
         
         document.querySelectorAll('.tab').forEach(btn => {
@@ -2209,7 +2248,6 @@
           state.attemptUuid = data.attemptUuid || null;
           state.startTime = Date.now();
 
-          // Load state into memory - does NOT write to editor
           const hasRecovered = loadFullState();
           if (hasRecovered) {
             state.hasRecovered = true;
@@ -2229,11 +2267,12 @@
           loadUserPreferences();
           updateToolbarUI();
 
-          // renderTask writes to the editor
           renderTask();
 
           requestAnimationFrame(() => {
-            setZoom(state.zoom);
+            // Apply both size settings from state (loaded from preferences)
+            setFontSize(state.fontSize);
+            setQuestionSize(state.questionSize);
           });
 
           startTimer();
@@ -2336,10 +2375,11 @@
         initDomRefs();
         
         document.documentElement.style.setProperty('--editor-font-size', CONFIG.DEFAULT_FONT_SIZE + 'px');
+        document.documentElement.style.setProperty('--question-font-size', CONFIG.DEFAULT_QUESTION_SIZE + '%');
         
         initTheme();
         initFontSizeControls();
-        initZoomControls();
+        initQuestionSizeControls();
         
         DOM.startBtn.addEventListener('click', startTest);
         DOM.accessCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTest(); });
@@ -2355,7 +2395,6 @@
         });
         
         DOM.editor.addEventListener('input', () => {
-          // Update the task state when user types
           const task = state.tasks[state.activeTask];
           if (task) {
             task.text = DOM.editor.textContent || '';
@@ -2381,9 +2420,12 @@
         initDivider();
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Fixed: Clean task independence');
-        console.log('📝 Only renderTask() writes to the editor');
-        console.log('📐 Question panel: 46% | Answer panel: 54%');
+        console.log('✅ Chill IELTS - Fully Fixed Version');
+        console.log('🔒 saveTaskState() now only reads DOM for active task');
+        console.log('📝 Answer Size: Changes only the editor');
+        console.log('📄 Question Size: Changes only the question panel');
+        console.log('💾 Unified preference system (single source of truth)');
+        console.log('🎯 Highlights preserved with text + highlight data');
       }
 
       if (document.readyState === 'loading') {
