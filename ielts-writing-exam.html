@@ -420,6 +420,9 @@
     }
     .finish:hover { filter: brightness(.94); }
     .finish:disabled { opacity: 0.6; cursor: not-allowed; }
+    .finish.submitted {
+      background: var(--accent-green);
+    }
 
     .collapse-btn {
       background: transparent;
@@ -717,7 +720,7 @@
     .task-image.hidden { display: none; }
 
     /* ============================================================
-       ANSWER AREA - Font size controlled by CSS variable
+       ANSWER AREA
        ============================================================ */
     .answer-head {
       display: flex;
@@ -777,6 +780,10 @@
       padding: 1px 0;
       transition: background 0.2s;
       cursor: text;
+    }
+    .editor.readonly {
+      opacity: 0.8;
+      cursor: default;
     }
 
     .foot-note { color: var(--text-secondary); font-size: 13px; padding-top: 12px; flex-shrink: 0; }
@@ -966,7 +973,7 @@
   </div>
 
   <!-- ============================================================
-       JAVASCRIPT
+       JAVASCRIPT - REFACTORED PERSISTENCE LAYER
        ============================================================ -->
   <script>
     (function() {
@@ -995,12 +1002,10 @@
       };
 
       // ============================================================
-      // STATE
+      // STATE - Organized by task
       // ============================================================
       const state = {
         test: null,
-        taskNo: 1,
-        seconds: CONFIG.TIMER_DURATION,
         code: '',
         studentName: '',
         isSubmitted: false,
@@ -1009,8 +1014,6 @@
         attemptUuid: null,
         startTime: null,
         lastSaveTime: Date.now(),
-        isDragging: false,
-        hasRecovered: false,
         isOnline: navigator.onLine,
         pendingAutosaves: [],
         submissionRetryCount: 0,
@@ -1019,10 +1022,39 @@
         theme: CONFIG.DEFAULT_THEME,
         dividerRatio: 0.5,
         toolbarCollapsed: false,
-        cursorPosition: 0,
-        selectionStart: 0,
-        selectionEnd: 0,
         isInitialized: false,
+        
+        // Task-specific state - each task has its own complete state
+        tasks: {
+          1: {
+            text: '',
+            highlights: [],
+            cursorPosition: 0,
+            scrollPosition: 0,
+            wordCount: 0,
+          },
+          2: {
+            text: '',
+            highlights: [],
+            cursorPosition: 0,
+            scrollPosition: 0,
+            wordCount: 0,
+          }
+        },
+        
+        // Current active task
+        activeTask: 1,
+        
+        // Timer
+        seconds: CONFIG.TIMER_DURATION,
+        timerInterval: null,
+        warningShown5Min: false,
+        warningShown1Min: false,
+        
+        // UI state
+        isDragging: false,
+        hasRecovered: false,
+        cursorPosition: 0,
       };
 
       // ============================================================
@@ -1073,7 +1105,7 @@
       }
 
       // ============================================================
-      // STORAGE KEY HELPER
+      // STORAGE KEY HELPER - Task-aware
       // ============================================================
       function storageKey(suffix) {
         if (!state.code || !state.studentName) {
@@ -1084,12 +1116,8 @@
         return `chill-${sanitizedCode}-${sanitizedName}-${suffix}`;
       }
 
-      function getTaskKey(taskNo) {
-        return storageKey(`task${taskNo}`);
-      }
-
-      function getHighlightKey() {
-        return storageKey('highlights-v8');
+      function getTaskStorageKey(taskNo, suffix) {
+        return storageKey(`task${taskNo}-${suffix}`);
       }
 
       function getUserPreferencesKey() {
@@ -1199,27 +1227,95 @@
       }
 
       // ============================================================
-      // HIGHLIGHT ENGINE - Simplified reliable version
+      // TASK DATA MANAGEMENT - Core refactor
       // ============================================================
-      function saveHighlights() {
+      
+      // Save a specific task's complete state
+      function saveTaskState(taskNo) {
+        const task = state.tasks[taskNo];
+        if (!task) return;
+        
+        // Save text
+        const plainText = getPlainText(DOM.editor.innerHTML);
+        task.text = plainText;
+        
+        // Save highlights
+        const highlights = getHighlightData();
+        task.highlights = highlights;
+        
+        // Save cursor position
+        task.cursorPosition = state.cursorPosition;
+        
+        // Save scroll position
+        task.scrollPosition = DOM.editor.scrollTop;
+        
+        // Save word count
+        task.wordCount = getWordCount(plainText);
+        
+        // Persist to localStorage
+        saveToLocalStorage(getTaskStorageKey(taskNo, 'data'), {
+          text: task.text,
+          highlights: task.highlights,
+          cursorPosition: task.cursorPosition,
+          scrollPosition: task.scrollPosition,
+          wordCount: task.wordCount
+        });
+      }
+      
+      // Load a specific task's complete state
+      function loadTaskState(taskNo) {
+        const saved = loadFromLocalStorage(getTaskStorageKey(taskNo, 'data'));
+        if (!saved) return false;
+        
+        const task = state.tasks[taskNo];
+        task.text = saved.text || '';
+        task.highlights = saved.highlights || [];
+        task.cursorPosition = saved.cursorPosition || 0;
+        task.scrollPosition = saved.scrollPosition || 0;
+        task.wordCount = saved.wordCount || 0;
+        
+        return true;
+      }
+      
+      // Switch to a task and restore its state
+      function switchToTask(taskNo) {
+        // Save current task state first
+        saveTaskState(state.activeTask);
+        
+        // Update active task
+        state.activeTask = taskNo;
+        
+        // Load and render the task
+        renderTask();
+        
+        // Update UI
+        updateCandidateInfo();
+        document.querySelectorAll('.tab').forEach(b => {
+          b.classList.toggle('active', +b.dataset.task === taskNo);
+          b.setAttribute('aria-selected', +b.dataset.task === taskNo ? 'true' : 'false');
+        });
+        
+        // Focus editor
+        setTimeout(() => DOM.editor.focus(), 100);
+      }
+
+      // ============================================================
+      // HIGHLIGHT ENGINE - Uses task-specific data
+      // ============================================================
+      function getHighlightData() {
         const highlights = [];
         const editor = DOM.editor;
         const highlightSpans = editor.querySelectorAll('.highlight');
         
-        // Get full plain text
         const fullText = getPlainText(editor.innerHTML);
         
         highlightSpans.forEach(span => {
           const text = span.textContent;
-          // Find position using indexOf - more reliable for simple highlights
           let start = 0;
           let found = false;
           
-          // Find the position of this text that's not inside another highlight
-          // Simple approach: find all occurrences and pick the right one
           let pos = fullText.indexOf(text);
           while (pos !== -1) {
-            // Check if this position is already highlighted
             const existing = highlights.some(h => 
               Math.abs(h.start - pos) < 5 || (h.start <= pos && h.end >= pos + text.length)
             );
@@ -1241,8 +1337,7 @@
           }
         });
         
-        state.highlightData = highlights;
-        saveToLocalStorage(getHighlightKey(), highlights);
+        return highlights;
       }
 
       function applyHighlightsToEditor(highlights) {
@@ -1255,7 +1350,6 @@
         const fullText = getPlainText(editor.innerHTML);
         if (!fullText) return;
         
-        // Save cursor position
         const selection = window.getSelection();
         let cursorPos = 0;
         if (selection.rangeCount && editor.contains(selection.anchorNode)) {
@@ -1277,7 +1371,6 @@
         
         clearHighlightsFromEditor();
         
-        // Rebuild with highlights
         let html = '';
         let lastIndex = 0;
         const sorted = highlights.sort((a, b) => a.start - b.start);
@@ -1297,9 +1390,7 @@
         html += escapeHtml(fullText.substring(lastIndex));
         
         editor.innerHTML = html;
-        state.highlightData = highlights;
         
-        // Restore cursor
         try {
           const textNodes = [];
           const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
@@ -1331,20 +1422,11 @@
           parent.replaceChild(textNode, el);
         });
         DOM.editor.normalize();
-        state.highlightData = [];
-      }
-
-      function restoreHighlights() {
-        const saved = loadFromLocalStorage(getHighlightKey());
-        if (!saved || !saved.length) {
-          clearHighlightsFromEditor();
-          return false;
-        }
-        applyHighlightsToEditor(saved);
-        return true;
       }
 
       function applyHighlightToSelection() {
+        if (state.isSubmitted || state.isFinished) return;
+        
         const selection = window.getSelection();
         if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) return;
         
@@ -1362,8 +1444,7 @@
           const span = document.createElement('span');
           span.className = 'highlight';
           range.surroundContents(span);
-          saveHighlights();
-          saveFullState();
+          saveTaskState(state.activeTask);
           updateSaveStatus('Highlight applied');
         } catch (e) {
           const textNode = document.createTextNode(text);
@@ -1372,12 +1453,13 @@
           span.appendChild(textNode);
           range.deleteContents();
           range.insertNode(span);
-          saveHighlights();
-          saveFullState();
+          saveTaskState(state.activeTask);
         }
       }
 
       function removeHighlightAtSelection() {
+        if (state.isSubmitted || state.isFinished) return;
+        
         const selection = window.getSelection();
         if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) return;
         
@@ -1392,8 +1474,7 @@
           const textNode = document.createTextNode(node.textContent);
           parent.replaceChild(textNode, node);
           parent.normalize();
-          saveHighlights();
-          saveFullState();
+          saveTaskState(state.activeTask);
           updateSaveStatus('Highlight removed');
         } else {
           const highlights = DOM.editor.querySelectorAll('.highlight');
@@ -1408,8 +1489,7 @@
             }
           });
           if (removed) {
-            saveHighlights();
-            saveFullState();
+            saveTaskState(state.activeTask);
             updateSaveStatus('Highlights removed');
           }
         }
@@ -1445,13 +1525,16 @@
         
         if (found) {
           state.cursorPosition = position;
-          saveToLocalStorage(storageKey('cursor'), { position: state.cursorPosition });
+          state.tasks[state.activeTask].cursorPosition = position;
         }
       }
 
       function restoreCursorPosition() {
-        const saved = loadFromLocalStorage(storageKey('cursor'));
-        if (!saved) return;
+        const task = state.tasks[state.activeTask];
+        if (!task) return;
+        
+        const position = task.cursorPosition;
+        if (position === undefined) return;
         
         const editor = DOM.editor;
         const textNodes = [];
@@ -1466,9 +1549,9 @@
         let charCount = 0;
         
         for (const textNode of textNodes) {
-          if (charCount + textNode.textContent.length >= saved.position) {
+          if (charCount + textNode.textContent.length >= position) {
             startNode = textNode;
-            startOffset = saved.position - charCount;
+            startOffset = position - charCount;
             break;
           }
           charCount += textNode.textContent.length;
@@ -1487,13 +1570,17 @@
       }
 
       // ============================================================
-      // STATE PERSISTENCE - Only save after login
+      // STATE PERSISTENCE - Saves full session including both tasks
       // ============================================================
       function saveFullState() {
         if (!state.code || !state.studentName) return;
         
-        const fullState = {
-          taskNo: state.taskNo,
+        // Save current task
+        saveTaskState(state.activeTask);
+        
+        // Save full session metadata
+        const sessionData = {
+          activeTask: state.activeTask,
           seconds: state.seconds,
           startTime: state.startTime,
           isSubmitted: state.isSubmitted,
@@ -1509,67 +1596,57 @@
           code: state.code,
           toolbarCollapsed: state.toolbarCollapsed,
         };
-        saveToLocalStorage(storageKey('fullState'), fullState);
+        saveToLocalStorage(storageKey('session'), sessionData);
         
-        const plainText = getPlainText(DOM.editor.innerHTML);
-        localStorage.setItem(getTaskKey(state.taskNo), plainText);
+        // Save divider position
+        saveDividerPosition();
         
-        saveHighlights();
-        saveCursorPosition();
-        
-        const scrollPos = {
-          question: DOM.questionPanel.scrollTop,
-          editor: DOM.editor.scrollTop
-        };
-        saveToLocalStorage(storageKey('scroll'), scrollPos);
-        saveToLocalStorage(storageKey('divider'), state.dividerRatio);
-        
+        // Save user preferences
         saveUserPreferences();
+        
         state.lastSaveTime = Date.now();
       }
 
       function loadFullState() {
         if (!state.code || !state.studentName) return false;
         
-        const fullState = loadFromLocalStorage(storageKey('fullState'));
-        if (!fullState) return false;
+        const sessionData = loadFromLocalStorage(storageKey('session'));
+        if (!sessionData) return false;
         
-        if (fullState.studentName !== state.studentName || fullState.code !== state.code) {
+        if (sessionData.studentName !== state.studentName || sessionData.code !== state.code) {
           return false;
         }
         
-        state.taskNo = fullState.taskNo || 1;
-        state.seconds = fullState.seconds || CONFIG.TIMER_DURATION;
-        state.startTime = fullState.startTime || Date.now();
-        state.isSubmitted = fullState.isSubmitted || false;
-        state.isFinished = fullState.isFinished || false;
-        state.attemptToken = fullState.attemptToken || null;
-        state.attemptUuid = fullState.attemptUuid || null;
-        state.hasRecovered = fullState.hasRecovered || false;
-        state.fontSize = fullState.fontSize || CONFIG.DEFAULT_FONT_SIZE;
-        state.zoom = fullState.zoom || CONFIG.DEFAULT_ZOOM;
-        state.theme = fullState.theme || CONFIG.DEFAULT_THEME;
-        state.dividerRatio = fullState.dividerRatio || 0.5;
-        state.toolbarCollapsed = fullState.toolbarCollapsed || false;
+        state.activeTask = sessionData.activeTask || 1;
+        state.seconds = sessionData.seconds || CONFIG.TIMER_DURATION;
+        state.startTime = sessionData.startTime || Date.now();
+        state.isSubmitted = sessionData.isSubmitted || false;
+        state.isFinished = sessionData.isFinished || false;
+        state.attemptToken = sessionData.attemptToken || null;
+        state.attemptUuid = sessionData.attemptUuid || null;
+        state.hasRecovered = sessionData.hasRecovered || false;
+        state.fontSize = sessionData.fontSize || CONFIG.DEFAULT_FONT_SIZE;
+        state.zoom = sessionData.zoom || CONFIG.DEFAULT_ZOOM;
+        state.theme = sessionData.theme || CONFIG.DEFAULT_THEME;
+        state.dividerRatio = sessionData.dividerRatio || 0.5;
+        state.toolbarCollapsed = sessionData.toolbarCollapsed || false;
         
-        const savedText = localStorage.getItem(getTaskKey(state.taskNo));
-        if (savedText !== null) {
-          DOM.editor.innerText = savedText;
-        }
+        // Load both tasks
+        loadTaskState(1);
+        loadTaskState(2);
         
-        restoreHighlights();
-        
-        const scrollPos = loadFromLocalStorage(storageKey('scroll'));
-        if (scrollPos) {
+        // Restore current task to editor
+        const task = state.tasks[state.activeTask];
+        if (task && task.text) {
+          DOM.editor.innerText = task.text;
+          applyHighlightsToEditor(task.highlights || []);
           setTimeout(() => {
-            DOM.questionPanel.scrollTop = scrollPos.question || 0;
-            DOM.editor.scrollTop = scrollPos.editor || 0;
+            DOM.editor.scrollTop = task.scrollPosition || 0;
+            restoreCursorPosition();
           }, 50);
         }
         
         restoreDividerPosition();
-        setTimeout(restoreCursorPosition, 100);
-        
         loadUserPreferences();
         updateToolbarUI();
         
@@ -1646,12 +1723,8 @@
       }
 
       // ============================================================
-      // TIMER MANAGEMENT - IELTS style with warnings
+      // TIMER MANAGEMENT
       // ============================================================
-      let timerInterval = null;
-      let warningShown5Min = false;
-      let warningShown1Min = false;
-
       function updateTimer() {
         if (state.seconds <= 0) {
           DOM.timer.textContent = '00:00';
@@ -1665,21 +1738,19 @@
         const s = state.seconds % 60;
         DOM.timer.textContent = `${m}:${String(s).padStart(2, '0')}`;
         
-        // IELTS style warnings
         if (state.seconds <= CONFIG.WARNING_1_MIN) {
           DOM.timer.classList.remove('warning-5');
           DOM.timer.classList.add('warning-1');
-          if (!warningShown1Min) {
-            warningShown1Min = true;
-            // Show warning but don't stop the test
+          if (!state.warningShown1Min) {
+            state.warningShown1Min = true;
             DOM.timeWarning.textContent = '⏰ 1 minute remaining!';
             DOM.timeWarning.classList.add('visible');
           }
         } else if (state.seconds <= CONFIG.WARNING_5_MIN) {
           DOM.timer.classList.remove('warning-1');
           DOM.timer.classList.add('warning-5');
-          if (!warningShown5Min) {
-            warningShown5Min = true;
+          if (!state.warningShown5Min) {
+            state.warningShown5Min = true;
             DOM.timeWarning.textContent = '⏰ 5 minutes remaining';
             DOM.timeWarning.classList.add('visible');
             setTimeout(() => {
@@ -1693,19 +1764,21 @@
       }
 
       function tick() {
-        if (state.isSubmitted) return;
+        if (state.isSubmitted && state.isFinished) return;
         state.seconds--;
         if (state.seconds < 0) state.seconds = 0;
         updateTimer();
-        saveToLocalStorage(storageKey('timer'), state.seconds);
+        if (!state.isFinished) {
+          saveToLocalStorage(storageKey('timer'), state.seconds);
+        }
       }
 
       function startTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        warningShown5Min = false;
-        warningShown1Min = false;
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        state.warningShown5Min = false;
+        state.warningShown1Min = false;
         updateTimer();
-        timerInterval = setInterval(tick, 1000);
+        state.timerInterval = setInterval(tick, 1000);
       }
 
       // ============================================================
@@ -1714,16 +1787,18 @@
       function updateWordCount() {
         const plainText = getPlainText(DOM.editor.innerHTML);
         const words = getWordCount(plainText);
-        const min = state.taskNo === 1 ? 150 : 250;
+        const min = state.activeTask === 1 ? 150 : 250;
         DOM.wordCount.textContent = `${words} words · minimum ${min}`;
         DOM.wordCount.classList.toggle('ok', words >= min);
         
-        const tab = document.querySelector(`.tab[data-task="${state.taskNo}"] .status`);
+        state.tasks[state.activeTask].wordCount = words;
+        
+        const tab = document.querySelector(`.tab[data-task="${state.activeTask}"] .status`);
         if (tab) tab.classList.toggle('done', words > 0);
       }
 
       // ============================================================
-      // AUTOSAVE - With forced saves on important actions
+      // AUTOSAVE - Now saves current task only
       // ============================================================
       let autosaveTimer = null;
       let debounceTimer = null;
@@ -1758,7 +1833,7 @@
       }
 
       function performAutosave() {
-        if (state.isSubmitted || !state.code || !state.studentName) return;
+        if (state.isFinished || !state.code || !state.studentName) return;
         
         const plainText = getPlainText(DOM.editor.innerHTML);
         if (!plainText.trim()) {
@@ -1766,14 +1841,16 @@
           return;
         }
         
-        saveCursorPosition();
+        // Save current task state
+        saveTaskState(state.activeTask);
         saveFullState();
         updateSaveStatus('Autosaved ✓');
         
+        // Only send the current task to server
         const payload = {
           attemptToken: state.attemptToken,
-          task1Answer: state.taskNo === 1 ? plainText : '',
-          task2Answer: state.taskNo === 2 ? plainText : '',
+          task1Answer: state.tasks[1].text || '',
+          task2Answer: state.tasks[2].text || '',
           remainingTime: state.seconds,
           elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
           clientTimestamp: Date.now(),
@@ -1809,6 +1886,7 @@
       }
 
       function forceAutosave() {
+        saveTaskState(state.activeTask);
         performAutosave();
       }
 
@@ -1818,15 +1896,15 @@
       }
 
       // ============================================================
-      // SUBMIT
+      // SUBMIT - Clean, no premature cleanup
       // ============================================================
       async function retrySubmission() {
         if (state.isFinished || !state.isSubmitted) return;
         
         const payload = {
           attemptToken: state.attemptToken || '',
-          task1Answer: localStorage.getItem(getTaskKey(1)) || '',
-          task2Answer: localStorage.getItem(getTaskKey(2)) || '',
+          task1Answer: state.tasks[1].text || '',
+          task2Answer: state.tasks[2].text || '',
           secondsRemaining: state.seconds,
           elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
           clientTimestamp: Date.now(),
@@ -1846,8 +1924,8 @@
             state.submissionRetryCount = 0;
             DOM.finishBtn.textContent = '✅ Submitted';
             DOM.finishBtn.disabled = true;
+            DOM.finishBtn.classList.add('submitted');
             DOM.saveStatus.textContent = '✅ Submitted to teacher';
-            window.removeEventListener('beforeunload', beforeUnloadHandler);
             return true;
           }
         } catch (_) { /* Will retry */ }
@@ -1868,15 +1946,16 @@
         DOM.finishBtn.disabled = true;
         DOM.finishBtn.textContent = 'Submitting...';
         
-        forceAutosave();
-        
-        const plainText1 = localStorage.getItem(getTaskKey(1)) || '';
-        const plainText2 = localStorage.getItem(getTaskKey(2)) || '';
+        // Save everything before submission
+        saveTaskState(1);
+        saveTaskState(2);
+        saveFullState();
+        performAutosave();
         
         const payload = {
           attemptToken: state.attemptToken || '',
-          task1Answer: plainText1,
-          task2Answer: plainText2,
+          task1Answer: state.tasks[1].text || '',
+          task2Answer: state.tasks[2].text || '',
           secondsRemaining: state.seconds,
           elapsedTime: CONFIG.TIMER_DURATION - state.seconds,
           clientTimestamp: Date.now(),
@@ -1895,11 +1974,22 @@
             if (response.ok) {
               state.isFinished = true;
               DOM.finishBtn.textContent = '✅ Submitted';
+              DOM.finishBtn.disabled = true;
+              DOM.finishBtn.classList.add('submitted');
               DOM.saveStatus.textContent = '✅ Submitted to teacher';
-              clearInterval(timerInterval);
+              clearInterval(state.timerInterval);
               clearInterval(autosaveTimer);
+              
+              // Remove beforeunload handler
               window.removeEventListener('beforeunload', beforeUnloadHandler);
-              cleanupStudentData();
+              
+              // Mark editor as readonly but keep content visible
+              DOM.editor.contentEditable = "false";
+              DOM.editor.classList.add('readonly');
+              
+              // Re-render to show submitted state
+              renderTask();
+              
               alert('✅ Test submitted successfully! Your answers have been sent to your teacher.');
               return;
             }
@@ -1917,41 +2007,13 @@
       }
 
       // ============================================================
-      // CLEANUP
-      // ============================================================
-      function cleanupStudentData() {
-        if (!state.code || !state.studentName) return;
-        
-        const keysToRemove = [
-          storageKey('fullState'),
-          storageKey('timer'),
-          storageKey('cursor'),
-          storageKey('scroll'),
-          storageKey('divider'),
-          storageKey('pendingAutosaves'),
-          storageKey('final'),
-          getTaskKey(1),
-          getTaskKey(2),
-        ];
-        
-        keysToRemove.forEach(key => {
-          try {
-            localStorage.removeItem(key);
-          } catch (e) { /* Ignore */ }
-        });
-        
-        try {
-          localStorage.removeItem(getHighlightKey());
-        } catch (e) { /* Ignore */ }
-      }
-
-      // ============================================================
-      // BEFORE UNLOAD
+      // BEFORE UNLOAD - Only warns about unsaved work
       // ============================================================
       function beforeUnloadHandler(e) {
-        if (!state.isSubmitted && state.code && state.studentName) {
-          forceAutosave();
+        if (!state.isFinished && state.code && state.studentName) {
+          saveTaskState(state.activeTask);
           saveFullState();
+          forceAutosave();
           e.preventDefault();
           e.returnValue = '⚠️ You have unsaved work. Are you sure you want to leave?';
           return e.returnValue;
@@ -2001,12 +2063,11 @@
       }
 
       // ============================================================
-      // ZOOM MANAGEMENT - Using CSS for the editor only
+      // ZOOM MANAGEMENT
       // ============================================================
       function setZoom(zoom) {
         if (!CONFIG.ZOOM_LEVELS.includes(zoom)) return;
         state.zoom = zoom;
-        // Apply zoom to editor and question panel using CSS
         const scale = parseInt(zoom) / 100;
         DOM.editor.style.transform = `scale(${scale})`;
         DOM.editor.style.transformOrigin = 'top left';
@@ -2077,8 +2138,98 @@
       function updateCandidateInfo() {
         DOM.candidateNameDisplay.textContent = `Candidate: ${state.studentName || '—'}`;
         DOM.accessCodeDisplay.textContent = `Code: ${state.code || '—'}`;
-        DOM.taskInfoDisplay.textContent = `Task ${state.taskNo}/2`;
+        DOM.taskInfoDisplay.textContent = `Task ${state.activeTask}/2`;
         DOM.autosaveStatusDisplay.textContent = `Autosave: ${state.isOnline ? 'on' : 'offline'}`;
+      }
+
+      // ============================================================
+      // RENDER TASK - Uses task-specific data
+      // ============================================================
+      function renderTask() {
+        if (!state.test) return;
+        
+        const t = state.test[`task${state.activeTask}`];
+        if (!t) return;
+        
+        DOM.taskLabel.textContent = `Writing task ${state.activeTask}`;
+        DOM.taskTitle.textContent = t.title;
+        DOM.instructions.innerHTML = state.activeTask === 1
+          ? 'You should spend about <b>20 minutes</b> on this task.<br>Write at least <b>150 words</b>.'
+          : 'You should spend about <b>40 minutes</b> on this task.<br>Write at least <b>250 words</b>.';
+        DOM.prompt.textContent = t.prompt;
+        
+        if (t.imageUrl) {
+          DOM.taskImage.src = t.imageUrl;
+          DOM.taskImage.classList.remove('hidden');
+        } else {
+          DOM.taskImage.classList.add('hidden');
+        }
+        
+        // Load task data
+        const task = state.tasks[state.activeTask];
+        if (task && task.text) {
+          DOM.editor.innerText = task.text;
+          applyHighlightsToEditor(task.highlights || []);
+        }
+        
+        // Update word count
+        updateWordCount();
+        
+        // Update tabs
+        document.querySelectorAll('.tab').forEach(b => {
+          b.classList.toggle('active', +b.dataset.task === state.activeTask);
+          b.setAttribute('aria-selected', +b.dataset.task === state.activeTask ? 'true' : 'false');
+        });
+        
+        // Restore cursor and scroll
+        setTimeout(() => {
+          restoreCursorPosition();
+          if (task && task.scrollPosition) {
+            DOM.editor.scrollTop = task.scrollPosition;
+          }
+        }, 50);
+        
+        // Set editor readonly if submitted
+        DOM.editor.contentEditable = state.isSubmitted ? "false" : "true";
+        if (state.isSubmitted) {
+          DOM.editor.classList.add('readonly');
+        } else {
+          DOM.editor.classList.remove('readonly');
+        }
+        
+        updateCandidateInfo();
+        setTimeout(() => DOM.editor.focus(), 100);
+      }
+
+      // ============================================================
+      // SWITCH TASK - Clean, uses task-aware switching
+      // ============================================================
+      function switchTask(taskNumber) {
+        if (taskNumber === state.activeTask) {
+          // Already on this task
+          return;
+        }
+        
+        // Save current task state before switching
+        saveTaskState(state.activeTask);
+        
+        // Switch
+        state.activeTask = taskNumber;
+        
+        // Render the new task
+        renderTask();
+        
+        // Update tabs
+        document.querySelectorAll('.tab').forEach(btn => {
+          btn.classList.toggle('active', +btn.dataset.task === taskNumber);
+          btn.setAttribute(
+            "aria-selected",
+            +btn.dataset.task === taskNumber ? "true" : "false"
+          );
+        });
+        
+        updateCandidateInfo();
+        setTimeout(() => DOM.editor.focus(), 100);
       }
 
       // ============================================================
@@ -2116,7 +2267,7 @@
           state.attemptUuid = data.attemptUuid || null;
           state.startTime = Date.now();
           
-          // Load full state - restores everything
+          // Load full state - restores both tasks
           const hasRecovered = loadFullState();
           if (hasRecovered) {
             state.hasRecovered = true;
@@ -2133,7 +2284,6 @@
           DOM.examName.textContent = data.title || 'Writing practice';
           updateCandidateInfo();
           
-          // Load user preferences after login
           loadUserPreferences();
           updateToolbarUI();
           
@@ -2151,79 +2301,6 @@
           DOM.startBtn.disabled = false;
           DOM.startBtn.textContent = 'Start test';
         }
-      }
-
-      // ============================================================
-      // RENDER TASK
-      // ============================================================
-      function renderTask() {
-        if (!state.test) return;
-        
-        const t = state.test[`task${state.taskNo}`];
-        if (!t) return;
-        
-        DOM.taskLabel.textContent = `Writing task ${state.taskNo}`;
-        DOM.taskTitle.textContent = t.title;
-        DOM.instructions.innerHTML = state.taskNo === 1
-          ? 'You should spend about <b>20 minutes</b> on this task.<br>Write at least <b>150 words</b>.'
-          : 'You should spend about <b>40 minutes</b> on this task.<br>Write at least <b>250 words</b>.';
-        DOM.prompt.textContent = t.prompt;
-        
-        if (t.imageUrl) {
-          DOM.taskImage.src = t.imageUrl;
-          DOM.taskImage.classList.remove('hidden');
-        } else {
-          DOM.taskImage.classList.add('hidden');
-        }
-        
-        // Restore text content
-        const savedText = localStorage.getItem(getTaskKey(state.taskNo));
-        if (savedText !== null) {
-          DOM.editor.innerText = savedText;
-        }
-        
-        // Restore highlights
-        restoreHighlights();
-        updateWordCount();
-        
-        // Update tabs
-        document.querySelectorAll('.tab').forEach(b => {
-          b.classList.toggle('active', +b.dataset.task === state.taskNo);
-          b.setAttribute('aria-selected', +b.dataset.task === state.taskNo ? 'true' : 'false');
-        });
-        
-        restoreCursorPosition();
-        restoreDividerPosition();
-        
-        // Restore scroll
-        const scrollPos = loadFromLocalStorage(storageKey('scroll'));
-        if (scrollPos) {
-          setTimeout(() => {
-            DOM.questionPanel.scrollTop = scrollPos.question || 0;
-            DOM.editor.scrollTop = scrollPos.editor || 0;
-          }, 50);
-        }
-        
-        updateCandidateInfo();
-        setTimeout(() => DOM.editor.focus(), 100);
-      }
-
-      // ============================================================
-      // SWITCH TASK - FIXED: Force save before switching
-      // ============================================================
-      function switchTask(taskNumber) {
-        if (state.isSubmitted) return;
-        
-        // CRITICAL FIX: Save everything before switching
-        saveCursorPosition();
-        forceAutosave();
-        saveFullState();
-        
-        state.taskNo = taskNumber;
-        saveToLocalStorage(storageKey('task'), taskNumber);
-        renderTask();
-        DOM.editor.focus();
-        updateCandidateInfo();
       }
 
       // ============================================================
@@ -2275,9 +2352,9 @@
       // ============================================================
       function handleVisibilityChange() {
         if (document.hidden && state.code && state.studentName) {
-          saveCursorPosition();
-          forceAutosave();
+          saveTaskState(state.activeTask);
           saveFullState();
+          forceAutosave();
         }
       }
 
@@ -2310,7 +2387,6 @@
       function init() {
         initDomRefs();
         
-        // Set default font size
         document.documentElement.style.setProperty('--editor-font-size', CONFIG.DEFAULT_FONT_SIZE + 'px');
         
         initTheme();
@@ -2351,9 +2427,9 @@
         initDivider();
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Professional exam platform');
-        console.log('📝 Features: Reliable highlights, collapsible toolbar, full session restore, IELTS-style timer');
-        console.log('🎯 Shortcuts: Ctrl+Shift+H (highlight), Ctrl+Shift+R (remove), Ctrl++/- (font), Ctrl+MouseWheel (zoom)');
+        console.log('✅ Chill IELTS - Refactored persistence layer');
+        console.log('📝 Each task has independent state (text, highlights, cursor, scroll)');
+        console.log('🔒 No data loss on task switching or after submission');
       }
 
       if (document.readyState === 'loading') {
