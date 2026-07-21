@@ -6,100 +6,237 @@
   <title>Chill IELTS | Writing practice</title>
   <style>
     /* ============================================================
-       CSS VARIABLES & THEMING
+       THEME SYSTEM - Professionally Designed Themes
        ============================================================ */
+    
+    /* BASE VARIABLES (Light - Default) */
     :root {
-      --ink: #1c2733;
-      --muted: #607080;
-      --line: #d8e0e8;
-      --navy: #123758;
-      --blue: #1769aa;
-      --panel: #f6f8fa;
-      --orange: #ff5a16;
-      --good: #087e54;
-      --bg: #ffffff;
-      --text: #1c2733;
-      --card-bg: #ffffff;
-      --border: #d8e0e8;
-      --shadow: #1a36500c;
-      --highlight-color: #ffeb3b;
+      --theme-name: 'Light';
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --bg-card: #ffffff;
+      --bg-toolbar: #f0f2f5;
+      --bg-editor: #ffffff;
+      --bg-hover: #e8eaed;
+      --bg-active: #d0d5dc;
+      --bg-border: #d8e0e8;
+      --bg-divider: #d8e0e8;
+      --text-primary: #1c2733;
+      --text-secondary: #607080;
+      --text-muted: #8a9aa8;
+      --text-inverse: #ffffff;
+      --border-color: #d8e0e8;
+      --shadow-color: rgba(26,54,96,0.08);
+      --accent-blue: #123758;
+      --accent-orange: #ff5a16;
+      --accent-green: #087e54;
+      --accent-red: #dc3545;
+      --highlight-bg: #ffeb3b;
       --highlight-opacity: 0.5;
-      --font-size-base: 15px;
-      --transition-speed: 0.2s;
+      --scrollbar-track: #f0f2f5;
+      --scrollbar-thumb: #c0c8d0;
       --divider-color: #d8e0e8;
-      --editor-bg: #ffffff;
-      --editor-text: #1c2733;
-      --warning-bg: #fff3cd;
-      --warning-text: #856404;
-      --danger-color: #dc3545;
-      --online-color: #087e54;
-      --offline-color: #dc3545;
-      --toolbar-bg: #f0f2f5;
-      --toolbar-border: #d0d5dc;
-      --toolbar-btn-bg: #ffffff;
-      --toolbar-btn-hover: #e8eaed;
-      --toolbar-btn-active: #d0d5dc;
-      --toolbar-text: #1c2733;
-      --toolbar-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    [data-theme="dark"] {
-      --bg: #1a1a2e;
-      --text: #e8e8f0;
-      --card-bg: #16213e;
-      --border: #3a3a5e;
-      --shadow: #00000030;
-      --panel: #1a1a3e;
-      --ink: #e8e8f0;
-      --muted: #a8a8c0;
-      --line: #3a3a5e;
-      --highlight-color: #ffd700;
-      --highlight-opacity: 0.3;
+    /* Theme: Dark Gray (VS Code Dark+) */
+    [data-theme="dark-gray"] {
+      --theme-name: 'Dark Gray';
+      --bg-primary: #1e1e1e;
+      --bg-secondary: #252526;
+      --bg-card: #2d2d2d;
+      --bg-toolbar: #2d2d2d;
+      --bg-editor: #1e1e1e;
+      --bg-hover: #3a3a3a;
+      --bg-active: #4a4a4a;
+      --bg-border: #3a3a3a;
+      --bg-divider: #3a3a3a;
+      --text-primary: #d4d4d4;
+      --text-secondary: #9a9a9a;
+      --text-muted: #6a6a6a;
+      --text-inverse: #1e1e1e;
+      --border-color: #3a3a3a;
+      --shadow-color: rgba(0,0,0,0.3);
+      --accent-blue: #4a8ab5;
+      --accent-orange: #ff6a26;
+      --accent-green: #4aae7a;
+      --accent-red: #e55;
+      --highlight-bg: #ffd700;
+      --highlight-opacity: 0.25;
+      --scrollbar-track: #2d2d2d;
+      --scrollbar-thumb: #5a5a5a;
+      --divider-color: #3a3a3a;
+    }
+
+    /* Theme: Midnight (GitHub Dark) */
+    [data-theme="midnight"] {
+      --theme-name: 'Midnight';
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-card: #1c2333;
+      --bg-toolbar: #1c2333;
+      --bg-editor: #0d1117;
+      --bg-hover: #30363d;
+      --bg-active: #40484f;
+      --bg-border: #30363d;
+      --bg-divider: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #5a6a7a;
+      --text-inverse: #0d1117;
+      --border-color: #30363d;
+      --shadow-color: rgba(0,0,0,0.4);
+      --accent-blue: #58a6ff;
+      --accent-orange: #f0883e;
+      --accent-green: #3fb950;
+      --accent-red: #f85149;
+      --highlight-bg: #ffd700;
+      --highlight-opacity: 0.25;
+      --scrollbar-track: #1c2333;
+      --scrollbar-thumb: #40484f;
+      --divider-color: #30363d;
+    }
+
+    /* Theme: Blue Dark */
+    [data-theme="blue-dark"] {
+      --theme-name: 'Blue Dark';
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-card: #1a1a3e;
+      --bg-toolbar: #1a1a3e;
+      --bg-editor: #1a1a2e;
+      --bg-hover: #2a2a4e;
+      --bg-active: #3a3a5e;
+      --bg-border: #3a3a5e;
+      --bg-divider: #3a3a5e;
+      --text-primary: #e8e8f0;
+      --text-secondary: #a8a8c0;
+      --text-muted: #787890;
+      --text-inverse: #1a1a2e;
+      --border-color: #3a3a5e;
+      --shadow-color: rgba(0,0,0,0.4);
+      --accent-blue: #4a8ab5;
+      --accent-orange: #ff6a26;
+      --accent-green: #4aae7a;
+      --accent-red: #e55;
+      --highlight-bg: #ffd700;
+      --highlight-opacity: 0.25;
+      --scrollbar-track: #1a1a3e;
+      --scrollbar-thumb: #4a4a6e;
       --divider-color: #3a3a5e;
-      --editor-bg: #1a1a3e;
-      --editor-text: #e8e8f0;
-      --warning-bg: #2a2a1e;
-      --warning-text: #ffd700;
-      --danger-color: #ff6b6b;
-      --online-color: #4aae7a;
-      --offline-color: #ff6b6b;
-      --toolbar-bg: #2a2a4e;
-      --toolbar-border: #3a3a5e;
-      --toolbar-btn-bg: #3a3a5e;
-      --toolbar-btn-hover: #4a4a6e;
-      --toolbar-btn-active: #5a5a7e;
-      --toolbar-text: #e8e8f0;
-      --toolbar-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    /* Font sizes - defined as CSS variables for dynamic sizing */
-    [data-font-size="12"] { --font-size-base: 12px; }
-    [data-font-size="13"] { --font-size-base: 13px; }
-    [data-font-size="14"] { --font-size-base: 14px; }
-    [data-font-size="15"] { --font-size-base: 15px; }
-    [data-font-size="16"] { --font-size-base: 16px; }
-    [data-font-size="18"] { --font-size-base: 18px; }
-    [data-font-size="20"] { --font-size-base: 20px; }
-    [data-font-size="22"] { --font-size-base: 22px; }
-    [data-font-size="24"] { --font-size-base: 24px; }
-    [data-font-size="28"] { --font-size-base: 28px; }
+    /* Theme: Graphite */
+    [data-theme="graphite"] {
+      --theme-name: 'Graphite';
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #222222;
+      --bg-card: #2a2a2a;
+      --bg-toolbar: #2a2a2a;
+      --bg-editor: #1a1a1a;
+      --bg-hover: #3a3a3a;
+      --bg-active: #4a4a4a;
+      --bg-border: #3a3a3a;
+      --bg-divider: #3a3a3a;
+      --text-primary: #d0d0d0;
+      --text-secondary: #909090;
+      --text-muted: #606060;
+      --text-inverse: #1a1a1a;
+      --border-color: #3a3a3a;
+      --shadow-color: rgba(0,0,0,0.3);
+      --accent-blue: #6a8a9a;
+      --accent-orange: #d07030;
+      --accent-green: #509070;
+      --accent-red: #c04040;
+      --highlight-bg: #c0a040;
+      --highlight-opacity: 0.25;
+      --scrollbar-track: #2a2a2a;
+      --scrollbar-thumb: #5a5a5a;
+      --divider-color: #3a3a3a;
+    }
+
+    /* Theme: OLED Black */
+    [data-theme="oled-black"] {
+      --theme-name: 'OLED Black';
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0a;
+      --bg-card: #0a0a0a;
+      --bg-toolbar: #0a0a0a;
+      --bg-editor: #000000;
+      --bg-hover: #1a1a1a;
+      --bg-active: #2a2a2a;
+      --bg-border: #1a1a1a;
+      --bg-divider: #1a1a1a;
+      --text-primary: #e8e8e8;
+      --text-secondary: #888888;
+      --text-muted: #555555;
+      --text-inverse: #000000;
+      --border-color: #1a1a1a;
+      --shadow-color: rgba(0,0,0,0.5);
+      --accent-blue: #4a8ab5;
+      --accent-orange: #ff6a26;
+      --accent-green: #4aae7a;
+      --accent-red: #e55;
+      --highlight-bg: #ffd700;
+      --highlight-opacity: 0.2;
+      --scrollbar-track: #0a0a0a;
+      --scrollbar-thumb: #2a2a2a;
+      --divider-color: #1a1a1a;
+    }
+
+    /* Theme: Sepia */
+    [data-theme="sepia"] {
+      --theme-name: 'Sepia';
+      --bg-primary: #fbf4e8;
+      --bg-secondary: #f0e6d8;
+      --bg-card: #fbf4e8;
+      --bg-toolbar: #f0e6d8;
+      --bg-editor: #fbf4e8;
+      --bg-hover: #e8ddd0;
+      --bg-active: #d8cdc0;
+      --bg-border: #d8cdc0;
+      --bg-divider: #d8cdc0;
+      --text-primary: #4a3a2a;
+      --text-secondary: #7a6a5a;
+      --text-muted: #9a8a7a;
+      --text-inverse: #fbf4e8;
+      --border-color: #d8cdc0;
+      --shadow-color: rgba(74,58,42,0.12);
+      --accent-blue: #6a5a4a;
+      --accent-orange: #b07040;
+      --accent-green: #5a7a5a;
+      --accent-red: #b04040;
+      --highlight-bg: #e8d080;
+      --highlight-opacity: 0.4;
+      --scrollbar-track: #f0e6d8;
+      --scrollbar-thumb: #c0b0a0;
+      --divider-color: #d8cdc0;
+    }
 
     /* ============================================================
        BASE STYLES
        ============================================================ */
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       margin: 0;
-      font: var(--font-size-base)/1.5 Arial, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      transition: background var(--transition-speed), color var(--transition-speed);
+      font: 15px/1.5 Arial, sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      transition: background 0.2s, color 0.2s;
       overflow: hidden;
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
-    button, input, textarea { font: inherit; }
+    
+    button, input, textarea, select { font: inherit; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--bg-active); }
+    * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
 
     /* ============================================================
        LOGIN GATE
@@ -108,51 +245,51 @@
       height: 100vh;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, var(--panel), var(--bg));
-      transition: background var(--transition-speed);
+      background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+      transition: background 0.2s;
     }
     .card {
       width: min(460px, calc(100% - 40px));
       padding: 34px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      box-shadow: 0 12px 32px var(--shadow);
+      box-shadow: 0 12px 32px var(--shadow-color);
       text-align: center;
-      transition: all var(--transition-speed);
+      transition: all 0.2s;
     }
     .card img { width: 82px; height: 82px; object-fit: contain; }
-    .card h1 { margin: 8px 0; color: var(--text); }
-    .card p { color: var(--muted); }
+    .card h1 { margin: 8px 0; color: var(--text-primary); }
+    .card p { color: var(--text-secondary); }
     .code {
       width: 100%;
       padding: 14px;
       text-align: center;
       letter-spacing: .16em;
       text-transform: uppercase;
-      border: 2px solid var(--border);
+      border: 2px solid var(--border-color);
       border-radius: 4px;
       margin: 14px 0;
-      background: var(--bg);
-      color: var(--text);
-      transition: all var(--transition-speed);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.2s;
     }
-    .code:focus { outline: none; border-color: var(--blue); }
+    .code:focus { outline: none; border-color: var(--accent-blue); }
     .code#studentName { letter-spacing: 0; text-transform: none; }
     .start {
       width: 100%;
       border: 0;
       border-radius: 4px;
-      background: var(--navy);
-      color: #fff;
+      background: var(--accent-blue);
+      color: var(--text-inverse);
       padding: 13px;
       cursor: pointer;
       font-weight: 700;
-      transition: background var(--transition-speed);
+      transition: background 0.2s;
     }
     .start:hover { filter: brightness(1.1); }
     .start:disabled { opacity: 0.6; cursor: not-allowed; }
-    .error { color: var(--danger-color); min-height: 24px; font-size: 14px; margin: 12px 0 0; }
+    .error { color: var(--accent-red); min-height: 24px; font-size: 14px; margin: 12px 0 0; }
 
     /* ============================================================
        TOP HEADER
@@ -162,10 +299,10 @@
       align-items: center;
       gap: 16px;
       padding: 10px 28px;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 1px 5px var(--shadow);
-      background: var(--card-bg);
-      transition: all var(--transition-speed);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 5px var(--shadow-color);
+      background: var(--bg-card);
+      transition: all 0.2s;
       flex-shrink: 0;
       min-height: 74px;
     }
@@ -176,18 +313,18 @@
       font-weight: 700;
       letter-spacing: .1px;
       min-width: 238px;
-      color: var(--text);
+      color: var(--text-primary);
     }
     .brand img { width: 46px; height: 46px; object-fit: contain; }
-    .brand small { display: block; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+    .brand small { display: block; color: var(--text-secondary); font-weight: 400; letter-spacing: 0; }
     .exam-title {
-      border-left: 1px solid var(--border);
+      border-left: 1px solid var(--border-color);
       padding-left: 20px;
-      color: var(--muted);
+      color: var(--text-secondary);
       flex: 1;
-      transition: border var(--transition-speed);
+      transition: border 0.2s;
     }
-    .exam-title strong { display: block; color: var(--text); }
+    .exam-title strong { display: block; color: var(--text-primary); }
     .top-controls {
       display: flex;
       align-items: center;
@@ -197,81 +334,74 @@
     .timer {
       font-size: 22px;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--accent-blue);
       font-variant-numeric: tabular-nums;
-      transition: color var(--transition-speed);
+      transition: color 0.2s;
       min-width: 80px;
       text-align: center;
     }
     .timer.warning {
-      color: var(--danger-color);
+      color: var(--accent-red);
       animation: blink 1s step-end infinite;
     }
-    .timer.expired { color: var(--danger-color); }
+    .timer.expired { color: var(--accent-red); }
     @keyframes blink {
       50% { opacity: 0.3; }
     }
     .finish {
       border: 0;
-      background: var(--orange);
+      background: var(--accent-orange);
       color: #fff;
       padding: 11px 18px;
       border-radius: 4px;
       cursor: pointer;
       font-weight: 700;
-      transition: background var(--transition-speed);
+      transition: background 0.2s;
     }
     .finish:hover { filter: brightness(.94); }
     .finish:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* ============================================================
-       TOOLBAR ROW - IMPROVED
+       TOOLBAR - Professional Design
        ============================================================ */
     .toolbar-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 20px;
-      background: var(--toolbar-bg);
-      border-bottom: 1px solid var(--toolbar-border);
-      flex-wrap: wrap;
+      gap: 4px;
+      padding: 4px 16px;
+      background: var(--bg-toolbar);
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: nowrap;
       flex-shrink: 0;
-      transition: all var(--transition-speed);
-      min-height: 46px;
-      box-shadow: var(--toolbar-shadow);
+      transition: all 0.2s;
+      min-height: 42px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      overflow-x: auto;
     }
     
     .toolbar-group {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 0 8px;
-      border-right: 1px solid var(--toolbar-border);
+      gap: 2px;
+      padding: 0 6px;
+      border-right: 1px solid var(--border-color);
+      flex-shrink: 0;
     }
     .toolbar-group:last-child {
       border-right: none;
       margin-left: auto;
     }
-    .toolbar-group-label {
-      font-size: 11px;
-      color: var(--muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-right: 4px;
-    }
     
     .toolbar-btn {
-      background: var(--toolbar-btn-bg);
-      color: var(--toolbar-text);
-      border: 1px solid var(--toolbar-border);
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid transparent;
       padding: 4px 10px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 13px;
-      transition: all var(--transition-speed);
-      min-height: 30px;
-      min-width: 30px;
+      transition: all 0.15s;
+      min-height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -280,69 +410,69 @@
       white-space: nowrap;
     }
     .toolbar-btn:hover {
-      background: var(--toolbar-btn-hover);
-      border-color: var(--blue);
+      background: var(--bg-hover);
+      border-color: var(--border-color);
     }
     .toolbar-btn:active {
-      background: var(--toolbar-btn-active);
+      background: var(--bg-active);
       transform: scale(0.95);
     }
     .toolbar-btn.active {
-      background: var(--navy);
-      color: #fff;
-      border-color: var(--navy);
+      background: var(--accent-blue);
+      color: var(--text-inverse);
+      border-color: var(--accent-blue);
+    }
+    .toolbar-btn:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 2px;
     }
     .toolbar-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
       transform: none;
     }
-    .toolbar-btn .icon {
-      font-size: 16px;
-      line-height: 1;
-    }
+    .toolbar-btn .icon { font-size: 14px; line-height: 1; }
     
-    .font-size-selector {
-      display: flex;
-      align-items: center;
-      gap: 2px;
+    .toolbar-select {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      min-height: 28px;
+      min-width: 50px;
+      transition: all 0.2s;
     }
-    .font-size-selector .toolbar-btn {
-      font-size: 12px;
-      padding: 4px 6px;
-      min-width: 28px;
-    }
-    .font-size-selector .toolbar-btn.active {
-      background: var(--navy);
-      color: #fff;
-    }
-    .font-size-value {
-      font-size: 12px;
-      color: var(--muted);
-      min-width: 30px;
-      text-align: center;
-      font-weight: 600;
+    .toolbar-select:hover { border-color: var(--accent-blue); }
+    .toolbar-select:focus {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 1px;
+      border-color: var(--accent-blue);
     }
     
     .separator {
-      color: var(--toolbar-border);
+      color: var(--border-color);
       margin: 0 2px;
       user-select: none;
     }
     
     .status-text {
-      color: var(--muted);
+      color: var(--text-secondary);
       font-size: 12px;
       margin-left: auto;
+      flex-shrink: 0;
     }
-    .status-text.online { color: var(--online-color); }
-    .status-text.offline { color: var(--offline-color); }
+    .status-text.online { color: var(--accent-green); }
+    .status-text.offline { color: var(--accent-red); }
     
     .recovery-notice {
-      color: var(--good);
-      font-size: 13px;
+      color: var(--accent-green);
+      font-size: 12px;
       font-weight: 700;
       animation: fadeIn 0.5s ease;
+      flex-shrink: 0;
     }
     .recovery-notice.hidden { display: none; }
     @keyframes fadeIn {
@@ -350,14 +480,16 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .time-warning {
-      background: var(--warning-bg);
-      color: var(--warning-text);
-      padding: 4px 12px;
+      background: var(--bg-hover);
+      color: var(--accent-red);
+      padding: 2px 10px;
       border-radius: 4px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
       display: none;
       animation: fadeIn 0.5s ease;
+      flex-shrink: 0;
+      border: 1px solid var(--accent-red);
     }
     .time-warning.visible { display: inline-block; }
 
@@ -369,53 +501,62 @@
       align-items: stretch;
       padding: 0 28px;
       gap: 4px;
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
       flex-shrink: 0;
-      height: 54px;
-      transition: all var(--transition-speed);
+      height: 48px;
+      transition: all 0.2s;
     }
     .tab {
       background: none;
       border: 0;
-      border-bottom: 4px solid transparent;
-      padding: 0 22px;
+      border-bottom: 3px solid transparent;
+      padding: 0 20px;
       cursor: pointer;
-      color: var(--muted);
+      color: var(--text-secondary);
       font-weight: 700;
-      transition: all var(--transition-speed);
+      font-size: 14px;
+      transition: all 0.2s;
     }
-    .tab:hover { color: var(--text); }
-    .tab.active { color: var(--text); border-bottom-color: var(--orange); }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-orange); }
     .tab .status {
       display: inline-block;
-      margin-left: 8px;
+      margin-left: 6px;
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--border);
-      transition: background var(--transition-speed);
+      background: var(--border-color);
+      transition: background 0.2s;
     }
-    .tab .status.done { background: var(--good); }
+    .tab .status.done { background: var(--accent-green); }
 
     /* ============================================================
-       SPLIT VIEW WITH DRAGGABLE DIVIDER
+       EXAM CONTAINER - Zoom Implementation
        ============================================================ */
+    .exam-wrapper {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background: var(--bg-primary);
+      transition: background 0.2s;
+    }
+    
     .exam-container {
       display: flex;
-      flex: 1;
-      min-height: 0;
-      position: relative;
-      background: var(--bg);
-      transition: background var(--transition-speed);
+      min-height: 100%;
+      min-width: 100%;
+      transition: transform 0.1s ease-out;
     }
+    
     .question-panel {
       flex: 1 1 50%;
       padding: 34px clamp(22px, 4vw, 65px);
       overflow-y: auto;
-      min-width: 200px;
-      background: var(--bg);
-      transition: background var(--transition-speed);
+      min-width: 300px;
+      background: var(--bg-primary);
+      transition: background 0.2s;
+      height: 100%;
     }
     .answer-panel {
       flex: 1 1 50%;
@@ -423,24 +564,25 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      background: var(--bg);
-      transition: background var(--transition-speed);
-      min-width: 200px;
+      background: var(--bg-primary);
+      transition: background 0.2s;
+      min-width: 300px;
+      height: 100%;
     }
 
-    /* Draggable divider - percentage based */
+    /* Divider - Inspera Style */
     .divider {
       width: 8px;
       background: var(--divider-color);
       cursor: col-resize;
       flex-shrink: 0;
       position: relative;
-      transition: background var(--transition-speed);
+      transition: background 0.2s;
       user-select: none;
     }
     .divider:hover,
     .divider.active {
-      background: var(--blue);
+      background: var(--accent-blue);
     }
     .divider::after {
       content: '⋮';
@@ -448,35 +590,35 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: var(--muted);
-      font-size: 20px;
+      color: var(--text-secondary);
+      font-size: 18px;
       opacity: 0.5;
     }
     .divider:hover::after,
     .divider.active::after {
-      color: var(--blue);
+      color: var(--text-inverse);
       opacity: 0.8;
     }
 
     /* ============================================================
        QUESTION AREA
        ============================================================ */
-    .label { color: var(--blue); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-    .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text); }
+    .label { color: var(--accent-blue); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text-primary); }
     .instructions {
-      background: var(--panel);
-      border-left: 4px solid var(--orange);
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--accent-orange);
       padding: 14px 16px;
       margin: 18px 0 24px;
-      color: var(--text);
-      transition: background var(--transition-speed);
+      color: var(--text-primary);
+      transition: background 0.2s;
     }
     .prompt {
-      font-size: var(--font-size-base);
+      font-size: 15px;
       line-height: 1.65;
       max-width: 850px;
       white-space: pre-line;
-      color: var(--text);
+      color: var(--text-primary);
     }
     .task-image {
       display: block;
@@ -485,14 +627,14 @@
       max-height: 560px;
       object-fit: contain;
       margin: 28px auto 0;
-      border: 1px solid var(--border);
-      box-shadow: 0 3px 12px var(--shadow);
-      transition: border var(--transition-speed);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 3px 12px var(--shadow-color);
+      transition: border 0.2s;
     }
     .task-image.hidden { display: none; }
 
     /* ============================================================
-       ANSWER AREA WITH CONTENTEDITABLE
+       ANSWER AREA
        ============================================================ */
     .answer-head {
       display: flex;
@@ -503,26 +645,26 @@
       flex-wrap: wrap;
       flex-shrink: 0;
     }
-    .answer-head strong { font-size: 18px; color: var(--text); }
+    .answer-head strong { font-size: 18px; color: var(--text-primary); }
     .word-count {
-      color: var(--muted);
+      color: var(--text-secondary);
       white-space: nowrap;
-      transition: color var(--transition-speed);
+      transition: color 0.2s;
       font-size: 14px;
     }
-    .word-count.ok { color: var(--good); font-weight: 700; }
-    .save-state { font-size: 12px; color: var(--good); font-weight: 700; }
+    .word-count.ok { color: var(--accent-green); font-weight: 700; }
+    .save-state { font-size: 12px; color: var(--accent-green); font-weight: 700; }
 
     .editor-wrapper {
       flex: 1;
       position: relative;
       min-height: 0;
-      border: 2px solid var(--border);
+      border: 2px solid var(--border-color);
       border-radius: 4px;
-      transition: border var(--transition-speed);
+      transition: border 0.2s;
       overflow: hidden;
     }
-    .editor-wrapper:focus-within { border-color: var(--blue); }
+    .editor-wrapper:focus-within { border-color: var(--accent-blue); }
 
     .editor {
       width: 100%;
@@ -531,10 +673,10 @@
       padding: 18px 20px;
       outline: none;
       line-height: 1.7;
-      font-size: var(--font-size-base);
-      background: var(--editor-bg);
-      color: var(--editor-text);
-      transition: all var(--transition-speed);
+      font-size: 15px;
+      background: var(--bg-editor);
+      color: var(--text-primary);
+      transition: all 0.2s;
       overflow-y: auto;
       word-wrap: break-word;
       white-space: pre-wrap;
@@ -542,24 +684,18 @@
     }
     .editor:empty::before {
       content: 'Type your answer here...';
-      color: var(--muted);
+      color: var(--text-muted);
       pointer-events: none;
     }
     .editor .highlight {
-      background-color: var(--highlight-color);
+      background-color: var(--highlight-bg);
       opacity: var(--highlight-opacity);
       border-radius: 2px;
       padding: 1px 0;
-    }
-    [data-theme="dark"] .editor .highlight {
-      background-color: #ffd700;
-      opacity: 0.3;
+      transition: background 0.2s;
     }
 
-    /* ============================================================
-       FOOTER NOTE
-       ============================================================ */
-    .foot-note { color: var(--muted); font-size: 13px; padding-top: 12px; flex-shrink: 0; }
+    .foot-note { color: var(--text-secondary); font-size: 13px; padding-top: 12px; flex-shrink: 0; }
 
     /* ============================================================
        HIDDEN STATE
@@ -575,18 +711,20 @@
       .brand { min-width: 0; }
       .brand span, .exam-title { display: none; }
       .top-controls { margin-left: auto; }
-      .toolbar-row { padding: 6px 10px; gap: 4px; }
+      .toolbar-row { padding: 4px 8px; gap: 2px; overflow-x: auto; }
       .toolbar-group { padding: 0 4px; }
-      .toolbar-group-label { display: none; }
-      .tabs { padding: 0 10px; overflow-x: auto; height: 48px; }
-      .exam-container { flex-direction: column; overflow-y: auto; }
-      .question-panel { border-right: 0; border-bottom: 1px solid var(--border); min-height: 40vh; }
-      .answer-panel { min-height: 50vh; }
+      .toolbar-btn { font-size: 11px; padding: 2px 6px; min-height: 24px; }
+      .toolbar-select { font-size: 11px; min-height: 24px; min-width: 40px; }
+      .tabs { padding: 0 10px; overflow-x: auto; height: 42px; }
+      .tab { font-size: 12px; padding: 0 12px; }
+      .exam-wrapper { overflow: auto; }
+      .exam-container { flex-direction: column; min-width: auto; }
+      .question-panel { border-right: 0; border-bottom: 1px solid var(--border-color); min-height: 40vh; min-width: auto; }
+      .answer-panel { min-height: 50vh; min-width: auto; }
       .divider { display: none; width: 0; }
-      .timer { font-size: 18px; }
-      .finish { padding: 9px 11px; }
-      .editor { min-height: 250px; }
-      .font-size-selector .toolbar-btn { font-size: 10px; padding: 2px 4px; min-width: 22px; }
+      .timer { font-size: 16px; }
+      .finish { padding: 7px 10px; font-size: 13px; }
+      .editor { min-height: 200px; }
     }
 
     /* ============================================================
@@ -594,7 +732,8 @@
        ============================================================ */
     @media print {
       .top-controls, .tabs, .divider, .finish, .toolbar-row { display: none !important; }
-      .exam-container { display: block !important; }
+      .exam-wrapper { overflow: visible !important; }
+      .exam-container { transform: none !important; width: 100% !important; height: auto !important; }
       .question-panel, .answer-panel { padding: 20px !important; border: none !important; }
       .editor { border: 1px solid #ccc !important; min-height: 300px !important; }
     }
@@ -636,11 +775,10 @@
       </div>
     </header>
 
-    <!-- Toolbar Row - Improved with professional design -->
+    <!-- Toolbar -->
     <div class="toolbar-row" id="toolbarRow">
       <!-- Highlight Tools -->
       <div class="toolbar-group">
-        <span class="toolbar-group-label">Highlight</span>
         <button class="toolbar-btn" id="highlightBtn" title="Highlight selected text (Ctrl+Shift+H)">
           <span class="icon">🖍️</span> Highlight
         </button>
@@ -649,35 +787,69 @@
         </button>
       </div>
 
+      <span class="separator">|</span>
+
       <!-- Font Size Controls -->
       <div class="toolbar-group">
-        <span class="toolbar-group-label">Size</span>
-        <div class="font-size-selector" id="fontSizeSelector">
-          <button class="toolbar-btn" data-size="12" title="12px">12</button>
-          <button class="toolbar-btn" data-size="13" title="13px">13</button>
-          <button class="toolbar-btn" data-size="14" title="14px">14</button>
-          <button class="toolbar-btn active" data-size="15" title="15px (default)">15</button>
-          <button class="toolbar-btn" data-size="16" title="16px">16</button>
-          <button class="toolbar-btn" data-size="18" title="18px">18</button>
-          <button class="toolbar-btn" data-size="20" title="20px">20</button>
-          <button class="toolbar-btn" data-size="22" title="22px">22</button>
-          <button class="toolbar-btn" data-size="24" title="24px">24</button>
-          <button class="toolbar-btn" data-size="28" title="28px">28</button>
-        </div>
+        <button class="toolbar-btn" id="fontDecrease" title="Decrease font size (Ctrl+-)">A−</button>
+        <select class="toolbar-select" id="fontSizeSelect" title="Font size">
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15" selected>15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+          <option value="22">22</option>
+          <option value="24">24</option>
+          <option value="26">26</option>
+          <option value="28">28</option>
+          <option value="30">30</option>
+          <option value="32">32</option>
+        </select>
+        <button class="toolbar-btn" id="fontIncrease" title="Increase font size (Ctrl++)">A+</button>
       </div>
 
-      <!-- Theme Toggle -->
+      <span class="separator">|</span>
+
+      <!-- Zoom Controls -->
+      <div class="toolbar-group">
+        <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Zoom</span>
+        <select class="toolbar-select" id="zoomSelect" title="Page zoom">
+          <option value="90">90%</option>
+          <option value="95">95%</option>
+          <option value="100" selected>100%</option>
+          <option value="110">110%</option>
+          <option value="125">125%</option>
+          <option value="150">150%</option>
+          <option value="175">175%</option>
+          <option value="200">200%</option>
+        </select>
+      </div>
+
+      <span class="separator">|</span>
+
+      <!-- Theme Selector -->
       <div class="toolbar-group" style="border-right: none;">
-        <button class="toolbar-btn" id="themeToggle" aria-label="Toggle dark mode">
-          <span class="icon" id="themeIcon">🌓</span>
-          <span id="themeLabel">Dark</span>
-        </button>
+        <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Theme</span>
+        <select class="toolbar-select" id="themeSelect" title="Select theme">
+          <option value="light">☀️ Light</option>
+          <option value="dark-gray">🌑 Dark Gray</option>
+          <option value="midnight">🌙 Midnight</option>
+          <option value="blue-dark">💙 Blue Dark</option>
+          <option value="graphite">⚪ Graphite</option>
+          <option value="oled-black">⬛ OLED Black</option>
+          <option value="sepia">📜 Sepia</option>
+        </select>
       </div>
 
       <!-- Status Information -->
       <span class="status-text" id="saveStatus">🟢 Online · Autosave: ready</span>
-      <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered successfully</span>
-      <span class="time-warning" id="timeWarning">⏰ Time has expired. Your work is still being saved.</span>
+      <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered</span>
+      <span class="time-warning" id="timeWarning">⏰ Time expired · Still saving</span>
     </div>
 
     <!-- Tabs -->
@@ -686,30 +858,32 @@
       <button class="tab" data-task="2" role="tab" aria-selected="false">Task 2 <i class="status"></i></button>
     </nav>
 
-    <!-- Exam split view -->
-    <div class="exam-container" id="examContainer">
-      <section class="question-panel" id="questionPanel" role="complementary" aria-label="Task question">
-        <div class="label" id="taskLabel">Writing task 1</div>
-        <h1 id="taskTitle">Describe the information</h1>
-        <div class="instructions" id="instructions"></div>
-        <div class="prompt" id="prompt"></div>
-        <img id="taskImage" class="task-image hidden" alt="Task chart">
-      </section>
+    <!-- Exam wrapper with scrolling -->
+    <div class="exam-wrapper" id="examWrapper">
+      <div class="exam-container" id="examContainer">
+        <section class="question-panel" id="questionPanel" role="complementary" aria-label="Task question">
+          <div class="label" id="taskLabel">Writing task 1</div>
+          <h1 id="taskTitle">Describe the information</h1>
+          <div class="instructions" id="instructions"></div>
+          <div class="prompt" id="prompt"></div>
+          <img id="taskImage" class="task-image hidden" alt="Task chart">
+        </section>
 
-      <!-- Draggable divider -->
-      <div class="divider" id="divider" role="separator" aria-label="Resize panels"></div>
+        <!-- Draggable divider -->
+        <div class="divider" id="divider" role="separator" aria-label="Resize panels"></div>
 
-      <section class="answer-panel" id="answerPanel" role="main" aria-label="Your answer">
-        <div class="answer-head">
-          <strong>Your answer</strong>
-          <span class="save-state" id="saveState">Saved</span>
-          <span class="word-count" id="wordCount">0 words</span>
-        </div>
-        <div class="editor-wrapper">
-          <div class="editor" id="editor" contenteditable="true" spellcheck="false" autocorrect="off" autocapitalize="sentences" role="textbox" aria-multiline="true" aria-label="Your writing answer"></div>
-        </div>
-        <div class="foot-note">Spelling assistance is disabled for exam conditions. Check the word count before finishing.</div>
-      </section>
+        <section class="answer-panel" id="answerPanel" role="main" aria-label="Your answer">
+          <div class="answer-head">
+            <strong>Your answer</strong>
+            <span class="save-state" id="saveState">Saved</span>
+            <span class="word-count" id="wordCount">0 words</span>
+          </div>
+          <div class="editor-wrapper">
+            <div class="editor" id="editor" contenteditable="true" spellcheck="false" autocorrect="off" autocapitalize="sentences" role="textbox" aria-multiline="true" aria-label="Your writing answer"></div>
+          </div>
+          <div class="foot-note">Spelling assistance is disabled. Check word count before finishing.</div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -732,9 +906,13 @@
         MAX_RETRY_ATTEMPTS: 5,
         RETRY_BACKOFF: 2000,
         TIMER_DURATION: 3600,
-        MAX_HIGHLIGHTS: 200,
-        FONT_SIZES: ['12', '13', '14', '15', '16', '18', '20', '22', '24', '28'],
+        MAX_HIGHLIGHTS: 500,
+        FONT_SIZES: ['11','12','13','14','15','16','17','18','19','20','22','24','26','28','30','32'],
         DEFAULT_FONT_SIZE: '15',
+        ZOOM_LEVELS: ['90','95','100','110','125','150','175','200'],
+        DEFAULT_ZOOM: '100',
+        THEMES: ['light', 'dark-gray', 'midnight', 'blue-dark', 'graphite', 'oled-black', 'sepia'],
+        DEFAULT_THEME: 'light',
       };
 
       // ============================================================
@@ -758,7 +936,9 @@
         submissionRetryCount: 0,
         highlightData: [],
         fontSize: CONFIG.DEFAULT_FONT_SIZE,
-        theme: 'light',
+        zoom: CONFIG.DEFAULT_ZOOM,
+        theme: CONFIG.DEFAULT_THEME,
+        dividerRatio: 0.5,
       };
 
       // ============================================================
@@ -793,12 +973,14 @@
         DOM.questionPanel = $('questionPanel');
         DOM.answerPanel = $('answerPanel');
         DOM.examContainer = $('examContainer');
-        DOM.themeToggle = $('themeToggle');
-        DOM.themeIcon = $('themeIcon');
-        DOM.themeLabel = $('themeLabel');
+        DOM.examWrapper = $('examWrapper');
         DOM.highlightBtn = $('highlightBtn');
         DOM.removeHighlightBtn = $('removeHighlightBtn');
-        DOM.fontSizeSelector = $('fontSizeSelector');
+        DOM.fontSizeSelect = $('fontSizeSelect');
+        DOM.fontDecrease = $('fontDecrease');
+        DOM.fontIncrease = $('fontIncrease');
+        DOM.zoomSelect = $('zoomSelect');
+        DOM.themeSelect = $('themeSelect');
         DOM.toolbarRow = $('toolbarRow');
       }
 
@@ -814,7 +996,7 @@
       }
 
       function getHighlightKey() {
-        return getStorageKey('highlights-v2');
+        return getStorageKey('highlights-v4');
       }
 
       function getPlainText(html) {
@@ -857,111 +1039,77 @@
       function saveToLocalStorage(key, value) {
         try {
           localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {
-          // Ignore storage errors
-        }
+        } catch (e) { /* Ignore storage errors */ }
       }
 
       function loadFromLocalStorage(key) {
         try {
           const data = localStorage.getItem(key);
           return data ? JSON.parse(data) : null;
-        } catch (e) {
-          return null;
-        }
-      }
-
-      function removeFromLocalStorage(key) {
-        try {
-          localStorage.removeItem(key);
-        } catch (e) {
-          // Ignore
-        }
+        } catch (e) { return null; }
       }
 
       // ============================================================
-      // ONLINE/OFFLINE MANAGEMENT
-      // ============================================================
-      function updateOnlineStatus() {
-        state.isOnline = navigator.onLine;
-        const statusText = DOM.saveStatus;
-        if (state.isOnline) {
-          statusText.textContent = '🟢 Online · Autosave: ready';
-          statusText.className = 'status-text online';
-          processPendingAutosaves();
-          if (state.isSubmitted && !state.isFinished) {
-            retrySubmission();
-          }
-        } else {
-          statusText.textContent = '🔴 Offline · Saving locally';
-          statusText.className = 'status-text offline';
-        }
-      }
-
-      window.addEventListener('online', updateOnlineStatus);
-      window.addEventListener('offline', updateOnlineStatus);
-
-      // ============================================================
-      // HIGHLIGHT ENGINE - DOM Range Based
+      // HIGHLIGHT ENGINE - Modern DOM Range Implementation
       // ============================================================
       function getHighlightData() {
         const highlights = [];
-        const fullText = getPlainText(DOM.editor.innerHTML);
+        const editor = DOM.editor;
+        const highlightSpans = editor.querySelectorAll('.highlight');
         
-        const highlightSpans = DOM.editor.querySelectorAll('.highlight');
         highlightSpans.forEach(span => {
           const text = span.textContent;
-          const index = fullText.indexOf(text);
-          if (index !== -1) {
+          // Find position using Range API
+          const range = document.createRange();
+          range.selectNodeContents(editor);
+          
+          let position = 0;
+          const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+          let node;
+          let found = false;
+          
+          while (node = walker.nextNode()) {
+            if (node.parentNode === span || node.parentNode.parentNode === span) {
+              found = true;
+              break;
+            }
+            position += node.textContent.length;
+          }
+          
+          if (found) {
             highlights.push({
-              start: index,
-              end: index + text.length,
-              text: text
+              start: position,
+              end: position + text.length,
+              text: text,
+              id: 'hl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
             });
           }
         });
         
-        return mergeHighlights(highlights);
+        return highlights;
       }
 
-      function mergeHighlights(highlights) {
-        if (highlights.length <= 1) return highlights;
+      function restoreHighlightsFromData(highlights) {
+        if (!highlights || !highlights.length) return false;
         
-        const sorted = [...highlights].sort((a, b) => a.start - b.start);
-        const merged = [];
-        let current = sorted[0];
-        
-        for (let i = 1; i < sorted.length; i++) {
-          if (sorted[i].start <= current.end) {
-            current.end = Math.max(current.end, sorted[i].end);
-            current.text = sorted[i].text;
-          } else {
-            merged.push(current);
-            current = sorted[i];
-          }
-        }
-        merged.push(current);
-        return merged;
-      }
-
-      function saveHighlights() {
-        const highlights = getHighlightData();
-        state.highlightData = highlights;
-        saveToLocalStorage(getHighlightKey(), highlights);
-      }
-
-      function restoreHighlights() {
-        const saved = loadFromLocalStorage(getHighlightKey());
-        if (!saved || !saved.length) return false;
-        
-        const fullText = getPlainText(DOM.editor.innerHTML);
+        const editor = DOM.editor;
+        const fullText = getPlainText(editor.innerHTML);
         if (!fullText) return false;
+        
+        // Save cursor position before rebuilding
+        const selection = window.getSelection();
+        let cursorPos = 0;
+        if (selection.rangeCount && editor.contains(selection.anchorNode)) {
+          const range = selection.getRangeAt(0);
+          cursorPos = range.startOffset;
+        }
         
         clearHighlightsFromEditor();
         
+        // Rebuild with highlights using Range API
         let html = '';
         let lastIndex = 0;
-        const sorted = saved.sort((a, b) => a.start - b.start);
+        const sorted = highlights.sort((a, b) => a.start - b.start);
         
         sorted.forEach(h => {
           const start = Math.max(0, Math.min(h.start, fullText.length));
@@ -972,13 +1120,37 @@
           if (!text.trim()) return;
           
           html += escapeHtml(fullText.substring(lastIndex, start));
-          html += `<span class="highlight">${escapeHtml(text)}</span>`;
+          html += `<span class="highlight" data-hl-id="${h.id || ''}">${escapeHtml(text)}</span>`;
           lastIndex = end;
         });
         html += escapeHtml(fullText.substring(lastIndex));
         
-        DOM.editor.innerHTML = html;
-        state.highlightData = saved;
+        editor.innerHTML = html;
+        state.highlightData = highlights;
+        
+        // Restore cursor
+        try {
+          const textNodes = [];
+          const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+          let node;
+          while (node = walker.nextNode()) {
+            textNodes.push(node);
+          }
+          
+          let charCount = 0;
+          for (const textNode of textNodes) {
+            if (charCount + textNode.textContent.length >= cursorPos) {
+              const range = document.createRange();
+              range.setStart(textNode, cursorPos - charCount);
+              range.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              break;
+            }
+            charCount += textNode.textContent.length;
+          }
+        } catch (e) { /* Ignore cursor restoration errors */ }
+        
         return true;
       }
 
@@ -991,7 +1163,18 @@
         });
         DOM.editor.normalize();
         state.highlightData = [];
-        saveHighlights();
+      }
+
+      function saveHighlights() {
+        const highlights = getHighlightData();
+        state.highlightData = highlights;
+        saveToLocalStorage(getHighlightKey(), highlights);
+      }
+
+      function restoreHighlights() {
+        const saved = loadFromLocalStorage(getHighlightKey());
+        if (!saved || !saved.length) return false;
+        return restoreHighlightsFromData(saved);
       }
 
       function applyHighlightToSelection() {
@@ -1016,6 +1199,7 @@
           saveFullState();
           updateSaveStatus('Highlight applied');
         } catch (e) {
+          // Fallback: insert at cursor
           const textNode = document.createTextNode(text);
           const span = document.createElement('span');
           span.className = 'highlight';
@@ -1076,7 +1260,9 @@
           hasRecovered: state.hasRecovered,
           highlightData: state.highlightData,
           fontSize: state.fontSize,
+          zoom: state.zoom,
           theme: state.theme,
+          dividerRatio: state.dividerRatio,
         };
         saveToLocalStorage(getStorageKey('fullState'), fullState);
         
@@ -1088,6 +1274,7 @@
         saveDividerPosition();
         
         localStorage.setItem('chill-font-size', state.fontSize);
+        localStorage.setItem('chill-zoom', state.zoom);
         localStorage.setItem('chill-theme', state.theme);
         
         state.lastSaveTime = Date.now();
@@ -1108,19 +1295,26 @@
         state.hasRecovered = fullState.hasRecovered || false;
         state.highlightData = fullState.highlightData || [];
         state.fontSize = fullState.fontSize || CONFIG.DEFAULT_FONT_SIZE;
-        state.theme = fullState.theme || 'light';
+        state.zoom = fullState.zoom || CONFIG.DEFAULT_ZOOM;
+        state.theme = fullState.theme || CONFIG.DEFAULT_THEME;
+        state.dividerRatio = fullState.dividerRatio || 0.5;
         
         const savedText = localStorage.getItem(getTaskKey(state.taskNo));
         if (savedText !== null) {
           DOM.editor.innerText = savedText;
         }
         
-        restoreHighlights();
+        if (state.highlightData && state.highlightData.length) {
+          restoreHighlightsFromData(state.highlightData);
+        }
+        
         restoreCursorAndScroll();
         restoreDividerPosition();
         
         const savedFont = localStorage.getItem('chill-font-size');
         if (savedFont) state.fontSize = savedFont;
+        const savedZoom = localStorage.getItem('chill-zoom');
+        if (savedZoom) state.zoom = savedZoom;
         const savedTheme = localStorage.getItem('chill-theme');
         if (savedTheme) state.theme = savedTheme;
         
@@ -1145,18 +1339,27 @@
         const position = loadFromLocalStorage(getStorageKey('cursor'));
         if (position !== null) {
           try {
-            const textNode = DOM.editor.firstChild;
-            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-              const range = document.createRange();
-              range.setStart(textNode, Math.min(position, textNode.textContent.length));
-              range.collapse(true);
-              const selection = window.getSelection();
-              selection.removeAllRanges();
-              selection.addRange(range);
+            const textNodes = [];
+            const walker = document.createTreeWalker(DOM.editor, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walker.nextNode()) {
+              textNodes.push(node);
             }
-          } catch (e) {
-            // Ignore cursor restoration errors
-          }
+            
+            let charCount = 0;
+            for (const textNode of textNodes) {
+              if (charCount + textNode.textContent.length >= position) {
+                const range = document.createRange();
+                range.setStart(textNode, position - charCount);
+                range.collapse(true);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                break;
+              }
+              charCount += textNode.textContent.length;
+            }
+          } catch (e) { /* Ignore cursor restoration errors */ }
         }
         
         const questionScroll = loadFromLocalStorage(getStorageKey('questionScroll'));
@@ -1171,25 +1374,23 @@
       }
 
       // ============================================================
-      // DIVIDER MANAGEMENT - PERCENTAGE BASED
+      // DIVIDER MANAGEMENT - Inspera Style
       // ============================================================
-      let dividerRatio = 0.5;
-
       function saveDividerPosition() {
         if (window.innerWidth <= 800) return;
         const rect = DOM.examContainer.getBoundingClientRect();
         const questionWidth = DOM.questionPanel.offsetWidth;
-        dividerRatio = rect.width > 0 ? questionWidth / rect.width : 0.5;
-        localStorage.setItem(`chill-divider-${state.code}`, dividerRatio);
+        state.dividerRatio = rect.width > 0 ? questionWidth / rect.width : 0.5;
+        localStorage.setItem(`chill-divider-${state.code}`, state.dividerRatio);
       }
 
       function restoreDividerPosition() {
         if (window.innerWidth <= 800) return;
         const saved = localStorage.getItem(`chill-divider-${state.code}`);
         if (saved) {
-          dividerRatio = parseFloat(saved);
-          if (!isNaN(dividerRatio) && dividerRatio > 0.1 && dividerRatio < 0.9) {
-            applyDividerRatio(dividerRatio);
+          state.dividerRatio = parseFloat(saved);
+          if (!isNaN(state.dividerRatio) && state.dividerRatio > 0.1 && state.dividerRatio < 0.9) {
+            applyDividerRatio(state.dividerRatio);
           }
         }
       }
@@ -1199,7 +1400,7 @@
         const percentage = (ratio * 100).toFixed(2);
         DOM.questionPanel.style.flex = `1 1 ${percentage}%`;
         DOM.answerPanel.style.flex = `1 1 ${(100 - parseFloat(percentage))}%`;
-        dividerRatio = ratio;
+        state.dividerRatio = ratio;
       }
 
       function initDivider() {
@@ -1210,7 +1411,7 @@
           state.isDragging = true;
           DOM.divider.classList.add('active');
           startX = e.clientX;
-          startRatio = dividerRatio;
+          startRatio = state.dividerRatio;
           document.body.style.cursor = 'col-resize';
           document.body.style.userSelect = 'none';
         });
@@ -1235,7 +1436,7 @@
 
         window.addEventListener('resize', throttle(() => {
           if (window.innerWidth > 800) {
-            applyDividerRatio(dividerRatio);
+            applyDividerRatio(state.dividerRatio);
           }
         }, 200));
       }
@@ -1282,7 +1483,7 @@
       }
 
       // ============================================================
-      // WORD COUNT - PLAIN TEXT ONLY
+      // WORD COUNT
       // ============================================================
       function updateWordCount() {
         const plainText = getPlainText(DOM.editor.innerHTML);
@@ -1403,9 +1604,7 @@
             window.removeEventListener('beforeunload', beforeUnloadHandler);
             return true;
           }
-        } catch (_) {
-          // Will retry
-        }
+        } catch (_) { /* Will retry */ }
         
         if (state.submissionRetryCount < CONFIG.MAX_RETRY_ATTEMPTS) {
           state.submissionRetryCount++;
@@ -1488,18 +1687,9 @@
         if (!CONFIG.FONT_SIZES.includes(size)) return;
         
         state.fontSize = size;
-        document.documentElement.setAttribute('data-font-size', size);
+        DOM.editor.style.fontSize = size + 'px';
+        DOM.fontSizeSelect.value = size;
         localStorage.setItem('chill-font-size', size);
-        
-        // Update button states
-        const buttons = DOM.fontSizeSelector.querySelectorAll('.toolbar-btn');
-        buttons.forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.size === size);
-        });
-        
-        // Update font size display
-        const sizeDisplay = document.querySelector('.font-size-value');
-        if (sizeDisplay) sizeDisplay.textContent = size + 'px';
         
         saveFullState();
       }
@@ -1519,41 +1709,101 @@
       }
 
       function initFontSizeControls() {
-        // Set initial font size
         const savedFont = localStorage.getItem('chill-font-size') || CONFIG.DEFAULT_FONT_SIZE;
         setFontSize(savedFont);
         
-        // Add click handlers to font size buttons
-        const buttons = DOM.fontSizeSelector.querySelectorAll('.toolbar-btn');
-        buttons.forEach(btn => {
-          btn.addEventListener('click', () => {
-            setFontSize(btn.dataset.size);
-          });
+        DOM.fontSizeSelect.addEventListener('change', () => {
+          setFontSize(DOM.fontSizeSelect.value);
         });
+        
+        DOM.fontDecrease.addEventListener('click', decreaseFontSize);
+        DOM.fontIncrease.addEventListener('click', increaseFontSize);
+      }
+
+      // ============================================================
+      // ZOOM MANAGEMENT
+      // ============================================================
+      function setZoom(zoom) {
+        if (!CONFIG.ZOOM_LEVELS.includes(zoom)) return;
+        
+        state.zoom = zoom;
+        const scale = parseInt(zoom) / 100;
+        DOM.examContainer.style.transform = `scale(${scale})`;
+        DOM.examContainer.style.transformOrigin = 'top left';
+        DOM.examContainer.style.width = `${100 / scale}%`;
+        DOM.examContainer.style.height = `${100 / scale}%`;
+        DOM.zoomSelect.value = zoom;
+        localStorage.setItem('chill-zoom', zoom);
+        
+        saveFullState();
+      }
+
+      function initZoomControls() {
+        const savedZoom = localStorage.getItem('chill-zoom') || CONFIG.DEFAULT_ZOOM;
+        setZoom(savedZoom);
+        
+        DOM.zoomSelect.addEventListener('change', () => {
+          setZoom(DOM.zoomSelect.value);
+        });
+        
+        // Ctrl+Mouse Wheel zoom
+        DOM.examWrapper.addEventListener('wheel', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            const currentIndex = CONFIG.ZOOM_LEVELS.indexOf(state.zoom);
+            if (e.deltaY < 0 && currentIndex < CONFIG.ZOOM_LEVELS.length - 1) {
+              setZoom(CONFIG.ZOOM_LEVELS[currentIndex + 1]);
+            } else if (e.deltaY > 0 && currentIndex > 0) {
+              setZoom(CONFIG.ZOOM_LEVELS[currentIndex - 1]);
+            }
+          }
+        }, { passive: false });
       }
 
       // ============================================================
       // THEME MANAGEMENT
       // ============================================================
-      function toggleTheme() {
-        state.theme = state.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', state.theme);
-        localStorage.setItem('chill-theme', state.theme);
+      function setTheme(theme) {
+        if (!CONFIG.THEMES.includes(theme)) return;
         
-        DOM.themeIcon.textContent = state.theme === 'dark' ? '☀️' : '🌓';
-        DOM.themeLabel.textContent = state.theme === 'dark' ? 'Light' : 'Dark';
-        DOM.themeToggle.setAttribute('aria-label', `Toggle dark mode (currently ${state.theme})`);
+        state.theme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        DOM.themeSelect.value = theme;
+        localStorage.setItem('chill-theme', theme);
         
         saveFullState();
       }
 
       function initTheme() {
-        const savedTheme = localStorage.getItem('chill-theme') || 'light';
-        state.theme = savedTheme;
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        DOM.themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌓';
-        DOM.themeLabel.textContent = savedTheme === 'dark' ? 'Light' : 'Dark';
+        const savedTheme = localStorage.getItem('chill-theme') || CONFIG.DEFAULT_THEME;
+        setTheme(savedTheme);
+        
+        DOM.themeSelect.addEventListener('change', () => {
+          setTheme(DOM.themeSelect.value);
+        });
       }
+
+      // ============================================================
+      // ONLINE/OFFLINE MANAGEMENT
+      // ============================================================
+      function updateOnlineStatus() {
+        state.isOnline = navigator.onLine;
+        const statusText = DOM.saveStatus;
+        if (state.isOnline) {
+          statusText.textContent = '🟢 Online · Autosave: ready';
+          statusText.className = 'status-text online';
+          processPendingAutosaves();
+          if (state.isSubmitted && !state.isFinished) {
+            retrySubmission();
+          }
+        } else {
+          statusText.textContent = '🔴 Offline · Saving locally';
+          statusText.className = 'status-text offline';
+        }
+      }
+
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
 
       // ============================================================
       // START TEST
@@ -1650,7 +1900,12 @@
           }
         }
         
-        restoreHighlights();
+        if (state.highlightData && state.highlightData.length) {
+          restoreHighlightsFromData(state.highlightData);
+        } else {
+          restoreHighlights();
+        }
+        
         updateWordCount();
         
         document.querySelectorAll('.tab').forEach(b => {
@@ -1679,45 +1934,49 @@
       // KEYBOARD SHORTCUTS
       // ============================================================
       function handleKeyboardShortcuts(e) {
-        // Ctrl+1, Ctrl+2 for task switching
-        if (e.ctrlKey && (e.key === '1' || e.key === '2')) {
+        // Detect platform
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+        
+        // Task switching: Ctrl+1, Ctrl+2
+        if (ctrlKey && (e.key === '1' || e.key === '2')) {
           e.preventDefault();
           const taskNum = parseInt(e.key);
           if (taskNum === 1 || taskNum === 2) switchTask(taskNum);
         }
         
-        // Ctrl+Enter for finish
-        if (e.ctrlKey && e.key === 'Enter') {
+        // Finish: Ctrl+Enter
+        if (ctrlKey && e.key === 'Enter') {
           e.preventDefault();
           if (!state.isSubmitted) finishTest();
         }
         
-        // Ctrl+Shift+H for highlight
-        if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+        // Highlight: Ctrl+Shift+H
+        if (ctrlKey && e.shiftKey && (e.key === 'H' || e.key === 'h')) {
           e.preventDefault();
           applyHighlightToSelection();
         }
         
-        // Ctrl+Shift+R for remove highlight
-        if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+        // Remove Highlight: Ctrl+Shift+R
+        if (ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')) {
           e.preventDefault();
           removeHighlightAtSelection();
         }
         
-        // Ctrl++ for increase font size
-        if (e.ctrlKey && e.key === '+' && !e.shiftKey) {
+        // Increase font: Ctrl++
+        if (ctrlKey && e.key === '+' && !e.shiftKey) {
           e.preventDefault();
           increaseFontSize();
         }
         
-        // Ctrl+- for decrease font size
-        if (e.ctrlKey && e.key === '-') {
+        // Decrease font: Ctrl+-
+        if (ctrlKey && e.key === '-') {
           e.preventDefault();
           decreaseFontSize();
         }
         
-        // Ctrl+0 for reset font size
-        if (e.ctrlKey && e.key === '0') {
+        // Reset font: Ctrl+0
+        if (ctrlKey && e.key === '0') {
           e.preventDefault();
           setFontSize(CONFIG.DEFAULT_FONT_SIZE);
         }
@@ -1756,12 +2015,14 @@
         // Initialize font size controls
         initFontSizeControls();
         
+        // Initialize zoom controls
+        initZoomControls();
+        
         // Event listeners
         DOM.startBtn.addEventListener('click', startTest);
         DOM.accessCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTest(); });
         DOM.studentName.addEventListener('keydown', (e) => { if (e.key === 'Enter') DOM.accessCode.focus(); });
         DOM.finishBtn.addEventListener('click', finishTest);
-        DOM.themeToggle.addEventListener('click', toggleTheme);
         
         // Highlight buttons
         DOM.highlightBtn.addEventListener('click', applyHighlightToSelection);
@@ -1798,9 +2059,9 @@
         // Update online status
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Professional UI with improved toolbar');
-        console.log('📝 Features: Permanent toolbar, font size selector, keyboard shortcuts');
-        console.log('🎯 Shortcuts: Ctrl+Shift+H (highlight), Ctrl+Shift+R (remove), Ctrl++ (increase), Ctrl+- (decrease)');
+        console.log('✅ Chill IELTS - Professional exam platform');
+        console.log('📝 Features: 7 themes, font size, zoom, highlight, autosave, recovery');
+        console.log('🎯 Shortcuts: Ctrl+Shift+H (highlight), Ctrl+Shift+R (remove), Ctrl++/- (font), Ctrl+MouseWheel (zoom)');
       }
 
       // Initialize when DOM is ready
