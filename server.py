@@ -645,14 +645,14 @@ class App(BaseHTTPRequestHandler):
         """))
     
     # ========================================================================
-    # ADMIN: CREATE TEST
+    # ADMIN: CREATE TEST (with clipboard paste support)
     # ========================================================================
     def new_test(self):
         if not self.require_login():
             return
         self.send(200, page('New test', """
         <h1>📝 Create a test</h1>
-        <form method=post enctype='multipart/form-data'>
+        <form method=post enctype='multipart/form-data' id="testForm">
             <label>Test title</label>
             <input name=title required placeholder='Academic Writing Practice 1'>
             <div class=grid>
@@ -663,7 +663,15 @@ class App(BaseHTTPRequestHandler):
                     <label>Instructions / question</label>
                     <textarea name=task1_prompt required></textarea>
                     <label>Chart image (PNG, JPG or WebP)</label>
-                    <input name=chart type=file accept='image/png,image/jpeg,image/webp'>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:5px 0 16px;">
+                        <input type="file" name="chart" id="chartInput" accept="image/png,image/jpeg,image/webp" style="flex:1; min-width:200px; padding:8px;">
+                        <button type="button" id="pasteBtn" class="button" style="background:var(--orange); padding:8px 16px; font-size:14px;">📋 Paste from Clipboard</button>
+                    </div>
+                    <div id="pasteStatus" style="font-size:13px; color:var(--good); margin: -10px 0 16px; display:none;"></div>
+                    <div id="imagePreview" style="display:none; margin:10px 0;">
+                        <img id="previewImg" style="max-width:100%; max-height:200px; border-radius:4px; border:1px solid var(--line);">
+                        <button type="button" id="removeImgBtn" style="background:#bd2d28; color:#fff; border:0; padding:4px 12px; border-radius:4px; cursor:pointer; margin-top:5px; font-size:13px;">✖ Remove image</button>
+                    </div>
                 </div>
                 <div>
                     <h2>Task 2</h2>
@@ -675,6 +683,138 @@ class App(BaseHTTPRequestHandler):
             </div>
             <button>Create test</button>
         </form>
+        <script>
+        (function() {
+            'use strict';
+            
+            const chartInput = document.getElementById('chartInput');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const pasteStatus = document.getElementById('pasteStatus');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeImgBtn = document.getElementById('removeImgBtn');
+            
+            let currentImageData = null;
+            
+            // Show preview when file is selected
+            chartInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        previewImg.src = ev.target.result;
+                        imagePreview.style.display = 'block';
+                        pasteStatus.style.display = 'none';
+                        currentImageData = ev.target.result;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+            
+            // Handle paste from clipboard
+            async function pasteFromClipboard() {
+                try {
+                    // Try to read clipboard data
+                    const clipboardItems = await navigator.clipboard.read();
+                    
+                    for (const item of clipboardItems) {
+                        if (item.types.some(type => type.startsWith('image/'))) {
+                            // Found an image
+                            const blob = await item.getType(item.types.find(type => type.startsWith('image/')));
+                            
+                            // Create a File object from the blob
+                            const ext = blob.type.split('/')[1] || 'png';
+                            const fileName = `pasted-image.${ext}`;
+                            const file = new File([blob], fileName, { type: blob.type });
+                            
+                            // Create a DataTransfer to set the file input
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            chartInput.files = dataTransfer.files;
+                            
+                            // Trigger change event to show preview
+                            const event = new Event('change', { bubbles: true });
+                            chartInput.dispatchEvent(event);
+                            
+                            // Show success message
+                            pasteStatus.textContent = '✅ Image pasted successfully!';
+                            pasteStatus.style.display = 'block';
+                            pasteStatus.style.color = 'var(--good)';
+                            
+                            // Auto-hide after 3 seconds
+                            setTimeout(() => {
+                                pasteStatus.style.display = 'none';
+                            }, 3000);
+                            
+                            return;
+                        }
+                    }
+                    
+                    // No image found in clipboard
+                    pasteStatus.textContent = '❌ No image found in the clipboard.';
+                    pasteStatus.style.display = 'block';
+                    pasteStatus.style.color = '#bd2d28';
+                    
+                    setTimeout(() => {
+                        pasteStatus.style.display = 'none';
+                    }, 3000);
+                    
+                } catch (err) {
+                    // Clipboard access denied or not supported
+                    if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+                        pasteStatus.textContent = '⚠️ Clipboard access denied. Please allow clipboard access or use Choose File.';
+                    } else {
+                        pasteStatus.textContent = '⚠️ Clipboard paste not supported in this browser. Please use Choose File.';
+                    }
+                    pasteStatus.style.display = 'block';
+                    pasteStatus.style.color = '#bd2d28';
+                    
+                    setTimeout(() => {
+                        pasteStatus.style.display = 'none';
+                    }, 4000);
+                }
+            }
+            
+            pasteBtn.addEventListener('click', pasteFromClipboard);
+            
+            // Keyboard shortcut: Ctrl+V (or Cmd+V on Mac)
+            document.addEventListener('keydown', function(e) {
+                // Check if Ctrl+V or Cmd+V
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                    // Check if the focus is on the file input or anywhere in the form
+                    const target = e.target;
+                    if (target.closest && target.closest('#testForm')) {
+                        // Check if we're not typing in a text input/textarea
+                        if (!target.closest('input[type="text"]') && !target.closest('textarea')) {
+                            e.preventDefault();
+                            pasteFromClipboard();
+                        }
+                    }
+                }
+            });
+            
+            // Remove image
+            removeImgBtn.addEventListener('click', function() {
+                chartInput.value = '';
+                imagePreview.style.display = 'none';
+                previewImg.src = '';
+                currentImageData = null;
+                pasteStatus.textContent = 'Image removed';
+                pasteStatus.style.display = 'block';
+                pasteStatus.style.color = 'var(--muted)';
+                setTimeout(() => {
+                    pasteStatus.style.display = 'none';
+                }, 1500);
+            });
+            
+            // Also support paste on the paste button itself
+            pasteBtn.addEventListener('paste', function(e) {
+                e.preventDefault();
+                pasteFromClipboard();
+            });
+            
+            console.log('📋 Clipboard paste support enabled for image uploads');
+        })();
+        </script>
         """))
     
     def create_test(self):
