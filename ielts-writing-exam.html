@@ -21,6 +21,7 @@
       --bg-active: #d0d5dc;
       --bg-border: #d8e0e8;
       --bg-divider: #d8e0e8;
+      --bg-logo: #ffffff;
       --text-primary: #1c2733;
       --text-secondary: #607080;
       --text-muted: #8a9aa8;
@@ -37,9 +38,12 @@
       --scrollbar-thumb: #c0c8d0;
       --divider-color: #d8e0e8;
       --focus-ring: #123758;
+      --toolbar-height: 42px;
+      --transition-speed: 0.3s;
+      --editor-font-size: 16px;
     }
 
-    /* Dark themes remain the same as before... */
+    /* Theme: Dark Gray */
     [data-theme="dark-gray"] {
       --theme-name: 'Dark Gray';
       --bg-primary: #1e1e1e;
@@ -51,6 +55,7 @@
       --bg-active: #4a4a4a;
       --bg-border: #3a3a3a;
       --bg-divider: #3a3a3a;
+      --bg-logo: #2d2d2d;
       --text-primary: #d4d4d4;
       --text-secondary: #9a9a9a;
       --text-muted: #6a6a6a;
@@ -69,8 +74,7 @@
       --focus-ring: #4a8ab5;
     }
 
-    /* Midnight, blue-dark, graphite, oled-black, sepia themes... */
-    /* (Keeping existing theme definitions for brevity) */
+    /* Theme: Midnight */
     [data-theme="midnight"] {
       --theme-name: 'Midnight';
       --bg-primary: #0d1117;
@@ -82,6 +86,7 @@
       --bg-active: #40484f;
       --bg-border: #30363d;
       --bg-divider: #30363d;
+      --bg-logo: #1c2333;
       --text-primary: #e6edf3;
       --text-secondary: #8b949e;
       --text-muted: #5a6a7a;
@@ -100,93 +105,69 @@
       --focus-ring: #58a6ff;
     }
 
-    [data-theme="blue-dark"] {
-      --theme-name: 'Blue Dark';
-      --bg-primary: #1a1a2e;
-      --bg-secondary: #16213e;
-      --bg-card: #1a1a3e;
-      --bg-toolbar: #1a1a3e;
-      --bg-editor: #1a1a2e;
-      --bg-hover: #2a2a4e;
-      --bg-active: #3a3a5e;
-      --bg-border: #3a3a5e;
-      --bg-divider: #3a3a5e;
-      --text-primary: #e8e8f0;
-      --text-secondary: #a8a8c0;
-      --text-muted: #787890;
-      --text-inverse: #1a1a2e;
-      --border-color: #3a3a5e;
-      --shadow-color: rgba(0,0,0,0.4);
-      --accent-blue: #4a8ab5;
-      --accent-orange: #ff6a26;
-      --accent-green: #4aae7a;
-      --accent-red: #e55;
-      --highlight-bg: #ffd700;
-      --highlight-opacity: 0.25;
-      --scrollbar-track: #1a1a3e;
-      --scrollbar-thumb: #4a4a6e;
-      --divider-color: #3a3a5e;
-      --focus-ring: #4a8ab5;
-    }
-
-    [data-theme="graphite"] {
-      --theme-name: 'Graphite';
-      --bg-primary: #1a1a1a;
-      --bg-secondary: #222222;
-      --bg-card: #2a2a2a;
-      --bg-toolbar: #2a2a2a;
-      --bg-editor: #1a1a1a;
-      --bg-hover: #3a3a3a;
-      --bg-active: #4a4a4a;
-      --bg-border: #3a3a3a;
-      --bg-divider: #3a3a3a;
-      --text-primary: #d0d0d0;
-      --text-secondary: #909090;
-      --text-muted: #606060;
-      --text-inverse: #1a1a1a;
-      --border-color: #3a3a3a;
-      --shadow-color: rgba(0,0,0,0.3);
-      --accent-blue: #6a8a9a;
-      --accent-orange: #d07030;
-      --accent-green: #509070;
-      --accent-red: #c04040;
-      --highlight-bg: #c0a040;
-      --highlight-opacity: 0.25;
-      --scrollbar-track: #2a2a2a;
-      --scrollbar-thumb: #5a5a5a;
-      --divider-color: #3a3a3a;
-      --focus-ring: #6a8a9a;
-    }
-
-    [data-theme="oled-black"] {
-      --theme-name: 'OLED Black';
-      --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
-      --bg-card: #0a0a0a;
-      --bg-toolbar: #0a0a0a;
-      --bg-editor: #000000;
-      --bg-hover: #1a1a1a;
-      --bg-active: #2a2a2a;
-      --bg-border: #1a1a1a;
-      --bg-divider: #1a1a1a;
-      --text-primary: #e8e8e8;
-      --text-secondary: #888888;
-      --text-muted: #555555;
-      --text-inverse: #000000;
-      --border-color: #1a1a1a;
+    /* Theme: Navy */
+    [data-theme="navy"] {
+      --theme-name: 'Navy';
+      --bg-primary: #0a1628;
+      --bg-secondary: #0f2040;
+      --bg-card: #162a4a;
+      --bg-toolbar: #162a4a;
+      --bg-editor: #0a1628;
+      --bg-hover: #1e3a5e;
+      --bg-active: #2a4a6e;
+      --bg-border: #1e3a5e;
+      --bg-divider: #1e3a5e;
+      --bg-logo: #162a4a;
+      --text-primary: #e8edf3;
+      --text-secondary: #9ab0c8;
+      --text-muted: #6a8aaa;
+      --text-inverse: #0a1628;
+      --border-color: #1e3a5e;
       --shadow-color: rgba(0,0,0,0.5);
-      --accent-blue: #4a8ab5;
-      --accent-orange: #ff6a26;
+      --accent-blue: #5a9ad5;
+      --accent-orange: #ff7a36;
       --accent-green: #4aae7a;
       --accent-red: #e55;
       --highlight-bg: #ffd700;
-      --highlight-opacity: 0.2;
-      --scrollbar-track: #0a0a0a;
-      --scrollbar-thumb: #2a2a2a;
-      --divider-color: #1a1a1a;
-      --focus-ring: #4a8ab5;
+      --highlight-opacity: 0.25;
+      --scrollbar-track: #162a4a;
+      --scrollbar-thumb: #3a5a7e;
+      --divider-color: #1e3a5e;
+      --focus-ring: #5a9ad5;
     }
 
+    /* Theme: Warm */
+    [data-theme="warm"] {
+      --theme-name: 'Warm';
+      --bg-primary: #faf0e6;
+      --bg-secondary: #f5e6d6;
+      --bg-card: #faf0e6;
+      --bg-toolbar: #f5e6d6;
+      --bg-editor: #faf0e6;
+      --bg-hover: #f0ddd0;
+      --bg-active: #e8d0c0;
+      --bg-border: #e8d0c0;
+      --bg-divider: #e8d0c0;
+      --bg-logo: #faf0e6;
+      --text-primary: #3a2a1e;
+      --text-secondary: #7a6a5a;
+      --text-muted: #9a8a7a;
+      --text-inverse: #faf0e6;
+      --border-color: #e8d0c0;
+      --shadow-color: rgba(58,42,30,0.12);
+      --accent-blue: #8a6a4a;
+      --accent-orange: #c07040;
+      --accent-green: #6a8a5a;
+      --accent-red: #b04040;
+      --highlight-bg: #e8d080;
+      --highlight-opacity: 0.4;
+      --scrollbar-track: #f5e6d6;
+      --scrollbar-thumb: #d0b8a8;
+      --divider-color: #e8d0c0;
+      --focus-ring: #8a6a4a;
+    }
+
+    /* Theme: Sepia */
     [data-theme="sepia"] {
       --theme-name: 'Sepia';
       --bg-primary: #fbf4e8;
@@ -198,6 +179,7 @@
       --bg-active: #d8cdc0;
       --bg-border: #d8cdc0;
       --bg-divider: #d8cdc0;
+      --bg-logo: #fbf4e8;
       --text-primary: #4a3a2a;
       --text-secondary: #7a6a5a;
       --text-muted: #9a8a7a;
@@ -214,6 +196,37 @@
       --scrollbar-thumb: #c0b0a0;
       --divider-color: #d8cdc0;
       --focus-ring: #6a5a4a;
+    }
+
+    /* Theme: High Contrast */
+    [data-theme="high-contrast"] {
+      --theme-name: 'High Contrast';
+      --bg-primary: #000000;
+      --bg-secondary: #1a1a1a;
+      --bg-card: #1a1a1a;
+      --bg-toolbar: #1a1a1a;
+      --bg-editor: #000000;
+      --bg-hover: #2a2a2a;
+      --bg-active: #3a3a3a;
+      --bg-border: #4a4a4a;
+      --bg-divider: #4a4a4a;
+      --bg-logo: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #b0b0b0;
+      --text-inverse: #000000;
+      --border-color: #4a4a4a;
+      --shadow-color: rgba(0,0,0,0.8);
+      --accent-blue: #6ab0ff;
+      --accent-orange: #ff8a4a;
+      --accent-green: #5ac85a;
+      --accent-red: #ff6a6a;
+      --highlight-bg: #ffff00;
+      --highlight-opacity: 0.3;
+      --scrollbar-track: #1a1a1a;
+      --scrollbar-thumb: #4a4a4a;
+      --divider-color: #4a4a4a;
+      --focus-ring: #ffff00;
     }
 
     /* ============================================================
@@ -235,13 +248,11 @@
     
     button, input, textarea, select { font: inherit; }
 
-    /* Focus styles for accessibility */
     :focus-visible {
       outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
 
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
     ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
@@ -249,7 +260,7 @@
     * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
 
     /* ============================================================
-       LOGIN GATE (unchanged)
+       LOGIN GATE
        ============================================================ */
     .gate {
       height: 100vh;
@@ -268,7 +279,15 @@
       text-align: center;
       transition: all 0.2s;
     }
-    .card img { width: 82px; height: 82px; object-fit: contain; }
+    .card img { 
+      width: 82px; 
+      height: 82px; 
+      object-fit: contain;
+      background: var(--bg-logo);
+      border-radius: 8px;
+      padding: 8px;
+      transition: background 0.2s;
+    }
     .card h1 { margin: 8px 0; color: var(--text-primary); }
     .card p { color: var(--text-secondary); }
     .code {
@@ -302,7 +321,7 @@
     .error { color: var(--accent-red); min-height: 24px; font-size: 14px; margin: 12px 0 0; }
 
     /* ============================================================
-       TOP HEADER (unchanged)
+       TOP HEADER
        ============================================================ */
     .top {
       display: flex;
@@ -315,6 +334,7 @@
       transition: all 0.2s;
       flex-shrink: 0;
       min-height: 74px;
+      position: relative;
     }
     .brand {
       display: flex;
@@ -322,35 +342,65 @@
       gap: 11px;
       font-weight: 700;
       letter-spacing: .1px;
-      min-width: 238px;
+      min-width: 180px;
       color: var(--text-primary);
     }
-    .brand img { width: 46px; height: 46px; object-fit: contain; }
+    .brand img { 
+      width: 46px; 
+      height: 46px; 
+      object-fit: contain;
+      background: var(--bg-logo);
+      border-radius: 4px;
+      padding: 4px;
+      transition: background 0.2s;
+    }
     .brand small { display: block; color: var(--text-secondary); font-weight: 400; letter-spacing: 0; }
+    
     .exam-title {
       border-left: 1px solid var(--border-color);
       padding-left: 20px;
       color: var(--text-secondary);
       flex: 1;
       transition: border 0.2s;
+      min-width: 200px;
     }
     .exam-title strong { display: block; color: var(--text-primary); }
+    .exam-title .info-details {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .exam-title .info-details span {
+      white-space: nowrap;
+    }
+    .exam-title .info-details .separator { color: var(--text-muted); }
+    
     .top-controls {
       display: flex;
       align-items: center;
       gap: 12px;
       flex-shrink: 0;
+      min-width: 120px;
+      justify-content: flex-end;
     }
     .timer {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 700;
       color: var(--accent-blue);
       font-variant-numeric: tabular-nums;
       transition: color 0.2s;
-      min-width: 80px;
+      min-width: 100px;
       text-align: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
-    .timer.warning {
+    .timer.warning-5 {
+      color: var(--accent-orange);
+    }
+    .timer.warning-1 {
       color: var(--accent-red);
       animation: blink 1s step-end infinite;
     }
@@ -371,8 +421,24 @@
     .finish:hover { filter: brightness(.94); }
     .finish:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    .collapse-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 13px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .collapse-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
+    }
+
     /* ============================================================
-       TOOLBAR (unchanged structure)
+       TOOLBAR - Collapsible
        ============================================================ */
     .toolbar-row {
       display: flex;
@@ -383,10 +449,19 @@
       border-bottom: 1px solid var(--border-color);
       flex-wrap: nowrap;
       flex-shrink: 0;
-      transition: all 0.2s;
-      min-height: 42px;
+      transition: all var(--transition-speed);
+      min-height: var(--toolbar-height);
       box-shadow: 0 2px 8px var(--shadow-color);
-      overflow-x: auto;
+      overflow: hidden;
+      max-height: var(--toolbar-height);
+      opacity: 1;
+    }
+    .toolbar-row.collapsed {
+      max-height: 0;
+      padding: 0 16px;
+      opacity: 0;
+      min-height: 0;
+      border-bottom: none;
     }
     
     .toolbar-group {
@@ -504,7 +579,7 @@
     .time-warning.visible { display: inline-block; }
 
     /* ============================================================
-       TABS (unchanged)
+       TABS
        ============================================================ */
     .tabs {
       display: flex;
@@ -542,7 +617,7 @@
     .tab .status.done { background: var(--accent-green); }
 
     /* ============================================================
-       EXAM CONTAINER - Improved zoom using font-size and layout
+       EXAM CONTAINER
        ============================================================ */
     .exam-wrapper {
       flex: 1;
@@ -556,7 +631,6 @@
       display: flex;
       min-height: 100%;
       min-width: 100%;
-      /* Zoom is now handled by font-size scaling via data-zoom attribute */
     }
     
     .question-panel {
@@ -580,7 +654,6 @@
       height: 100%;
     }
 
-    /* Divider - Inspera Style */
     .divider {
       width: 8px;
       background: var(--divider-color);
@@ -611,7 +684,7 @@
     }
 
     /* ============================================================
-       QUESTION AREA (unchanged)
+       QUESTION AREA
        ============================================================ */
     .label { color: var(--accent-blue); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
     .question-panel h1 { font-size: 29px; margin: 6px 0 18px; color: var(--text-primary); }
@@ -624,7 +697,7 @@
       transition: background 0.2s;
     }
     .prompt {
-      font-size: 15px;
+      font-size: var(--editor-font-size);
       line-height: 1.65;
       max-width: 850px;
       white-space: pre-line;
@@ -644,7 +717,7 @@
     .task-image.hidden { display: none; }
 
     /* ============================================================
-       ANSWER AREA - Improved editor
+       ANSWER AREA - Font size controlled by CSS variable
        ============================================================ */
     .answer-head {
       display: flex;
@@ -672,7 +745,7 @@
       border: 2px solid var(--border-color);
       border-radius: 4px;
       transition: border 0.2s;
-      overflow: hidden;
+      overflow: auto;
     }
     .editor-wrapper:focus-within { border-color: var(--accent-blue); }
 
@@ -683,10 +756,10 @@
       padding: 18px 20px;
       outline: none;
       line-height: 1.7;
-      font-size: 15px;
+      font-size: var(--editor-font-size);
       background: var(--bg-editor);
       color: var(--text-primary);
-      transition: background 0.2s, color 0.2s;
+      transition: all 0.2s;
       overflow-y: auto;
       word-wrap: break-word;
       white-space: pre-wrap;
@@ -714,14 +787,15 @@
     .hidden { display: none !important; }
 
     /* ============================================================
-       RESPONSIVE (unchanged)
+       RESPONSIVE
        ============================================================ */
     @media (max-width: 800px) {
       body { overflow-y: auto; height: auto; }
-      .top { padding: 9px 14px; flex-wrap: wrap; height: auto; gap: 8px; }
+      .top { padding: 9px 14px; flex-wrap: wrap; height: auto; gap: 8px; position: relative; }
       .brand { min-width: 0; }
       .brand span, .exam-title { display: none; }
       .top-controls { margin-left: auto; }
+      .timer { font-size: 20px; min-width: 80px; position: static; transform: none; }
       .toolbar-row { padding: 4px 8px; gap: 2px; overflow-x: auto; }
       .toolbar-group { padding: 0 4px; }
       .toolbar-btn { font-size: 11px; padding: 2px 6px; min-height: 24px; }
@@ -733,13 +807,13 @@
       .question-panel { border-right: 0; border-bottom: 1px solid var(--border-color); min-height: 40vh; min-width: auto; }
       .answer-panel { min-height: 50vh; min-width: auto; }
       .divider { display: none; width: 0; }
-      .timer { font-size: 16px; }
       .finish { padding: 7px 10px; font-size: 13px; }
       .editor { min-height: 200px; }
+      .exam-title .info-details { font-size: 11px; gap: 6px; flex-direction: column; }
     }
 
     /* ============================================================
-       PRINT (unchanged)
+       PRINT
        ============================================================ */
     @media print {
       .top-controls, .tabs, .divider, .finish, .toolbar-row { display: none !important; }
@@ -776,19 +850,30 @@
         <img src="chill-ielts-logo.png" alt="Chill IELTS logo">
         <span>Chill IELTS<small>Computer-delivered practice</small></span>
       </div>
+      
       <div class="exam-title">
         <strong id="examName">Writing practice</strong>
-        <span id="studentDisplay">Two tasks · Your work saves on this device</span>
+        <div class="info-details" id="candidateInfo">
+          <span id="candidateNameDisplay">Candidate: —</span>
+          <span class="separator">•</span>
+          <span id="accessCodeDisplay">Code: —</span>
+          <span class="separator">•</span>
+          <span id="taskInfoDisplay">Two tasks</span>
+          <span class="separator">•</span>
+          <span id="autosaveStatusDisplay">Autosave: on</span>
+        </div>
       </div>
+      
       <div class="top-controls">
-        <div class="timer" id="timer">60:00</div>
+        <button class="collapse-btn" id="collapseBtn" title="Toggle toolbar">Hide toolbar ▲</button>
         <button class="finish" id="finishBtn">Finish test</button>
       </div>
+      
+      <div class="timer" id="timer">60:00</div>
     </header>
 
     <!-- Toolbar -->
     <div class="toolbar-row" id="toolbarRow">
-      <!-- Highlight Tools -->
       <div class="toolbar-group">
         <button class="toolbar-btn" id="highlightBtn" title="Highlight selected text (Ctrl+Shift+H)">
           <span class="icon">🖍️</span> Highlight
@@ -800,64 +885,47 @@
 
       <span class="separator">|</span>
 
-      <!-- Font Size Controls -->
       <div class="toolbar-group">
         <button class="toolbar-btn" id="fontDecrease" title="Decrease font size (Ctrl+-)">A−</button>
         <select class="toolbar-select" id="fontSizeSelect" title="Font size">
-          <option value="11">11</option>
-          <option value="12">12</option>
-          <option value="13">13</option>
-          <option value="14">14</option>
-          <option value="15" selected>15</option>
-          <option value="16">16</option>
-          <option value="17">17</option>
-          <option value="18">18</option>
-          <option value="19">19</option>
-          <option value="20">20</option>
-          <option value="22">22</option>
-          <option value="24">24</option>
-          <option value="26">26</option>
-          <option value="28">28</option>
-          <option value="30">30</option>
-          <option value="32">32</option>
+          <option value="12">12</option><option value="14">14</option><option value="16">16</option>
+          <option value="18">18</option><option value="20">20</option><option value="22">22</option>
+          <option value="24">24</option><option value="26">26</option><option value="28">28</option>
+          <option value="30">30</option><option value="32">32</option><option value="34">34</option>
+          <option value="36">36</option><option value="40">40</option><option value="44">44</option>
+          <option value="48">48</option><option value="52">52</option><option value="56">56</option>
+          <option value="60">60</option><option value="64">64</option><option value="72">72</option>
+          <option value="80">80</option><option value="90">90</option><option value="100">100</option>
         </select>
         <button class="toolbar-btn" id="fontIncrease" title="Increase font size (Ctrl++)">A+</button>
       </div>
 
       <span class="separator">|</span>
 
-      <!-- Zoom Controls -->
       <div class="toolbar-group">
         <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Zoom</span>
         <select class="toolbar-select" id="zoomSelect" title="Page zoom">
-          <option value="90">90%</option>
-          <option value="95">95%</option>
-          <option value="100" selected>100%</option>
-          <option value="110">110%</option>
-          <option value="125">125%</option>
-          <option value="150">150%</option>
-          <option value="175">175%</option>
-          <option value="200">200%</option>
+          <option value="90">90%</option><option value="95">95%</option><option value="100" selected>100%</option>
+          <option value="110">110%</option><option value="125">125%</option><option value="150">150%</option>
+          <option value="175">175%</option><option value="200">200%</option>
         </select>
       </div>
 
       <span class="separator">|</span>
 
-      <!-- Theme Selector -->
       <div class="toolbar-group" style="border-right: none;">
         <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Theme</span>
         <select class="toolbar-select" id="themeSelect" title="Select theme">
           <option value="light">☀️ Light</option>
           <option value="dark-gray">🌑 Dark Gray</option>
           <option value="midnight">🌙 Midnight</option>
-          <option value="blue-dark">💙 Blue Dark</option>
-          <option value="graphite">⚪ Graphite</option>
-          <option value="oled-black">⬛ OLED Black</option>
+          <option value="navy">⚓ Navy</option>
+          <option value="warm">🔥 Warm</option>
           <option value="sepia">📜 Sepia</option>
+          <option value="high-contrast">♿ High Contrast</option>
         </select>
       </div>
 
-      <!-- Status Information -->
       <span class="status-text" id="saveStatus">🟢 Online · Autosave: ready</span>
       <span class="recovery-notice hidden" id="recoveryNotice">📄 Draft recovered</span>
       <span class="time-warning" id="timeWarning">⏰ Time expired · Still saving</span>
@@ -869,7 +937,7 @@
       <button class="tab" data-task="2" role="tab" aria-selected="false">Task 2 <i class="status"></i></button>
     </nav>
 
-    <!-- Exam wrapper with scrolling -->
+    <!-- Exam wrapper -->
     <div class="exam-wrapper" id="examWrapper">
       <div class="exam-container" id="examContainer">
         <section class="question-panel" id="questionPanel" role="complementary" aria-label="Task question">
@@ -880,7 +948,6 @@
           <img id="taskImage" class="task-image hidden" alt="Task chart">
         </section>
 
-        <!-- Draggable divider -->
         <div class="divider" id="divider" role="separator" aria-label="Resize panels"></div>
 
         <section class="answer-panel" id="answerPanel" role="main" aria-label="Your answer">
@@ -899,7 +966,7 @@
   </div>
 
   <!-- ============================================================
-       JAVASCRIPT - COMPLETE REWRITE OF CRITICAL SYSTEMS
+       JAVASCRIPT
        ============================================================ -->
   <script>
     (function() {
@@ -917,12 +984,14 @@
         MAX_RETRY_ATTEMPTS: 5,
         RETRY_BACKOFF: 2000,
         TIMER_DURATION: 3600,
-        FONT_SIZES: ['11','12','13','14','15','16','17','18','19','20','22','24','26','28','30','32'],
-        DEFAULT_FONT_SIZE: '15',
+        FONT_SIZES: ['12','14','16','18','20','22','24','26','28','30','32','34','36','40','44','48','52','56','60','64','72','80','90','100'],
+        DEFAULT_FONT_SIZE: '16',
         ZOOM_LEVELS: ['90','95','100','110','125','150','175','200'],
         DEFAULT_ZOOM: '100',
-        THEMES: ['light', 'dark-gray', 'midnight', 'blue-dark', 'graphite', 'oled-black', 'sepia'],
+        THEMES: ['light', 'dark-gray', 'midnight', 'navy', 'warm', 'sepia', 'high-contrast'],
         DEFAULT_THEME: 'light',
+        WARNING_5_MIN: 300,
+        WARNING_1_MIN: 60,
       };
 
       // ============================================================
@@ -949,10 +1018,11 @@
         zoom: CONFIG.DEFAULT_ZOOM,
         theme: CONFIG.DEFAULT_THEME,
         dividerRatio: 0.5,
-        // Cursor tracking
+        toolbarCollapsed: false,
         cursorPosition: 0,
         selectionStart: 0,
         selectionEnd: 0,
+        isInitialized: false,
       };
 
       // ============================================================
@@ -969,7 +1039,10 @@
         DOM.gateError = $('gateError');
         DOM.startBtn = $('startBtn');
         DOM.examName = $('examName');
-        DOM.studentDisplay = $('studentDisplay');
+        DOM.candidateNameDisplay = $('candidateNameDisplay');
+        DOM.accessCodeDisplay = $('accessCodeDisplay');
+        DOM.taskInfoDisplay = $('taskInfoDisplay');
+        DOM.autosaveStatusDisplay = $('autosaveStatusDisplay');
         DOM.timer = $('timer');
         DOM.finishBtn = $('finishBtn');
         DOM.taskLabel = $('taskLabel');
@@ -996,6 +1069,7 @@
         DOM.zoomSelect = $('zoomSelect');
         DOM.themeSelect = $('themeSelect');
         DOM.toolbarRow = $('toolbarRow');
+        DOM.collapseBtn = $('collapseBtn');
       }
 
       // ============================================================
@@ -1015,7 +1089,11 @@
       }
 
       function getHighlightKey() {
-        return storageKey('highlights-v6');
+        return storageKey('highlights-v8');
+      }
+
+      function getUserPreferencesKey() {
+        return 'chill-user-preferences';
       }
 
       // ============================================================
@@ -1061,7 +1139,7 @@
       function saveToLocalStorage(key, value) {
         try {
           localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) { /* Ignore storage errors */ }
+        } catch (e) { /* Ignore */ }
       }
 
       function loadFromLocalStorage(key) {
@@ -1072,281 +1150,117 @@
       }
 
       // ============================================================
-      // CURSOR POSITION TRACKING - Robust Implementation
+      // USER PREFERENCES
       // ============================================================
-      function saveCursorPosition() {
-        const selection = window.getSelection();
-        if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) {
-          return;
-        }
-        
-        const range = selection.getRangeAt(0);
-        const editor = DOM.editor;
-        
-        // Get the position using a TreeWalker
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        let position = 0;
-        let found = false;
-        
-        // Get all text nodes in order
-        const textNodes = [];
-        while (node = walker.nextNode()) {
-          textNodes.push(node);
-        }
-        
-        // Find the position of the cursor
-        for (const textNode of textNodes) {
-          if (textNode === range.startContainer) {
-            position += range.startOffset;
-            found = true;
-            break;
-          }
-          position += textNode.textContent.length;
-        }
-        
-        if (found) {
-          state.cursorPosition = position;
-          state.selectionStart = position;
-          state.selectionEnd = position + (range.endContainer === range.startContainer ? range.endOffset - range.startOffset : 0);
-          
-          // Also save the selection range if there is one
-          if (!range.collapsed) {
-            // Find end position
-            let endPos = 0;
-            let endFound = false;
-            for (const textNode of textNodes) {
-              if (textNode === range.endContainer) {
-                endPos += range.endOffset;
-                endFound = true;
-                break;
-              }
-              endPos += textNode.textContent.length;
-            }
-            if (endFound) {
-              state.selectionStart = position;
-              state.selectionEnd = endPos;
-            }
-          }
-          
-          // Save to localStorage
-          saveToLocalStorage(storageKey('cursor'), {
-            position: state.cursorPosition,
-            selectionStart: state.selectionStart,
-            selectionEnd: state.selectionEnd
-          });
-        }
+      function saveUserPreferences() {
+        if (!state.code || !state.studentName) return;
+        const prefs = {
+          theme: state.theme,
+          fontSize: state.fontSize,
+          zoom: state.zoom,
+          toolbarCollapsed: state.toolbarCollapsed,
+        };
+        saveToLocalStorage(getUserPreferencesKey(), prefs);
       }
 
-      function restoreCursorPosition() {
-        const saved = loadFromLocalStorage(storageKey('cursor'));
-        if (!saved) return;
-        
-        const editor = DOM.editor;
-        const textNodes = [];
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        while (node = walker.nextNode()) {
-          textNodes.push(node);
-        }
-        
-        // Try to restore selection
-        let startNode = null;
-        let startOffset = 0;
-        let endNode = null;
-        let endOffset = 0;
-        let charCount = 0;
-        
-        for (const textNode of textNodes) {
-          if (charCount + textNode.textContent.length >= saved.position) {
-            startNode = textNode;
-            startOffset = saved.position - charCount;
-            break;
+      function loadUserPreferences() {
+        const prefs = loadFromLocalStorage(getUserPreferencesKey());
+        if (prefs) {
+          if (prefs.theme) setTheme(prefs.theme);
+          if (prefs.fontSize) setFontSize(prefs.fontSize);
+          if (prefs.zoom) setZoom(prefs.zoom);
+          if (prefs.toolbarCollapsed !== undefined) {
+            state.toolbarCollapsed = prefs.toolbarCollapsed;
+            updateToolbarUI();
           }
-          charCount += textNode.textContent.length;
+          return true;
         }
-        
-        if (saved.selectionEnd && saved.selectionEnd > saved.position) {
-          charCount = 0;
-          for (const textNode of textNodes) {
-            if (charCount + textNode.textContent.length >= saved.selectionEnd) {
-              endNode = textNode;
-              endOffset = saved.selectionEnd - charCount;
-              break;
-            }
-            charCount += textNode.textContent.length;
-          }
-        }
-        
-        if (startNode) {
-          try {
-            const range = document.createRange();
-            range.setStart(startNode, Math.min(startOffset, startNode.textContent.length));
-            if (endNode && endNode !== startNode) {
-              range.setEnd(endNode, Math.min(endOffset, endNode.textContent.length));
-            } else if (endNode) {
-              range.setEnd(startNode, Math.min(endOffset, startNode.textContent.length));
-            } else {
-              range.collapse(true);
-            }
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-          } catch (e) {
-            // Fallback: just restore cursor position
-            try {
-              const range = document.createRange();
-              range.setStart(startNode, Math.min(startOffset, startNode.textContent.length));
-              range.collapse(true);
-              const selection = window.getSelection();
-              selection.removeAllRanges();
-              selection.addRange(range);
-            } catch (e2) { /* Ignore */ }
-          }
-        }
+        return false;
       }
 
       // ============================================================
-      // HIGHLIGHT ENGINE - Completely Rewritten
+      // TOOLBAR COLLAPSE
       // ============================================================
-      function getHighlightData() {
+      function updateToolbarUI() {
+        if (state.toolbarCollapsed) {
+          DOM.toolbarRow.classList.add('collapsed');
+          DOM.collapseBtn.textContent = 'Show toolbar ▼';
+        } else {
+          DOM.toolbarRow.classList.remove('collapsed');
+          DOM.collapseBtn.textContent = 'Hide toolbar ▲';
+        }
+      }
+
+      function toggleToolbar() {
+        state.toolbarCollapsed = !state.toolbarCollapsed;
+        updateToolbarUI();
+        saveUserPreferences();
+        saveFullState();
+      }
+
+      // ============================================================
+      // HIGHLIGHT ENGINE - Simplified reliable version
+      // ============================================================
+      function saveHighlights() {
         const highlights = [];
         const editor = DOM.editor;
         const highlightSpans = editor.querySelectorAll('.highlight');
         
+        // Get full plain text
+        const fullText = getPlainText(editor.innerHTML);
+        
         highlightSpans.forEach(span => {
           const text = span.textContent;
-          // Find position using Range API
-          const range = document.createRange();
-          range.selectNodeContents(editor);
-          
-          let position = 0;
-          const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-          let node;
+          // Find position using indexOf - more reliable for simple highlights
+          let start = 0;
           let found = false;
           
-          while (node = walker.nextNode()) {
-            if (node.parentNode === span || node.parentNode.parentNode === span) {
+          // Find the position of this text that's not inside another highlight
+          // Simple approach: find all occurrences and pick the right one
+          let pos = fullText.indexOf(text);
+          while (pos !== -1) {
+            // Check if this position is already highlighted
+            const existing = highlights.some(h => 
+              Math.abs(h.start - pos) < 5 || (h.start <= pos && h.end >= pos + text.length)
+            );
+            if (!existing) {
+              start = pos;
               found = true;
               break;
             }
-            position += node.textContent.length;
+            pos = fullText.indexOf(text, pos + 1);
           }
           
           if (found) {
-            // Use a stable ID based on position and text
-            const id = `hl-${position}-${text.length}-${Date.now()}`;
             highlights.push({
-              start: position,
-              end: position + text.length,
+              start: start,
+              end: start + text.length,
               text: text,
-              id: id
+              id: 'hl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6)
             });
           }
         });
         
-        return highlights;
+        state.highlightData = highlights;
+        saveToLocalStorage(getHighlightKey(), highlights);
       }
 
       function applyHighlightsToEditor(highlights) {
-        if (!highlights || !highlights.length) return;
+        if (!highlights || !highlights.length) {
+          clearHighlightsFromEditor();
+          return;
+        }
         
         const editor = DOM.editor;
         const fullText = getPlainText(editor.innerHTML);
         if (!fullText) return;
         
-        // Get all text nodes
-        const textNodes = [];
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        while (node = walker.nextNode()) {
-          textNodes.push(node);
-        }
-        
-        // Build a map of character positions to text nodes
-        let charPos = 0;
-        const charMap = [];
-        for (const textNode of textNodes) {
-          const length = textNode.textContent.length;
-          for (let i = 0; i < length; i++) {
-            charMap.push({ node: textNode, offset: i });
-          }
-          charPos += length;
-        }
-        
-        // Apply highlights by wrapping ranges
-        const sorted = highlights.sort((a, b) => a.start - b.start);
-        let lastEnd = 0;
-        let html = '';
-        
-        // We need to rebuild the content with highlights
-        // This is safe because we're not using innerHTML on the editor directly
-        // We're building a new DOM structure
-        let currentIndex = 0;
-        const fragment = document.createDocumentFragment();
-        
-        for (const h of sorted) {
-          const start = Math.max(0, Math.min(h.start, fullText.length));
-          const end = Math.min(h.end, fullText.length);
-          if (start >= end) continue;
-          
-          // Add text before highlight
-          if (start > currentIndex) {
-            const textNode = document.createTextNode(fullText.substring(currentIndex, start));
-            fragment.appendChild(textNode);
-          }
-          
-          // Add highlighted text
-          const highlightText = fullText.substring(start, end);
-          const span = document.createElement('span');
-          span.className = 'highlight';
-          span.setAttribute('data-hl-id', h.id || '');
-          span.textContent = highlightText;
-          fragment.appendChild(span);
-          
-          currentIndex = end;
-        }
-        
-        // Add remaining text
-        if (currentIndex < fullText.length) {
-          const textNode = document.createTextNode(fullText.substring(currentIndex));
-          fragment.appendChild(textNode);
-        }
-        
-        // Replace editor content with fragment
-        editor.innerHTML = '';
-        editor.appendChild(fragment);
-        
-        // Store highlights data
-        state.highlightData = highlights;
-      }
-
-      function clearHighlightsFromEditor() {
-        const highlights = DOM.editor.querySelectorAll('.highlight');
-        highlights.forEach(el => {
-          const parent = el.parentNode;
-          const textNode = document.createTextNode(el.textContent);
-          parent.replaceChild(textNode, el);
-        });
-        DOM.editor.normalize();
-      }
-
-      function saveHighlights() {
-        const highlights = getHighlightData();
-        state.highlightData = highlights;
-        saveToLocalStorage(getHighlightKey(), highlights);
-      }
-
-      function restoreHighlights() {
-        const saved = loadFromLocalStorage(getHighlightKey());
-        if (!saved || !saved.length) return false;
-        
-        // Get current cursor position before applying highlights
+        // Save cursor position
         const selection = window.getSelection();
         let cursorPos = 0;
-        if (selection.rangeCount && DOM.editor.contains(selection.anchorNode)) {
+        if (selection.rangeCount && editor.contains(selection.anchorNode)) {
           const range = selection.getRangeAt(0);
-          const walker = document.createTreeWalker(DOM.editor, NodeFilter.SHOW_TEXT, null, false);
+          const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
           let node;
           let pos = 0;
           let found = false;
@@ -1361,13 +1275,34 @@
           if (!found) cursorPos = 0;
         }
         
-        // Apply highlights
-        applyHighlightsToEditor(saved);
+        clearHighlightsFromEditor();
+        
+        // Rebuild with highlights
+        let html = '';
+        let lastIndex = 0;
+        const sorted = highlights.sort((a, b) => a.start - b.start);
+        
+        sorted.forEach(h => {
+          const start = Math.max(0, Math.min(h.start, fullText.length));
+          const end = Math.min(h.end, fullText.length);
+          if (start >= end) return;
+          
+          const text = fullText.substring(start, end);
+          if (!text.trim()) return;
+          
+          html += escapeHtml(fullText.substring(lastIndex, start));
+          html += `<span class="highlight">${escapeHtml(text)}</span>`;
+          lastIndex = end;
+        });
+        html += escapeHtml(fullText.substring(lastIndex));
+        
+        editor.innerHTML = html;
+        state.highlightData = highlights;
         
         // Restore cursor
         try {
           const textNodes = [];
-          const walker = document.createTreeWalker(DOM.editor, NodeFilter.SHOW_TEXT, null, false);
+          const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
           let node;
           while (node = walker.nextNode()) {
             textNodes.push(node);
@@ -1379,15 +1314,33 @@
               const range = document.createRange();
               range.setStart(textNode, Math.min(cursorPos - charCount, textNode.textContent.length));
               range.collapse(true);
-              const selection = window.getSelection();
               selection.removeAllRanges();
               selection.addRange(range);
               break;
             }
             charCount += textNode.textContent.length;
           }
-        } catch (e) { /* Ignore cursor restoration errors */ }
-        
+        } catch (e) { /* Ignore */ }
+      }
+
+      function clearHighlightsFromEditor() {
+        const highlights = DOM.editor.querySelectorAll('.highlight');
+        highlights.forEach(el => {
+          const parent = el.parentNode;
+          const textNode = document.createTextNode(el.textContent);
+          parent.replaceChild(textNode, el);
+        });
+        DOM.editor.normalize();
+        state.highlightData = [];
+      }
+
+      function restoreHighlights() {
+        const saved = loadFromLocalStorage(getHighlightKey());
+        if (!saved || !saved.length) {
+          clearHighlightsFromEditor();
+          return false;
+        }
+        applyHighlightsToEditor(saved);
         return true;
       }
 
@@ -1401,51 +1354,18 @@
         const text = range.toString();
         if (!text.trim()) return;
         
-        // Check if already highlighted
         let parent = range.commonAncestorContainer;
         if (parent.nodeType === Node.TEXT_NODE) parent = parent.parentNode;
         if (parent.classList && parent.classList.contains('highlight')) return;
         
         try {
-          // Get the full text and positions
-          const editor = DOM.editor;
-          const fullText = getPlainText(editor.innerHTML);
-          
-          // Find position of the selected text
-          const startPos = getTextPosition(editor, range.startContainer, range.startOffset);
-          const endPos = getTextPosition(editor, range.endContainer, range.endOffset);
-          
-          if (startPos === -1 || endPos === -1) {
-            // Fallback: surround contents
-            const span = document.createElement('span');
-            span.className = 'highlight';
-            range.surroundContents(span);
-          } else {
-            // Get all highlights and add this one
-            const highlights = getHighlightData();
-            // Check for duplicates
-            const duplicate = highlights.some(h => 
-              Math.abs(h.start - startPos) < 2 && Math.abs(h.end - endPos) < 2
-            );
-            if (duplicate) return;
-            
-            highlights.push({
-              start: startPos,
-              end: endPos,
-              text: text,
-              id: `hl-${startPos}-${endPos}-${Date.now()}`
-            });
-            
-            // Rebuild with highlights
-            applyHighlightsToEditor(highlights);
-          }
-          
+          const span = document.createElement('span');
+          span.className = 'highlight';
+          range.surroundContents(span);
           saveHighlights();
           saveFullState();
           updateSaveStatus('Highlight applied');
-          
         } catch (e) {
-          // Fallback: insert at cursor
           const textNode = document.createTextNode(text);
           const span = document.createElement('span');
           span.className = 'highlight';
@@ -1455,20 +1375,6 @@
           saveHighlights();
           saveFullState();
         }
-      }
-
-      function getTextPosition(editor, container, offset) {
-        // Find the character position of a text node + offset
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        let position = 0;
-        while (node = walker.nextNode()) {
-          if (node === container) {
-            return position + offset;
-          }
-          position += node.textContent.length;
-        }
-        return -1;
       }
 
       function removeHighlightAtSelection() {
@@ -1490,7 +1396,6 @@
           saveFullState();
           updateSaveStatus('Highlight removed');
         } else {
-          // Find all highlights in the selection
           const highlights = DOM.editor.querySelectorAll('.highlight');
           let removed = false;
           highlights.forEach(el => {
@@ -1511,7 +1416,78 @@
       }
 
       // ============================================================
-      // STATE PERSISTENCE
+      // CURSOR POSITION TRACKING
+      // ============================================================
+      function saveCursorPosition() {
+        if (!state.code || !state.studentName) return;
+        const selection = window.getSelection();
+        if (!selection.rangeCount || !DOM.editor.contains(selection.anchorNode)) return;
+        
+        const range = selection.getRangeAt(0);
+        const editor = DOM.editor;
+        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        let position = 0;
+        let found = false;
+        const textNodes = [];
+        while (node = walker.nextNode()) {
+          textNodes.push(node);
+        }
+        
+        for (const textNode of textNodes) {
+          if (textNode === range.startContainer) {
+            position += range.startOffset;
+            found = true;
+            break;
+          }
+          position += textNode.textContent.length;
+        }
+        
+        if (found) {
+          state.cursorPosition = position;
+          saveToLocalStorage(storageKey('cursor'), { position: state.cursorPosition });
+        }
+      }
+
+      function restoreCursorPosition() {
+        const saved = loadFromLocalStorage(storageKey('cursor'));
+        if (!saved) return;
+        
+        const editor = DOM.editor;
+        const textNodes = [];
+        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while (node = walker.nextNode()) {
+          textNodes.push(node);
+        }
+        
+        let startNode = null;
+        let startOffset = 0;
+        let charCount = 0;
+        
+        for (const textNode of textNodes) {
+          if (charCount + textNode.textContent.length >= saved.position) {
+            startNode = textNode;
+            startOffset = saved.position - charCount;
+            break;
+          }
+          charCount += textNode.textContent.length;
+        }
+        
+        if (startNode) {
+          try {
+            const range = document.createRange();
+            range.setStart(startNode, Math.min(startOffset, startNode.textContent.length));
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } catch (e) { /* Ignore */ }
+        }
+      }
+
+      // ============================================================
+      // STATE PERSISTENCE - Only save after login
       // ============================================================
       function saveFullState() {
         if (!state.code || !state.studentName) return;
@@ -1531,6 +1507,7 @@
           dividerRatio: state.dividerRatio,
           studentName: state.studentName,
           code: state.code,
+          toolbarCollapsed: state.toolbarCollapsed,
         };
         saveToLocalStorage(storageKey('fullState'), fullState);
         
@@ -1547,11 +1524,7 @@
         saveToLocalStorage(storageKey('scroll'), scrollPos);
         saveToLocalStorage(storageKey('divider'), state.dividerRatio);
         
-        // Global settings
-        localStorage.setItem('chill-font-size', state.fontSize);
-        localStorage.setItem('chill-zoom', state.zoom);
-        localStorage.setItem('chill-theme', state.theme);
-        
+        saveUserPreferences();
         state.lastSaveTime = Date.now();
       }
 
@@ -1561,7 +1534,6 @@
         const fullState = loadFromLocalStorage(storageKey('fullState'));
         if (!fullState) return false;
         
-        // Verify this data belongs to the current student
         if (fullState.studentName !== state.studentName || fullState.code !== state.code) {
           return false;
         }
@@ -1578,17 +1550,15 @@
         state.zoom = fullState.zoom || CONFIG.DEFAULT_ZOOM;
         state.theme = fullState.theme || CONFIG.DEFAULT_THEME;
         state.dividerRatio = fullState.dividerRatio || 0.5;
+        state.toolbarCollapsed = fullState.toolbarCollapsed || false;
         
-        // Restore text content
         const savedText = localStorage.getItem(getTaskKey(state.taskNo));
         if (savedText !== null) {
           DOM.editor.innerText = savedText;
         }
         
-        // Restore highlights
         restoreHighlights();
         
-        // Restore scroll position
         const scrollPos = loadFromLocalStorage(storageKey('scroll'));
         if (scrollPos) {
           setTimeout(() => {
@@ -1597,19 +1567,11 @@
           }, 50);
         }
         
-        // Restore divider
         restoreDividerPosition();
-        
-        // Restore cursor
         setTimeout(restoreCursorPosition, 100);
         
-        // Global settings
-        const savedFont = localStorage.getItem('chill-font-size');
-        if (savedFont) state.fontSize = savedFont;
-        const savedZoom = localStorage.getItem('chill-zoom');
-        if (savedZoom) state.zoom = savedZoom;
-        const savedTheme = localStorage.getItem('chill-theme');
-        if (savedTheme) state.theme = savedTheme;
+        loadUserPreferences();
+        updateToolbarUI();
         
         return true;
       }
@@ -1619,6 +1581,7 @@
       // ============================================================
       function saveDividerPosition() {
         if (window.innerWidth <= 800) return;
+        if (!state.code || !state.studentName) return;
         const rect = DOM.examContainer.getBoundingClientRect();
         const questionWidth = DOM.questionPanel.offsetWidth;
         state.dividerRatio = rect.width > 0 ? questionWidth / rect.width : 0.5;
@@ -1683,30 +1646,50 @@
       }
 
       // ============================================================
-      // TIMER MANAGEMENT
+      // TIMER MANAGEMENT - IELTS style with warnings
       // ============================================================
       let timerInterval = null;
+      let warningShown5Min = false;
+      let warningShown1Min = false;
 
       function updateTimer() {
         if (state.seconds <= 0) {
           DOM.timer.textContent = '00:00';
+          DOM.timer.classList.remove('warning-5', 'warning-1');
           DOM.timer.classList.add('expired');
-          DOM.timer.classList.remove('warning');
           DOM.timeWarning.classList.add('visible');
           return;
         }
+        
         const m = Math.floor(state.seconds / 60);
         const s = state.seconds % 60;
         DOM.timer.textContent = `${m}:${String(s).padStart(2, '0')}`;
         
-        if (state.seconds <= 300) {
-          DOM.timer.classList.add('warning');
-          DOM.timer.classList.remove('expired');
+        // IELTS style warnings
+        if (state.seconds <= CONFIG.WARNING_1_MIN) {
+          DOM.timer.classList.remove('warning-5');
+          DOM.timer.classList.add('warning-1');
+          if (!warningShown1Min) {
+            warningShown1Min = true;
+            // Show warning but don't stop the test
+            DOM.timeWarning.textContent = '⏰ 1 minute remaining!';
+            DOM.timeWarning.classList.add('visible');
+          }
+        } else if (state.seconds <= CONFIG.WARNING_5_MIN) {
+          DOM.timer.classList.remove('warning-1');
+          DOM.timer.classList.add('warning-5');
+          if (!warningShown5Min) {
+            warningShown5Min = true;
+            DOM.timeWarning.textContent = '⏰ 5 minutes remaining';
+            DOM.timeWarning.classList.add('visible');
+            setTimeout(() => {
+              DOM.timeWarning.classList.remove('visible');
+            }, 5000);
+          }
         } else {
-          DOM.timer.classList.remove('warning');
-          DOM.timer.classList.remove('expired');
+          DOM.timer.classList.remove('warning-5', 'warning-1');
+          DOM.timeWarning.classList.remove('visible');
         }
-        DOM.timeWarning.classList.remove('visible');
       }
 
       function tick() {
@@ -1719,6 +1702,8 @@
 
       function startTimer() {
         if (timerInterval) clearInterval(timerInterval);
+        warningShown5Min = false;
+        warningShown1Min = false;
         updateTimer();
         timerInterval = setInterval(tick, 1000);
       }
@@ -1738,7 +1723,7 @@
       }
 
       // ============================================================
-      // AUTOSAVE
+      // AUTOSAVE - With forced saves on important actions
       // ============================================================
       let autosaveTimer = null;
       let debounceTimer = null;
@@ -1781,7 +1766,6 @@
           return;
         }
         
-        // Save cursor before autosave
         saveCursorPosition();
         saveFullState();
         updateSaveStatus('Autosaved ✓');
@@ -1822,6 +1806,10 @@
           performAutosave();
           debounceTimer = null;
         }, CONFIG.DEBOUNCE_DELAY);
+      }
+
+      function forceAutosave() {
+        performAutosave();
       }
 
       function startAutosave() {
@@ -1880,7 +1868,7 @@
         DOM.finishBtn.disabled = true;
         DOM.finishBtn.textContent = 'Submitting...';
         
-        performAutosave();
+        forceAutosave();
         
         const plainText1 = localStorage.getItem(getTaskKey(1)) || '';
         const plainText2 = localStorage.getItem(getTaskKey(2)) || '';
@@ -1962,8 +1950,7 @@
       // ============================================================
       function beforeUnloadHandler(e) {
         if (!state.isSubmitted && state.code && state.studentName) {
-          saveCursorPosition();
-          performAutosave();
+          forceAutosave();
           saveFullState();
           e.preventDefault();
           e.returnValue = '⚠️ You have unsaved work. Are you sure you want to leave?';
@@ -1976,13 +1963,11 @@
       // ============================================================
       function setFontSize(size) {
         if (!CONFIG.FONT_SIZES.includes(size)) return;
-        
         state.fontSize = size;
-        DOM.editor.style.fontSize = size + 'px';
+        document.documentElement.style.setProperty('--editor-font-size', size + 'px');
         DOM.fontSizeSelect.value = size;
-        localStorage.setItem('chill-font-size', size);
-        
-        saveFullState();
+        saveUserPreferences();
+        if (state.code && state.studentName) saveFullState();
       }
 
       function increaseFontSize() {
@@ -2000,8 +1985,12 @@
       }
 
       function initFontSizeControls() {
-        const savedFont = localStorage.getItem('chill-font-size') || CONFIG.DEFAULT_FONT_SIZE;
-        setFontSize(savedFont);
+        const savedFont = localStorage.getItem('chill-font-size');
+        if (savedFont && CONFIG.FONT_SIZES.includes(savedFont)) {
+          setFontSize(savedFont);
+        } else {
+          setFontSize(CONFIG.DEFAULT_FONT_SIZE);
+        }
         
         DOM.fontSizeSelect.addEventListener('change', () => {
           setFontSize(DOM.fontSizeSelect.value);
@@ -2012,22 +2001,21 @@
       }
 
       // ============================================================
-      // ZOOM MANAGEMENT - Using font-size scaling
+      // ZOOM MANAGEMENT - Using CSS for the editor only
       // ============================================================
       function setZoom(zoom) {
         if (!CONFIG.ZOOM_LEVELS.includes(zoom)) return;
-        
         state.zoom = zoom;
-        // Apply zoom by scaling the entire exam container
+        // Apply zoom to editor and question panel using CSS
         const scale = parseInt(zoom) / 100;
-        DOM.examContainer.style.transform = `scale(${scale})`;
-        DOM.examContainer.style.transformOrigin = 'top left';
-        DOM.examContainer.style.width = `${100 / scale}%`;
-        DOM.examContainer.style.height = `${100 / scale}%`;
+        DOM.editor.style.transform = `scale(${scale})`;
+        DOM.editor.style.transformOrigin = 'top left';
+        DOM.editor.style.width = `${100 / scale}%`;
+        DOM.editor.style.height = `${100 / scale}%`;
+        DOM.prompt.style.fontSize = `calc(${state.fontSize}px * ${scale})`;
         DOM.zoomSelect.value = zoom;
-        localStorage.setItem('chill-zoom', zoom);
-        
-        saveFullState();
+        saveUserPreferences();
+        if (state.code && state.studentName) saveFullState();
       }
 
       function initZoomControls() {
@@ -2037,18 +2025,6 @@
         DOM.zoomSelect.addEventListener('change', () => {
           setZoom(DOM.zoomSelect.value);
         });
-        
-        DOM.examWrapper.addEventListener('wheel', (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            const currentIndex = CONFIG.ZOOM_LEVELS.indexOf(state.zoom);
-            if (e.deltaY < 0 && currentIndex < CONFIG.ZOOM_LEVELS.length - 1) {
-              setZoom(CONFIG.ZOOM_LEVELS[currentIndex + 1]);
-            } else if (e.deltaY > 0 && currentIndex > 0) {
-              setZoom(CONFIG.ZOOM_LEVELS[currentIndex - 1]);
-            }
-          }
-        }, { passive: false });
       }
 
       // ============================================================
@@ -2056,13 +2032,11 @@
       // ============================================================
       function setTheme(theme) {
         if (!CONFIG.THEMES.includes(theme)) return;
-        
         state.theme = theme;
         document.documentElement.setAttribute('data-theme', theme);
         DOM.themeSelect.value = theme;
-        localStorage.setItem('chill-theme', theme);
-        
-        saveFullState();
+        saveUserPreferences();
+        if (state.code && state.studentName) saveFullState();
       }
 
       function initTheme() {
@@ -2091,10 +2065,21 @@
           statusText.textContent = '🔴 Offline · Saving locally';
           statusText.className = 'status-text offline';
         }
+        updateCandidateInfo();
       }
 
       window.addEventListener('online', updateOnlineStatus);
       window.addEventListener('offline', updateOnlineStatus);
+
+      // ============================================================
+      // CANDIDATE INFO
+      // ============================================================
+      function updateCandidateInfo() {
+        DOM.candidateNameDisplay.textContent = `Candidate: ${state.studentName || '—'}`;
+        DOM.accessCodeDisplay.textContent = `Code: ${state.code || '—'}`;
+        DOM.taskInfoDisplay.textContent = `Task ${state.taskNo}/2`;
+        DOM.autosaveStatusDisplay.textContent = `Autosave: ${state.isOnline ? 'on' : 'offline'}`;
+      }
 
       // ============================================================
       // START TEST
@@ -2131,6 +2116,7 @@
           state.attemptUuid = data.attemptUuid || null;
           state.startTime = Date.now();
           
+          // Load full state - restores everything
           const hasRecovered = loadFullState();
           if (hasRecovered) {
             state.hasRecovered = true;
@@ -2145,7 +2131,11 @@
           DOM.player.style.display = 'flex';
           
           DOM.examName.textContent = data.title || 'Writing practice';
-          DOM.studentDisplay.textContent = `Candidate: ${name} · Two tasks · Autosave on`;
+          updateCandidateInfo();
+          
+          // Load user preferences after login
+          loadUserPreferences();
+          updateToolbarUI();
           
           renderTask();
           startTimer();
@@ -2154,6 +2144,7 @@
           updateOnlineStatus();
           
           window.addEventListener('beforeunload', beforeUnloadHandler);
+          state.isInitialized = true;
           
         } catch (error) {
           DOM.gateError.textContent = error.message;
@@ -2185,17 +2176,17 @@
           DOM.taskImage.classList.add('hidden');
         }
         
-        if (!state.hasRecovered) {
-          const savedText = localStorage.getItem(getTaskKey(state.taskNo));
-          if (savedText !== null) {
-            DOM.editor.innerText = savedText;
-          }
+        // Restore text content
+        const savedText = localStorage.getItem(getTaskKey(state.taskNo));
+        if (savedText !== null) {
+          DOM.editor.innerText = savedText;
         }
         
         // Restore highlights
         restoreHighlights();
         updateWordCount();
         
+        // Update tabs
         document.querySelectorAll('.tab').forEach(b => {
           b.classList.toggle('active', +b.dataset.task === state.taskNo);
           b.setAttribute('aria-selected', +b.dataset.task === state.taskNo ? 'true' : 'false');
@@ -2213,20 +2204,26 @@
           }, 50);
         }
         
+        updateCandidateInfo();
         setTimeout(() => DOM.editor.focus(), 100);
       }
 
       // ============================================================
-      // SWITCH TASK
+      // SWITCH TASK - FIXED: Force save before switching
       // ============================================================
       function switchTask(taskNumber) {
         if (state.isSubmitted) return;
+        
+        // CRITICAL FIX: Save everything before switching
         saveCursorPosition();
-        performAutosave();
+        forceAutosave();
+        saveFullState();
+        
         state.taskNo = taskNumber;
         saveToLocalStorage(storageKey('task'), taskNumber);
         renderTask();
         DOM.editor.focus();
+        updateCandidateInfo();
       }
 
       // ============================================================
@@ -2236,44 +2233,37 @@
         const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
         
-        // Task switching: Ctrl+1, Ctrl+2
         if (ctrlKey && (e.key === '1' || e.key === '2')) {
           e.preventDefault();
           const taskNum = parseInt(e.key);
           if (taskNum === 1 || taskNum === 2) switchTask(taskNum);
         }
         
-        // Finish: Ctrl+Enter
         if (ctrlKey && e.key === 'Enter') {
           e.preventDefault();
           if (!state.isSubmitted) finishTest();
         }
         
-        // Highlight: Ctrl+Shift+H
         if (ctrlKey && e.shiftKey && (e.key === 'H' || e.key === 'h')) {
           e.preventDefault();
           applyHighlightToSelection();
         }
         
-        // Remove Highlight: Ctrl+Shift+R
         if (ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')) {
           e.preventDefault();
           removeHighlightAtSelection();
         }
         
-        // Increase font: Ctrl++
         if (ctrlKey && e.key === '+' && !e.shiftKey) {
           e.preventDefault();
           increaseFontSize();
         }
         
-        // Decrease font: Ctrl+-
         if (ctrlKey && e.key === '-') {
           e.preventDefault();
           decreaseFontSize();
         }
         
-        // Reset font: Ctrl+0
         if (ctrlKey && e.key === '0') {
           e.preventDefault();
           setFontSize(CONFIG.DEFAULT_FONT_SIZE);
@@ -2286,32 +2276,29 @@
       function handleVisibilityChange() {
         if (document.hidden && state.code && state.studentName) {
           saveCursorPosition();
-          performAutosave();
+          forceAutosave();
           saveFullState();
         }
       }
 
       // ============================================================
-      // PASTE HANDLER - Modern API
+      // PASTE HANDLER
       // ============================================================
       function handlePaste(e) {
         e.preventDefault();
         const text = e.clipboardData.getData('text/plain');
         if (text) {
-          // Use modern Range API to insert text
           const selection = window.getSelection();
           if (selection.rangeCount) {
             const range = selection.getRangeAt(0);
             range.deleteContents();
             const textNode = document.createTextNode(text);
             range.insertNode(textNode);
-            // Move cursor to end of inserted text
             range.setStartAfter(textNode);
             range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
           } else {
-            // Fallback
             DOM.editor.innerText += text;
           }
         }
@@ -2323,6 +2310,9 @@
       function init() {
         initDomRefs();
         
+        // Set default font size
+        document.documentElement.style.setProperty('--editor-font-size', CONFIG.DEFAULT_FONT_SIZE + 'px');
+        
         initTheme();
         initFontSizeControls();
         initZoomControls();
@@ -2331,6 +2321,7 @@
         DOM.accessCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTest(); });
         DOM.studentName.addEventListener('keydown', (e) => { if (e.key === 'Enter') DOM.accessCode.focus(); });
         DOM.finishBtn.addEventListener('click', finishTest);
+        DOM.collapseBtn.addEventListener('click', toggleToolbar);
         
         DOM.highlightBtn.addEventListener('click', applyHighlightToSelection);
         DOM.removeHighlightBtn.addEventListener('click', removeHighlightAtSelection);
@@ -2339,11 +2330,9 @@
           b.addEventListener('click', () => switchTask(+b.dataset.task));
         });
         
-        // Editor events
         DOM.editor.addEventListener('input', () => {
           updateWordCount();
           debouncedAutosave();
-          // Don't save full state on every keystroke - let autosave handle it
         });
         
         DOM.editor.addEventListener('keyup', () => {
@@ -2362,8 +2351,8 @@
         initDivider();
         updateOnlineStatus();
         
-        console.log('✅ Chill IELTS - Professional exam platform with fixed highlighting');
-        console.log('📝 Features: Reliable highlights, cursor restoration, professional themes');
+        console.log('✅ Chill IELTS - Professional exam platform');
+        console.log('📝 Features: Reliable highlights, collapsible toolbar, full session restore, IELTS-style timer');
         console.log('🎯 Shortcuts: Ctrl+Shift+H (highlight), Ctrl+Shift+R (remove), Ctrl++/- (font), Ctrl+MouseWheel (zoom)');
       }
 
