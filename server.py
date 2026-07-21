@@ -58,7 +58,7 @@ DB_PATH = DATA_BASE / "chill_ielts.sqlite3" if not USE_POSTGRES else None
 CONFIG_PATH = DATA_BASE / "settings.json"
 
 # ============================================================================
-# DATABASE ABSTRACTION LAYER - Proper SQL generation
+# DATABASE ABSTRACTION LAYER
 # ============================================================================
 class SQLDialect:
     """SQL dialect adapter for different databases"""
@@ -76,7 +76,6 @@ class SQLDialect:
     @staticmethod
     def on_conflict(table, constraint, updates):
         """Generate ON CONFLICT clause"""
-        # SQLite uses ON CONFLICT ... DO UPDATE SET
         return f"ON CONFLICT({constraint}) DO UPDATE SET {updates}"
 
 class PostgreSQLDialect(SQLDialect):
@@ -92,7 +91,6 @@ class PostgreSQLDialect(SQLDialect):
     
     @staticmethod
     def on_conflict(table, constraint, updates):
-        # PostgreSQL uses ON CONFLICT ... DO UPDATE SET with EXCLUDED
         return f"ON CONFLICT({constraint}) DO UPDATE SET {updates}"
 
 # Get the appropriate dialect
@@ -108,17 +106,13 @@ class DatabaseConnection:
         self._dialect = PostgreSQLDialect if is_postgres else SQLDialect
     
     def _format_sql(self, sql, params):
-        """Format SQL with proper placeholders without string replacement"""
+        """Format SQL with proper placeholders"""
         if not params:
             return sql, ()
         
-        # Generate proper placeholders based on dialect
+        # Note: This uses string replacement for placeholders
+        # For a production system, consider using psycopg.sql or a proper SQL builder
         if self.is_postgres:
-            placeholders = ', '.join(['%s'] * len(params))
-            # Replace ? with %s for PostgreSQL, but only for placeholders
-            # We use a simple approach: replace ? with %s in the SQL
-            # This is safe because we only replace ? that are placeholders
-            # and we know the exact parameter count
             formatted_sql = sql.replace('?', '%s')
             return formatted_sql, params
         else:
@@ -129,7 +123,6 @@ class DatabaseConnection:
         if params is None:
             params = ()
         
-        # Format SQL with proper placeholders
         formatted_sql, formatted_params = self._format_sql(sql, params)
         
         try:
@@ -146,52 +139,41 @@ class DatabaseConnection:
         if not params_list:
             return None
         
-        # Format SQL with proper placeholders (using first params for count)
         formatted_sql, _ = self._format_sql(sql, params_list[0])
-        
         self._cursor = self.conn.executemany(formatted_sql, params_list)
         return self._cursor
     
     def fetchone(self):
-        """Fetch one row from the last executed query"""
         if self._cursor:
             return self._cursor.fetchone()
         return None
     
     def fetchall(self):
-        """Fetch all rows from the last executed query"""
         if self._cursor:
             return self._cursor.fetchall()
         return []
     
     def commit(self):
-        """Commit the current transaction"""
         self.conn.commit()
     
     def rollback(self):
-        """Rollback the current transaction"""
         self.conn.rollback()
     
     def close(self):
-        """Close the connection"""
         self.conn.close()
     
     def row_factory(self, factory):
-        """Set the row factory for the connection"""
         if hasattr(self.conn, 'row_factory'):
             self.conn.row_factory = factory
     
     def lastrowid(self):
-        """Get the last inserted row ID"""
         return self._dialect.get_last_insert_id(self._cursor)
     
     def on_conflict(self, table, constraint, updates):
-        """Generate ON CONFLICT clause for the current dialect"""
         return self._dialect.on_conflict(table, constraint, updates)
     
     @contextmanager
     def transaction(self):
-        """Context manager for transactions"""
         try:
             yield self
             self.commit()
@@ -205,7 +187,6 @@ if USE_POSTGRES:
         from psycopg_pool import ConnectionPool
         from psycopg.rows import dict_row
         
-        # Initialize connection pool
         pool = ConnectionPool(
             DATABASE_URL,
             min_size=5,
@@ -217,7 +198,6 @@ if USE_POSTGRES:
                 'autocommit': False,
             }
         )
-        # Warm up the pool
         pool.open()
         logger.info("PostgreSQL connection pool created")
     except ImportError:
@@ -231,7 +211,6 @@ if USE_POSTGRES:
 def get_db_connection():
     """Get a database connection (context manager for proper cleanup)"""
     if USE_POSTGRES:
-        # Use pool.connection() context manager (psycopg3 pattern)
         with pool.connection() as conn:
             db = DatabaseConnection(conn, is_postgres=True)
             yield db
@@ -239,7 +218,7 @@ def get_db_connection():
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON")
-        conn.execute("PRAGMA journal_mode = WAL")  # Better concurrency
+        conn.execute("PRAGMA journal_mode = WAL")
         db = DatabaseConnection(conn, is_postgres=False)
         try:
             yield db
@@ -255,14 +234,47 @@ def get_db_version(db):
     """Get current database schema version"""
     try:
         if USE_POSTGRES:
-            result = db.execute("SELECT version FROM schema_version ORDER BY id DESC LIMIT 1")
+            # Check whether the schema_version table exists first
+            result = db.execute("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_name = 'schema_version'
+                )
+            """)
             row = result.fetchone()
-            return row['version'] if row else 0
+            exists = row["exists"] if isinstance(row, dict) else row[0]
+
+            if not exists:
+                return 0
+
+            # Table exists, query the version
+            result = db.execute("""
+                SELECT version
+                FROM schema_version
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            row = result.fetchone()
+            
+            if isinstance(row, dict):
+                return row['version'] if row else 0
+            else:
+                return row[0] if row else 0
+
         else:
             result = db.execute("PRAGMA user_version")
             row = result.fetchone()
             return row[0] if row else 0
-    except Exception:
+            
+    except Exception as e:
+        logger.debug(f"Error getting database version: {e}")
+        # IMPORTANT: Rollback the transaction if PostgreSQL to clear the aborted state
+        if USE_POSTGRES:
+            try:
+                db.rollback()
+            except Exception as rollback_error:
+                logger.debug(f"Error during rollback: {rollback_error}")
         return 0
 
 def set_db_version(db, version):
@@ -330,7 +342,6 @@ def create_index_if_not_exists(db, index_name, table_name, columns, unique=False
         if USE_POSTGRES:
             db.execute(f"CREATE {unique_str} INDEX IF NOT EXISTS {index_name} ON {table_name} ({columns})")
         else:
-            # SQLite doesn't support IF NOT EXISTS for indexes in older versions
             result = db.execute(
                 "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
                 (index_name,)
@@ -484,7 +495,6 @@ def migrate_database(db):
         add_column_if_not_exists(db, "attempts", "completed", "INTEGER NOT NULL DEFAULT 0")
         add_column_if_not_exists(db, "attempts", "attempt_uuid", "TEXT")
         
-        # Generate UUIDs for existing attempts
         if column_exists(db, "attempts", "attempt_uuid"):
             attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''")
             for attempt in attempts.fetchall():
@@ -494,7 +504,6 @@ def migrate_database(db):
                 else:
                     db.execute("UPDATE attempts SET attempt_uuid = ? WHERE token_hash = ?", (new_uuid, attempt['token_hash']))
         
-        # Create indexes
         create_index_if_not_exists(db, "idx_attempts_token_hash", "attempts", "token_hash")
         create_index_if_not_exists(db, "idx_attempts_test_student", "attempts", "test_id, student_name")
         create_index_if_not_exists(db, "idx_attempts_uuid", "attempts", "attempt_uuid", unique=True)
@@ -509,7 +518,6 @@ def migrate_database(db):
         add_column_if_not_exists(db, "submissions", "attempt_uuid", "TEXT")
         add_column_if_not_exists(db, "autosave", "attempt_uuid", "TEXT")
         
-        # Generate UUIDs for existing attempts if needed
         if column_exists(db, "attempts", "attempt_uuid"):
             attempts = db.execute("SELECT token_hash FROM attempts WHERE attempt_uuid IS NULL OR attempt_uuid = ''")
             for attempt in attempts.fetchall():
@@ -549,11 +557,9 @@ def sha(value: str) -> str:
 
 def load_settings():
     """Load settings from environment or config file"""
-    # Use local variables to avoid scope issues
     admin_password = ADMIN_PASSWORD
     session_secret = SESSION_SECRET
     
-    # Priority: Environment variables > config file
     if admin_password and session_secret:
         logger.info("Using environment variables for configuration")
         return {
@@ -561,7 +567,6 @@ def load_settings():
             "secret": session_secret
         }
     
-    # Fallback to config file for local development
     if CONFIG_PATH.exists():
         try:
             settings = json.loads(CONFIG_PATH.read_text())
@@ -570,7 +575,6 @@ def load_settings():
         except Exception as e:
             logger.warning(f"Could not read config file: {e}")
     
-    # Create config file for local development
     if not admin_password:
         admin_password = input("Create a teacher dashboard password: ").strip()
         if not admin_password:
@@ -593,7 +597,6 @@ SETTINGS = load_settings()
 # UTILITY FUNCTIONS
 # ============================================================================
 def generate_attempt_uuid() -> str:
-    """Generate a unique attempt identifier"""
     return str(uuid.uuid4())
 
 def esc(value):
@@ -633,9 +636,7 @@ class App(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("X-Content-Type-Options", "nosniff")
-        # Add security headers
-        if self.request.get('https', False):
-            self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        # Security headers (HTTPS detection removed - will be added via reverse proxy)
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
         self.send_header("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
         for k, v in (headers or {}).items():
@@ -685,7 +686,6 @@ class App(BaseHTTPRequestHandler):
         else:
             target = (ROOT / path.lstrip('/')).resolve()
         
-        # Prevent path traversal
         if not str(target).startswith(str(ROOT.resolve())) and not str(target).startswith(str(UPLOADS.resolve())):
             logger.warning(f"Path traversal attempt: {target}")
             return self.send(404, "Not found")
@@ -794,7 +794,6 @@ class App(BaseHTTPRequestHandler):
             return self.json(400, {"error": "Please enter your full name."})
         
         with get_db_connection() as db:
-            # Find test by class code
             test = execute_query(
                 db,
                 "SELECT * FROM tests WHERE class_code=? AND active=1",
@@ -805,7 +804,6 @@ class App(BaseHTTPRequestHandler):
             if not test:
                 return self.json(404, {"error": "This access code is not valid or the test is inactive."})
             
-            # Check for existing active attempt
             existing_attempt = execute_query(
                 db,
                 "SELECT token_hash, attempt_uuid FROM attempts WHERE test_id=? AND student_name=? AND expires_at>? AND completed=0",
@@ -822,15 +820,12 @@ class App(BaseHTTPRequestHandler):
                     "task2": {"title": test['task2_title'], "prompt": test['task2_prompt']}
                 })
             
-            # Create new attempt
             token = secrets.token_urlsafe(32)
             token_hash = sha(token)
             attempt_uuid = generate_attempt_uuid()
             
-            # Delete expired attempts
             execute_query(db, "DELETE FROM attempts WHERE expires_at<?", (int(time.time()),))
             
-            # Insert new attempt
             with db.transaction():
                 execute_query(
                     db,
@@ -864,7 +859,6 @@ class App(BaseHTTPRequestHandler):
         token_hash = sha(raw_token)
         
         with get_db_connection() as db:
-            # Verify attempt exists and is not completed
             attempt = execute_query(
                 db,
                 "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
@@ -875,7 +869,6 @@ class App(BaseHTTPRequestHandler):
             if not attempt:
                 return self.json(403, {"error": "Your test session has expired or has already been submitted."})
             
-            # Create submission with transaction
             with db.transaction():
                 execute_query(
                     db,
@@ -888,10 +881,7 @@ class App(BaseHTTPRequestHandler):
                      int(data.get('secondsRemaining', 0) or 0), int(time.time()))
                 )
                 
-                # Mark attempt as completed
                 execute_query(db, "UPDATE attempts SET completed=1 WHERE token_hash=?", (token_hash,))
-                
-                # Clear autosave data
                 execute_query(db, "DELETE FROM autosave WHERE attempt_token_hash=?", (token_hash,))
             
             return self.json(200, {"ok": True})
@@ -917,7 +907,6 @@ class App(BaseHTTPRequestHandler):
         token_hash = sha(raw_token)
         
         with get_db_connection() as db:
-            # Verify attempt exists and is not completed
             attempt = execute_query(
                 db,
                 "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
@@ -928,7 +917,6 @@ class App(BaseHTTPRequestHandler):
             if not attempt:
                 return self.json(403, {"error": "Your test session has expired or has already been submitted."})
             
-            # Save or update autosave data
             with db.transaction():
                 execute_query(
                     db,
@@ -950,7 +938,6 @@ class App(BaseHTTPRequestHandler):
         token_hash = sha(raw_token)
         
         with get_db_connection() as db:
-            # Verify attempt exists
             attempt = execute_query(
                 db,
                 "SELECT * FROM attempts WHERE token_hash=? AND expires_at>? AND completed=0",
@@ -961,7 +948,6 @@ class App(BaseHTTPRequestHandler):
             if not attempt:
                 return self.json(403, {"error": "Your test session has expired or has already been submitted."})
             
-            # Get autosave data
             autosave = execute_query(
                 db,
                 "SELECT task1_answer, task2_answer FROM autosave WHERE attempt_token_hash=?",
@@ -993,11 +979,10 @@ class App(BaseHTTPRequestHandler):
         expiry = str(int(time.time()) + 28800)
         sig = hmac.new(SETTINGS['secret'].encode(), expiry.encode(), hashlib.sha256).hexdigest()
         
-        # Set cookie with Secure flag if HTTPS
-        cookie_secure = "; Secure" if self.request.get('https', False) else ""
+        # Secure flag removed - will be handled by reverse proxy
         self.send(303, b'', headers={
             'Location': '/admin',
-            'Set-Cookie': f'teacher_session={expiry}.{sig}; Path=/; HttpOnly; SameSite=Strict{cookie_secure}'
+            'Set-Cookie': f'teacher_session={expiry}.{sig}; Path=/; HttpOnly; SameSite=Strict'
         })
     
     # ========================================================================
@@ -1223,7 +1208,6 @@ class App(BaseHTTPRequestHandler):
             image = '/uploads/' + name
         
         with get_db_connection() as db:
-            # Generate unique class code
             for _ in range(100):
                 class_code = f"{secrets.randbelow(10000):04d}"
                 existing = execute_query(db, "SELECT id FROM tests WHERE class_code=?", (class_code,), fetch_one=True)
@@ -1232,7 +1216,6 @@ class App(BaseHTTPRequestHandler):
             else:
                 return self.send(503, page('Error', 'Could not generate a unique class code. Please try again.'))
             
-            # Insert new test
             with db.transaction():
                 if USE_POSTGRES:
                     cursor = execute_query(
@@ -1288,7 +1271,6 @@ class App(BaseHTTPRequestHandler):
             if not test:
                 return self.send(404, 'Test not found')
             
-            # Generate unique class code
             for _ in range(100):
                 class_code = f"{secrets.randbelow(10000):04d}"
                 existing = execute_query(db, "SELECT id FROM tests WHERE class_code=? AND id!=?", (class_code, test_id), fetch_one=True)
@@ -1384,7 +1366,6 @@ Task 2 answer:
 
 Return plain text with clear headings."""
         
-        # Use a model that supports the Responses API
         model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
         
         body = json.dumps({
@@ -1504,10 +1485,8 @@ def startup():
     logger.info("🚀 Chill IELTS Server Starting...")
     logger.info("=" * 60)
     
-    # Log database type
     if USE_POSTGRES:
         logger.info("🐘 Using PostgreSQL database")
-        # Validate PostgreSQL connection
         try:
             with get_db_connection() as db:
                 result = db.execute("SELECT 1")
@@ -1519,15 +1498,12 @@ def startup():
     else:
         logger.info("📦 Using SQLite database")
     
-    # Initialize database
     if not init_database():
         logger.error("❌ Database initialization failed")
         return False
     
-    # Log uploads directory
     logger.info(f"📁 Uploads directory: {UPLOADS}")
     
-    # Log configuration source
     if ADMIN_PASSWORD and SESSION_SECRET:
         logger.info("🔐 Using environment variables for configuration")
     else:
