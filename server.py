@@ -601,70 +601,105 @@ def validate_image(file_data, filename):
     return ext, None
 
 class SupabaseUploadError(Exception):
-    """Custom exception for Supabase upload failures"""
+    """Raised when an upload to Supabase Storage fails."""
     pass
 
-def upload_to_supabase(file_data: bytes, filename: str, content_type: str = None) -> str:
+def upload_to_supabase(file_data: bytes, filename: str) -> str:
     """
-    Upload a file to Supabase Storage and return the public URL.
-    
-    Args:
-        file_data: The file content as bytes
-        filename: Original filename (used to determine extension)
-        content_type: Optional MIME type (auto-detected if not provided)
-    
-    Returns:
-        str: Public URL of the uploaded file
-    
-    Raises:
-        SupabaseUploadError: If upload fails
+    Upload an image to Supabase Storage using direct REST API and return its public URL.
+    Compatible with all Supabase versions.
     """
     if supabase_client is None:
-        raise SupabaseUploadError("Supabase client is not initialized. Check SUPABASE_URL and SUPABASE_SECRET_KEY.")
-    
-    # Determine file extension and content type
-    ext = None
-    if filename:
-        # Extract extension from filename
-        if '.' in filename:
-            ext = filename.rsplit('.', 1)[1].lower()
-    
-    # Detect content type based on extension
-    if content_type is None and ext:
-        content_type_map = {
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'webp': 'image/webp'
-        }
-        content_type = content_type_map.get(ext, 'application/octet-stream')
-    
-    # Generate unique filename
-    unique_filename = secrets.token_hex(12)
-    if ext:
-        unique_filename = f"{unique_filename}.{ext}"
-    
-    try:
-        # Upload to Supabase Storage
-        supabase_client.storage.from_(SUPABASE_BUCKET).upload(
-            path=unique_filename,
-            file=file_data,
-            file_options={
-                "content-type": content_type or "application/octet-stream",
-                "cache-control": "public, max-age=31536000"  # Cache for 1 year
-            }
+        raise SupabaseUploadError(
+            "Supabase client has not been initialized."
         )
+
+    # ------------------------
+    # determine extension
+    # ------------------------
+    ext = "png"
+
+    if "." in filename:
+        ext = filename.rsplit(".", 1)[1].lower()
+
+    if ext == "jpeg":
+        ext = "jpg"
+
+    content_types = {
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "webp": "image/webp"
+    }
+
+    content_type = content_types.get(ext, "application/octet-stream")
+
+    object_name = f"{uuid.uuid4().hex}.{ext}"
+
+    # ------------------------
+    # construct Supabase REST API URL
+    # ------------------------
+    # URL format: https://PROJECT.supabase.co/storage/v1/object/BUCKET/OBJECT_NAME
+    base_url = SUPABASE_URL.rstrip('/')
+    upload_url = f"{base_url}/storage/v1/object/{SUPABASE_BUCKET}/{object_name}"
+
+    # ------------------------
+    # prepare headers
+    # ------------------------
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
+        "apikey": SUPABASE_SECRET_KEY,
+        "Content-Type": content_type,
+        "Cache-Control": "max-age=3600",
+        "x-upsert": "false",
+    }
+
+    try:
+        logger.info(f"Uploading {object_name} to Supabase via REST API...")
+
+        # ------------------------
+        # perform the upload
+        # ------------------------
+        req = urlrequest.Request(
+            upload_url,
+            data=file_data,
+            headers=headers,
+            method="POST"
+        )
+
+        with urlrequest.urlopen(req, timeout=30) as response:
+            # Storage uploads normally return 200 OK
+            if response.status != 200:
+                raise Exception(f"Upload failed with status {response.status}")
+
+        # ------------------------
+        # construct public URL
+        # ------------------------
+        # Public URL format: https://PROJECT.supabase.co/storage/v1/object/public/BUCKET/OBJECT_NAME
+        public_url = f"{base_url}/storage/v1/object/public/{SUPABASE_BUCKET}/{object_name}"
         
-        logger.info(f"Successfully uploaded {unique_filename} to Supabase Storage")
-        
-        # Get public URL
-        public_url = supabase_client.storage.from_(SUPABASE_BUCKET).get_public_url(unique_filename)
-        
+        logger.info(f"Uploaded {object_name} successfully")
+
         return public_url
-        
+
+    except urlerror.HTTPError as e:
+        # HTTP error from Supabase - read the response body for details
+        try:
+            error_body = e.read().decode('utf-8')
+            logger.exception(f"Supabase HTTP upload failed: {e.code} - {error_body}")
+            raise SupabaseUploadError(f"Upload failed: HTTP {e.code} - {error_body}")
+        except Exception:
+            logger.exception(f"Supabase HTTP upload failed: {e.code}")
+            raise SupabaseUploadError(f"Upload failed: HTTP {e.code}")
+    
+    except urlerror.URLError as e:
+        # Network/connection error
+        logger.exception(f"Supabase connection error: {e}")
+        raise SupabaseUploadError(f"Connection error: {str(e)}")
+    
     except Exception as e:
-        logger.error(f"Failed to upload to Supabase Storage: {e}")
-        raise SupabaseUploadError(f"Image upload failed: {str(e)}")
+        # Any other unexpected error
+        logger.exception("Supabase upload failed")
+        raise SupabaseUploadError(str(e))
 
 def get_cookie_secure_flag():
     """Return Secure flag if using HTTPS"""
@@ -1316,13 +1351,22 @@ class App(BaseHTTPRequestHandler):
             try:
                 # Upload to Supabase Storage
                 image = upload_to_supabase(file_data, chart.filename)
-                logger.info(f"Successfully uploaded test image to Supabase: {image}")
-            except SupabaseUploadError as e:
-                logger.exception(f"Failed to upload image to Supabase: {e}")
-                return self.send(500, page('New test', 
-                    f'<p>Image upload failed: {esc(str(e))}</p>'
-                    '<p>Please try again or contact support.</p>'
-                ))
+                logger.info(f"Successfully uploaded test image: {image}")
+            except Exception as e:
+                logger.exception("Image upload failed")
+                return self.send(
+                    500,
+                    page(
+                        "Upload failed",
+                        f"""
+                        <h2>Image upload failed</h2>
+                        <pre>{esc(str(e))}</pre>
+                        <a class="button" href="/admin/new">
+                            Back
+                        </a>
+                        """
+                    )
+                )
         
         with get_db_connection() as db:
             # Generate unique class code
@@ -1614,19 +1658,13 @@ def startup():
     else:
         logger.info("📦 Using SQLite database")
     
-    # Validate Supabase Storage
+    # Check Supabase configuration
     if SUPABASE_URL and SUPABASE_SECRET_KEY:
         if supabase_client is None:
             logger.error("❌ Supabase client initialization failed. Check your Supabase credentials.")
             return False
         else:
-            try:
-                # Test connection by attempting to list bucket (optional)
-                supabase_client.storage.from_(SUPABASE_BUCKET).list(limit=1)
-                logger.info(f"✅ Supabase Storage connected successfully (bucket: {SUPABASE_BUCKET})")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not verify Supabase bucket: {e}")
-                logger.warning(f"⚠️ Make sure bucket '{SUPABASE_BUCKET}' exists and is public")
+            logger.info("✅ Supabase Storage configured (will verify on first upload)")
     else:
         logger.warning("⚠️ Supabase Storage not configured. New tests will not be able to upload images.")
         logger.warning("⚠️ Set SUPABASE_URL, SUPABASE_SECRET_KEY, and SUPABASE_BUCKET to enable image uploads.")
